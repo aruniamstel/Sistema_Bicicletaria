@@ -1,0 +1,78 @@
+/* Estilo para centralizar a página */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    background-color: #f8f9fa; /* Cor de fundo leve */
+    font-family: Arial, sans-serif;
+}
+
+/* Container do formulário */
+.form-container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px; /* Cantos arredondados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra leve */
+    width: 100%;
+    max-width: 400px; /* Largura máxima */
+    text-align: center; /* Centraliza o conteúdo do formulário */
+    box-sizing: border-box; /* Inclui padding e border no cálculo de largura */
+}
+
+/* Estilo do título */
+h2 {
+    margin-bottom: 20px;
+    color: #343a40;
+}
+
+/* Estilo do formulário */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaçamento entre os elementos */
+}
+
+/* Labels */
+label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #495057;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+/* Inputs e Selects */
+input, select {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Botão Enviar */
+button {
+    padding: 12px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform
+}
+
+button:disabled {
+    padding: 12px;
+    font-size: 16px;
+    background-color: #acacac;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform
+}

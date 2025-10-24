@@ -1,0 +1,75 @@
+.loginpg {
+  font-family: Arial, sans-serif; /* Fonte da página de login */
+  background-color: #f0f0f0; /* Cor de fundo */
+  display: flex; /* Usando flexbox para centralização */
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center; /* Centraliza verticalmente */
+  height: 100vh; /* Altura total da tela */
+  margin: 0; /* Remove margens padrão */
+}
+
+.login-container {
+  background-color: #fff; /* Cor de fundo do container */
+  padding: 25px; /* Aumenta o padding para mais conforto visual */
+  border-radius: 12px; /* Cantos arredondados */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 300px; /* Largura fixa do container */
+}
+
+h2 {
+  text-align: center; /* Centraliza o título */
+  color: #333; /* Cor do texto */
+  margin-bottom: 20px; /* Espaçamento abaixo do título */
+}
+
+form {
+  display: flex; /* Usando flexbox para o formulário */
+  flex-direction: column; /* Alinha os elementos na coluna */
+}
+
+label {
+  margin-top: 15px; /* Aumenta o espaçamento acima do rótulo */
+  color: #555; /* Cor do rótulo */
+  font-weight: bold; /* Deixa o texto em negrito */
+}
+
+input {
+  padding: 10px; /* Aumenta o padding dos inputs */
+  margin-top: 5px; /* Espaçamento acima do input */
+  border: 1px solid #415a77; 
+  border-radius: 4px; /* Cantos arredondados */
+  font-size: 14px; /* Tamanho da fonte */
+}
+
+button {
+  margin-top: 20px; /* Espaçamento acima do botão */
+  padding: 12px; /* Aumenta o padding do botão */
+  border: none; /* Remove a borda padrão */
+  border-radius: 6px; /* Cantos arredondados */
+  background-color: #415a77; /* Cor de fundo do botão */
+  color: white; /* Cor do texto do botão */
+  cursor: pointer; /* Muda o cursor ao passar o mouse */
+  font-size: 16px; /* Tamanho da fonte do botão */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Transição suave para o botão */
+}
+
+button:hover {
+  background-color: #1b263b; /* Muda a cor do botão ao passar o mouse */
+  transform: scale(1.05); /* Aumenta levemente o botão ao passar o mouse */
+}
+
+.links {
+  margin-top: 20px; /* Espaçamento acima das links */
+  text-align: center; /* Centraliza os links */
+}
+
+.links a {
+  display: block; /* Faz cada link ocupar a largura total */
+  color: #1b263b; /* Cor do link */
+  text-decoration: none; /* Remove o sublinhado */
+  margin-top: 10px; /* Espaçamento acima de cada link */
+}
+
+.links a:hover {
+  text-decoration: underline; /* Sublinha o link ao passar o mouse */
+}

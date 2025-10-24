@@ -1,0 +1,39 @@
+<app-header></app-header>
+<div class="orcamento">
+  <div class="container" >
+    <h2>Orçamento da Solicitação</h2>
+    <div class="solicitacao-detalhes">
+      <p><strong>Descrição do Equipamento:</strong> {{ solicitacao?.description }}</p>
+      <p><strong>Categoria:</strong> {{ solicitacao?.categoria?.nome}}</p>
+      <p><strong>Descrição do Defeito:</strong> {{ solicitacao?.defeito }}</p>
+      <p><strong>Data da Solicitação:</strong> {{ solicitacao?.date  | date:'dd/MM/yyyy' }}</p>
+      <p><strong>Estado:</strong> <span>{{ solicitacao?.status }}</span></p>
+      <p><strong>Valor orçado:</strong> <strong>{{ solicitacao?.preco }}</strong></p>
+    </div>
+
+    <div class="button-container">
+      <button (click)="aprovarOrcamento()" class="btn btn-success">Aprovar orçamento</button>
+      <button (click)="rejeitarOrcamento()" class="btn btn-danger">Rejeitar orçamento</button>
+    </div>
+  </div>
+
+  <!-- Modal de rejeição -->
+  <div *ngIf="modalVisible" class="modal">
+    <div class="modal-content">
+      <h5>Justificativa:</h5>
+      <textarea [(ngModel)]="justificativa" class="form-control" style="height: 100px"></textarea>
+      <div class="button-container">
+        <button (click)="closeModal()" class="btn btn-secondary">Fechar</button>
+        <button (click)="confirmarRejeicao()" class="btn btn-primary">Confirmar</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Popup -->
+  <div class="popup" [ngClass]="{'show': popupVisible}">
+    <span class="popuptext">
+      {{ popupMessage }} <br>
+      <button (click)="closePopup()">OK</button>
+    </span>
+  </div>
+</div>

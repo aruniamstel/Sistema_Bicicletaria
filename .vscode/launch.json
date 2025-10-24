@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SistemaManutencaoApplication<sistema-manutencao>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.net.manutencao.SistemaManutencaoApplication",
+            "projectName": "sistema-manutencao",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

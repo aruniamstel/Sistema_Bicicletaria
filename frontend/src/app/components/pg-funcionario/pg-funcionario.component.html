@@ -1,0 +1,57 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="container">
+  <h3 class="title-table">Ordens de serviço</h3>
+ 
+  <!-- Inicio tabela -->
+  <table class="table table-striped table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Data/Hora</th>
+        <th>Cliente</th>
+        <th>Descrição</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let request of filteredRequests">
+        <td>{{ request.date | date: 'dd MMM yyyy, hh:mm a' }}</td>
+        <td>{{ request.cliente.nome }}</td>
+        <td>{{ request.description }}</td>
+        <td [ngClass]="getStatusClass(request.status)">{{ request.status }}</td>
+        <td>
+          <!-- Botão de Ação Principal -->
+          <button class="btn btn-sm btn table" [ngClass]="getActionButtonClass(request.status)"
+            (click)="efetuarAcao(request)">
+            {{ getActionButtonText(request.status) }}
+          </button>
+          <!-- Botão para abrir o modal de Detalhes -->
+          <button class="btn btn-sm btn-info ms-2" (click)="abrirModal(request)">Detalhes</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="modal" tabindex="-1" [ngClass]="{ 'show': isModalOpen }" [ngStyle]="{ display: isModalOpen ? 'block' : 'none' }">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes da Solicitação</h5>
+                <button type="button" class="btn-close" aria-label="Close" (click)="fecharModal()"></button>
+            </div>
+            <div class="modal-body" *ngIf="selectedRequest">
+                <p><strong>Data/Hora:</strong> {{ selectedRequest.date | date: 'dd MMM yyyy, hh:mm a' }}</p>
+                <p><strong>Cliente:</strong> {{ selectedRequest.cliente.nome }}</p>
+                <p><strong>Descrição:</strong> {{ selectedRequest.description }}</p>
+                <p><strong>Categoria:</strong> {{ selectedRequest.categoria.nome }}</p>
+                <p><strong>Defeito:</strong> {{ selectedRequest.defeito }}</p>
+                <p><strong>Status:</strong> {{ selectedRequest.status }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>

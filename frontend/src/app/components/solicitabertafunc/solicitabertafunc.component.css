@@ -1,0 +1,22 @@
+/* Ajusta o layout dos botões na tabela */
+.table td {
+    vertical-align: middle; /* Alinha o conteúdo verticalmente ao centro */
+  }
+  
+  .table td .btn {
+    margin-right: 5px; /* Adiciona espaçamento horizontal entre os botões */
+    display: inline-block; /* Garante que os botões fiquem lado a lado */
+  }
+  
+  .table td .btn:last-child {
+    margin-right: 0; /* Remove margem do último botão */
+  }
+  /* Ajuste de alinhamento dos botões na tabela */
+.table td .btn {
+    display: inline-block;
+  }
+  
+  .table td .btn + .btn {
+    margin-left: 10px; /* Espaçamento entre botões */
+  }
+  

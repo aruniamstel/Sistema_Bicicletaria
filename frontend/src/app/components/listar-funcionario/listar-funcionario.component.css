@@ -1,0 +1,30 @@
+.modal-dialog {
+  max-width: 400px; /* Limita a largura da modal */
+  margin: 1.75rem auto; /* Centraliza horizontalmente */
+}
+
+.modal-content {
+  border-radius: 8px; /* Cantos arredondados */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Adiciona uma sombra */
+}
+
+.modal-header {
+  background-color: #f8f9fa; /* Fundo claro */
+  border-bottom: 1px solid #dee2e6; /* Linha no rodapé */
+  font-weight: bold; /* Título em negrito */
+}
+
+.modal-body {
+  padding: 20px;
+  font-size: 16px;
+}
+
+.modal-footer {
+  padding: 15px;
+  text-align: right;
+}
+
+.modal.show {
+  display: block;
+  background: rgba(0, 0, 0, 0.5); /* Fundo escuro para o restante da tela */
+}

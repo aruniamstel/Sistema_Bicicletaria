@@ -1,0 +1,35 @@
+<app-headerfuncionario></app-headerfuncionario>
+
+<div class="container" *ngIf="solicitacao">
+  <header>
+    <h2>Efetuar Orçamento</h2>
+  </header>
+
+  <div class="solicitacao-detalhes">
+    <p><strong>Categoria:</strong> {{ solicitacao.categoria.nome }}</p>
+    <p><strong>Descrição do Defeito:</strong> {{ solicitacao.defeito }}</p>
+    <p><strong>Data da Solicitação:</strong> {{ solicitacao.date | date: 'dd/MM/yyyy' }}</p>
+
+    <div *ngIf="!isRedirecionar">
+      <strong>Orçar valor:</strong>
+      <form id="valor-orcado">
+        <label>R$ </label>
+        <input type="number" id="numero" name="numero" [(ngModel)]="valorOrcado" required />
+      </form>
+    </div>
+
+  </div>
+
+  <div class="popup">
+    <div class="button-container">
+      <button *ngIf="!isRedirecionar" (click)="confirmarOrcamento()" id="aprovar" class="btn btn-success">
+        Confirmar orçamento
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!solicitacao" class="loading">
+  <p>Carregando dados da solicitação...</p>
+</div>

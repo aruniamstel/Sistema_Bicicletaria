@@ -1,0 +1,34 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="finalizarsolicit">
+    <div class="container">
+        
+        <h2>Finalizar Solicitação</h2>
+        <div class="solicitacao-detalhes">
+            <p><strong>Número da Solicitação:</strong> {{solicitacao?.id}}</p>
+            <p><strong>Descrição da Solicitação:</strong> {{solicitacao?.description}}</p>
+            <p><strong>Status Atual:</strong> {{solicitacao?.status}}</p>
+        </div>
+
+
+        <button (click)="finalizarSolicitacao()" id="finalizar-btn">Finalizar Solicitação</button>
+    </div>
+
+      <!-- Modal de rejeição -->
+  <div *ngIf="modalVisible" class="modal">
+    <div class="modal-content">
+      <h5>Justificativa:</h5>
+      <textarea [(ngModel)]="popupMessage" class="form-control" style="height: 100px"></textarea>
+      <div class="button-container">
+        <button (click)="closeModal()" class="btn btn-secondary">Fechar</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Popup -->
+  <div class="popup" [ngClass]="{'show': popupVisible}">
+    <span class="popuptext">
+      {{ popupMessage }} <br>
+      <button (click)="closePopup()">OK</button>
+    </span>
+  </div>
+</div>

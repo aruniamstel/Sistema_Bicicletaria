@@ -1,0 +1,38 @@
+<header>
+    <div class="navbar navbar-expand-lg bg-body-tertiary p-4 justify-content-between">
+        <h1 class="navbar-brand">Manutenção de Bikes</h1>
+        <!-- Centralizar os Dropdowns -->
+        <div class="d-flex justify-content-center flex-grow-1">
+            <!-- Dropdown Ver Ordens de serviço -->
+            <div ngbDropdown class="nav-item dropdown mx-3">
+                <a class="nav-link dropdown-toggle" ngbDropdownToggle>Ordens de serviço</a>
+                <div ngbDropdownMenu>
+                    <a class="dropdown-item" [routerLink]="['/pgfuncionario']">Todas as Ordens de serviço</a>
+                    <a class="dropdown-item" [routerLink]="['/solicitabertas']">Ordens de serviço Abertas</a>
+                </div>
+            </div>
+
+            <!-- Dropdown Relatórios -->
+            <div ngbDropdown class="nav-item dropdown mx-3">
+                <a class="nav-link dropdown-toggle" ngbDropdownToggle>Relatórios</a>
+                <div ngbDropdownMenu>
+                    <a class="dropdown-item" [routerLink]="['/relatoriodata']">Relatório de Receitas por Data</a>
+                    <a class="dropdown-item" [routerLink]="['/relatorioCategoria']">Relatório por Categoria</a>
+                </div>
+            </div>
+
+            <!-- Dropdown CRUD -->
+            <div ngbDropdown class="nav-item dropdown mx-3">
+                <a class="nav-link dropdown-toggle" ngbDropdownToggle>Cadastros</a>
+                <div ngbDropdownMenu>
+                    <a class="dropdown-item" [routerLink]="['/funcionarios/listar']">Cadastro de Funcionários</a>
+                    <a class="dropdown-item" [routerLink]="['/categorias/listar']">Cadastrar Categoria</a>
+                </div>
+            </div>
+        </div>
+        <!-- Botão Sair -->
+        <a class="btn btn-danger sair-btn" [routerLink]="['/login']">
+            <i class="fas fa-sign-out-alt me-2"></i> Sair
+        </a>
+    </div>
+</header>

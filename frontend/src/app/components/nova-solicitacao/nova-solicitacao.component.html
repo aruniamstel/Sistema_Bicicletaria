@@ -1,0 +1,27 @@
+<app-header></app-header>
+<body>
+  <div class="form-container">
+    <form [formGroup]="solicitacaoForm" (ngSubmit)="onSubmit()">
+      <h2>Nova Solicitação</h2>
+      <div>
+        <label for="description">Descrição</label>
+        <input id="description" formControlName="description" type="text" />
+      </div>
+  
+      <div>
+        <label for="categoria">Categoria</label>
+        <select id="categoria" formControlName="categoria">
+          <option *ngFor="let cat of categorias$ | async" [value]="cat.id">{{ cat.nome }}</option>
+        </select>
+      </div>
+  
+      <div>
+        <label for="defeito">Defeito</label>
+        <input id="defeito" formControlName="defeito" type="text" />
+      </div>
+  
+      <button type="submit" [disabled]="!solicitacaoForm.valid">Enviar</button>
+    </form>
+  </div>
+</body>
+

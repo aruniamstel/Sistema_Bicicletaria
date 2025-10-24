@@ -1,0 +1,42 @@
+.pagarservico {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 800px;
+    margin: 150px auto 20px; 
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+}
+
+.solicitacao-detalhes p {
+    color: #555;
+    margin: 10px 0;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #6200ea;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #3700b3;
+}

@@ -1,0 +1,104 @@
+.visualizarservicos {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 800px;
+   
+}
+
+h2, h3 {
+    text-align: center;
+    color: #333;
+}
+
+.solicitacao-detalhes p, .historico p {
+    color: #555;
+   
+}
+
+.historico {
+    border-top: 1px solid #ddd;
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+.acoes {
+    display: flex;
+    justify-content: center;
+  
+}
+
+.acoes button {
+    background-color: #415a77;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.acoes button:hover {
+    background-color: #778da9;
+}
+
+.historico {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  .historico ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .historico li {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .historico li:last-child {
+    border-bottom: none;
+  }
+  .modal-dialog {
+    max-width: 600px;
+    margin: 1.75rem auto;
+  }
+  
+  .modal-content {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 15px;
+  }
+  
+  .modal.show {
+    display: block;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  

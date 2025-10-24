@@ -1,0 +1,16 @@
+<app-header></app-header>
+<div class="pagarservico">
+    <div class="container">
+        
+        <h2>Pagamento da Solicitação</h2>
+        <div class="solicitacao-detalhes">
+            <p><strong>Descrição do Equipamento: </strong> {{solicitacao?.description}}</p>
+            <p><strong>Categoria: </strong>{{solicitacao?.categoria?.nome}}</p>
+            <p><strong>Descrição do Defeito: </strong> {{solicitacao?.defeito}}</p>
+            <p><strong>Data da Solicitação:</strong> {{solicitacao?.date | date: 'dd/MM/yyyy HH:mm'}}</p>
+            <p><strong>Estado:</strong> AGUARDANDO PAGAMENTO</p>
+            <p><strong>Valor do Serviço:</strong> R$ {{solicitacao?.preco  | number: '1.2-2' }}  </p>
+        </div>
+        <button (click)="confirmarPagamento()" id="confirmarPagamento">Confirmar Pagamento</button>
+    </div>
+</div>

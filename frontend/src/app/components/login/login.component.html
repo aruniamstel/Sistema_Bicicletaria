@@ -1,0 +1,21 @@
+<div class="loginpg">
+    <div class="banner-login"></div>
+        <div class="login-container">
+        <h2>Login</h2>
+        <form #formLogin="ngForm" (ngSubmit)="logar()">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="login" [(ngModel)]="login.login" required />
+            
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" [(ngModel)]="login.senha"required />
+            
+            <button type="button" class="btn btn-primary" (click)="logar()" [disabled]="!formLogin.form.valid">
+                <i class="fa fa-save" aria-hidden="true"></i> Logar
+              </button>
+          </form>
+          
+        <br>
+        <a [routerLink]="['/cadastro']">Não tem cadastro? Cadastre-se</a>
+       
+    </div>
+</div>

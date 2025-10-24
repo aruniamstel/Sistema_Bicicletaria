@@ -1,0 +1,130 @@
+.filters {
+  padding-bottom: 30px;
+  width: 50%;
+  margin: 0 auto;
+}
+.col-fixa {
+  width: 140px; /* Ajuste para a largura desejada para 10 caracteres */
+  white-space: nowrap; /* Impede que o texto quebre para uma nova linha */
+  overflow: hidden; /* Esconde o texto extra que ultrapassa o limite */
+  text-overflow: ellipsis; /* Adiciona reticências (...) se o texto ultrapassar o limite */
+}
+
+.col-fixa2 {
+  width: 240px; /* Ajuste para a largura desejada para 10 caracteres */
+  white-space: nowrap; /* Impede que o texto quebre para uma nova linha */
+  overflow: hidden; /* Esconde o texto extra que ultrapassa o limite */
+  text-overflow: ellipsis; /* Adiciona reticências (...) se o texto ultrapassar o limite */
+}
+
+button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.aprovar {
+  background-color: #119754;
+  color: white;
+}
+
+button.orcada {
+  /* Marrom */
+  background-color: #633a3a;
+  color: white;
+}
+
+button.aprovada {
+  background-color: #bebe06;
+  /* Amarelo */
+  color: white;
+}
+
+
+button.aberta {
+  background-color: #797676;
+  color: white;
+}
+
+button.paga {
+  background-color: #ff7f00;
+  ;
+  color: white;
+}
+
+
+button.arrumada {
+  background-color: #007bff;
+  color: white;
+}
+
+button.rejeitar {
+  background-color: #f44336;
+  color: white;
+}
+
+button.aguardandoPagamento {
+  background-color: #007bff;
+  color: white;
+}
+
+button.resgatar,
+button.pagar,
+button.visualizar {
+  background-color: #6200ea;
+  color: white;
+}
+
+/* Estilos para cada estado das Ordens de serviço */
+
+.font-bold {
+  font-weight: bolder;
+
+}
+
+.aberta {
+  color: #797676;
+  /* Cinza */
+}
+
+.orcada {
+  color: #633a3a;
+  /* Marrom */
+
+}
+
+.rejeitada {
+  color: #ff0000;
+  /* Vermelho */
+}
+
+.aprovada {
+  color: #bebe06;
+  /* Amarelo */
+}
+
+/* seria a redirecionada ?! */
+.arrumada {
+  color: #007bff;
+  /* Roxo */
+}
+
+.redirecionada {
+  color: #800080;
+}
+
+.aguardandoPagamento {
+  color: #007bff;
+  /* Azul */
+}
+
+.paga {
+  color: #ff7f00;
+  /* Alaranjado */
+}
+
+.finalizada {
+  color: #28a745;
+  /* Verde */
+}

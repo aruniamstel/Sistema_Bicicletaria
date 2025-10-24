@@ -1,0 +1,40 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="relatoriodata">
+    <div class="container">
+        <div class="filter-container">
+            <label for="startDate">Data Inicial:</label>
+            <input type="date" id="startDate" [(ngModel)]="startDate" />
+
+            <label for="endDate">Data Final:</label>
+            <input type="date" id="endDate" [(ngModel)]="endDate" />
+
+            <button class="btn btn-info" (click)="filtrarPorData()">Filtrar</button>
+
+            <button class="imprimir-button" (click)="gerarPDF()">
+                <img src="assets/imprimir.png" alt="Imprimir" />
+            </button>
+        </div>
+
+        <div class="table-container">
+            <h3 class="title-table">Relatório de Receitas por Data/Período</h3>
+            <table id="requestsTable" class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Receita (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let request of filteredRequests">
+                        <td class="centralizado">{{ request.date }}</td>
+                        <td class="centralizado">{{ request.receita | currency:'BRL' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="total-container">
+                <p class="centralizado">Período: {{ (startDate && endDate) ? (startDate | date:'dd/MM/yyyy') + ' a ' + (endDate | date:'dd/MM/yyyy') : 'Todo o Período' }}</p>
+                <p class="centralizado">Total: {{ calcularSomaReceita() | currency:'BRL' }}</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+<app-header></app-header>
+<div class="container">
+  <h3 class="title-table">Minhas Ordens de serviço</h3>
+  <table class="table table-striped table-bordered table-hover">
+    <thead>
+      <tr>
+        <th class="text-center col-fixa">Data/Hora</th>
+        <th class="text-center">Descrição do Equipamento</th>
+        <th class="text-center col-fixa">Status</th>
+        <th class="text-center col-fixa2">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let request of filteredRequests">
+        <td>{{ request.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ request.description.substring(0, 30) }}</td>
+        <td [ngClass]="getStatusClass(request.status)">{{ request.status }}</td>
+        <td class="text-center" style="width: 300px">
+          <div class="d-flex justify-content-center">
+            <!-- Botão "Detalhes" -->
+            <button class="btn btn-primary btn-sm table me-2" (click)="abrirModal(request)">
+              Visualizar Serviço
+            </button>
+            <!-- Segundo botão de ação (condicional) -->
+            <button *ngIf="shouldShowActionButton(request.status)" 
+                    class="btn btn-sm btn table" 
+                    [ngClass]="getActionButtonClass(request.status)"
+                    (click)="efetuarAcao(request)">
+              {{ getActionButtonText(request.status) }}
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Modal -->
+  <div class="modal fade" id="solicitacaoModal" tabindex="-1" role="dialog" aria-labelledby="solicitacaoModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="solicitacaoModalLabel">Detalhes da Solicitação</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="fecharModal()"></button>
+        </div>
+        <div class="modal-body">
+          <h4>Detalhes</h4>
+          <p><strong>Data da Solicitação:</strong> {{ solicitacaoSelecionada?.date | date: 'dd/MM/yyyy HH:mm' }}</p>
+          <p><strong>Descrição do Equipamento:</strong> {{ solicitacaoSelecionada?.description }}</p>
+          <p><strong>Defeito:</strong> {{ solicitacaoSelecionada?.defeito }}</p>
+          <p><strong>Categoria:</strong> {{ solicitacaoSelecionada?.categoria?.nome }}</p>
+          <p><strong>Status:</strong> {{ solicitacaoSelecionada?.status }}</p>
+          <p><strong>Valor do Serviço:</strong> R$ {{ solicitacaoSelecionada?.preco | number: '1.2-2' }}</p>
+
+          <h4>Histórico</h4>
+          <ul>
+            <li *ngFor="let passo of historicoPassos">
+              <p><strong>Data/Hora:</strong> {{ passo.dataHora }}</p>
+              <p><strong>Funcionário:</strong> {{ passo.funcionario }}</p>
+              <p><strong>Status:</strong> {{ passo.estado }}</p>
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

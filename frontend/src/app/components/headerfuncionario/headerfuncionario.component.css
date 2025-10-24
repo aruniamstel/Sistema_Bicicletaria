@@ -1,0 +1,36 @@
+header {
+    background-color: #415a77; /* Cor de fundo do cabeçalho */
+   
+}
+
+.dropdown-toggle {
+    cursor: pointer; /* Define o cursor como "mãozinha" */
+}
+
+.navbar-nav {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+/* Estilo para o botão Sair */
+.sair-btn {
+    width: 120px; /* Tamanho fixo */
+    text-align: center; /* Centraliza o texto */
+    display: flex;
+    align-items: center; /* Alinha ícone e texto verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+}
+
+.dropdown-toggle:hover {
+    color:#3d9bf8; 
+}
+
+/*
+.dropdown-toggle {
+    border-style: solid;
+    border-width: 1px; 
+    border-radius: 5px; 
+    margin: 1px;
+}
+    */

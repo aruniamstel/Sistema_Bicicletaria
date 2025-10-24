@@ -1,0 +1,33 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="relatoriocategoria">
+  <div class="container">
+    <div class="filter-container">
+      <label for="category">Categoria:</label>
+      <select id="category" [(ngModel)]="selectedCategory" (change)="filtrarPorCategoria()">
+        <option *ngFor="let category of categories" [value]="category">{{ category === 'all' ? 'Todas' : category }}</option>
+      </select>
+      
+      <button class="imprimir-button" (click)="gerarPDF()">
+        <img src="assets/imprimir.png" alt="Imprimir" />
+      </button>
+    </div>
+
+    <div class="table-container">
+      <h3 class="title-table">Relatório de Receitas por Categoria</h3>
+      <table id="requestsTable" class="table table-striped table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th>Receita (R$)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of filteredRequests">
+            <td>{{ request.categoria }}</td>
+            <td>{{ request.receita | currency:'BRL' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+.finalizarsolicit {
+    font-family: Arial, sans-serif; /* Fonte padrão */
+    background-color: #e0e1dd; /* Cor de fundo da página */
+    margin: 0; /* Remove margens padrão */
+    padding: 20px; /* Adiciona padding para melhor espaçamento interno */
+}
+
+.container {
+    display: flex; /* Flexbox para layout */
+    flex-direction: column; /* Itens empilhados verticalmente */
+    background-color: #ffffff; /* Fundo do container */
+    padding: 40px; /* Aumentado para um melhor espaçamento interno */
+    border-radius: 12px; /* Bordas arredondadas */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+    width: 80%; /* Largura do container */
+    max-width: 800px; /* Largura máxima do container */
+    margin: 150px auto 20px; /* Margens automáticas para centralização */
+    transition: all 0.3s ease; /* Transição suave para hover */
+}
+
+.container:hover {
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15); /* Efeito de hover no container */
+}
+
+h2 {
+    text-align: center; /* Centraliza o texto */
+    color: #1b263b; /* Cor do texto */
+    font-size: 24px; /* Tamanho da fonte */
+    margin-bottom: 20px; /* Margem inferior */
+    font-family: 'Roboto', sans-serif; /* Fonte Roboto */
+}
+
+.solicitacao-detalhes p {
+    color: #415a77; /* Cor dos parágrafos */
+    font-size: 16px; /* Tamanho da fonte */
+    line-height: 1.6; /* Espaçamento entre linhas */
+    margin: 10px 0; /* Margem entre parágrafos */
+}
+
+.form-group {
+    margin-bottom: 20px; /* Aumenta o espaçamento entre grupos de formulários */
+}
+
+label {
+    display: block; /* Faz com que o rótulo ocupe toda a linha */
+    margin-bottom: 6px; /* Aumenta a margem inferior do rótulo */
+    font-weight: bold; /* Negrito */
+    color: #1b263b; /* Cor do texto */
+    font-size: 15px; /* Tamanho da fonte */
+}
+
+input {
+    width: 100%; /* Ocupa toda a largura disponível */
+    padding: 12px; /* Aumenta o padding para melhor espaçamento interno */
+    border: 1px solid #415a77; /* Borda com cor consistente */
+    border-radius: 6px; /* Bordas arredondadas */
+    font-size: 16px; /* Aumenta o tamanho da fonte */
+    background-color: #f9f9f9; /* Cor de fundo do input */
+    transition: border-color 0.3s ease; /* Transição suave para a cor da borda */
+}
+
+input:focus {
+    border-color: #6200ea; /* Muda a cor da borda ao focar */
+    outline: none; /* Remove a borda de foco padrão */
+}
+
+button {
+    margin-top: 20px; /* Espaçamento acima do botão */
+    padding: 12px 24px; /* Aumenta o padding para o botão */
+    border: none; /* Remove a borda padrão */
+    border-radius: 6px; /* Bordas arredondadas */
+    background-color: #6200ea; /* Cor de fundo do botão */
+    color: white; /* Cor do texto do botão */
+    cursor: pointer; /* Muda o cursor ao passar sobre o botão */
+    text-align: center; /* Centraliza o texto do botão */
+    font-size: 16px; /* Aumenta o tamanho da fonte do botão */
+    font-family: 'Roboto', sans-serif; /* Fonte Roboto */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Adiciona animações ao passar o mouse */
+}
+
+button:hover {
+    background-color: #3700b3; /* Cor de fundo do botão ao passar o mouse */
+    transform: scale(1.02); /* Efeito de leve ampliação ao passar o mouse */
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 90%; /* Ajusta a largura do container em telas menores */
+    }
+}
+.popup {
+    position: relative;
+    display: none;
+    margin: 0;
+  }
+  
+  .popup.show {
+    display: flex; 
+    position: absolute;
+    background-color: #415a77; /* Cor do popup */
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .popup .popuptext {
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+  }
+  
+  .popup .popuptext button {
+    margin-top: 10px;
+    background-color: #4CAF50; /* Verde */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .popup .popuptext button:hover {
+    background-color: #45a049; /* Verde escuro */
+  }

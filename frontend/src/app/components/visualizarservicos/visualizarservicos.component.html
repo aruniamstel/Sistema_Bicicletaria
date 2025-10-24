@@ -1,0 +1,58 @@
+<div class="container">
+  <h3>Minhas Ordens de serviço</h3>
+  <table class="table table-striped table-striped table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Data/Hora</th>
+        <th>Descrição</th>
+        <th>Estado</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let solicitacao of solicitacoes">
+        <td>{{ solicitacao.dataHora | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ solicitacao.descricao.substring(0, 30) }}</td>
+        <td>{{ solicitacao.estado }}</td>
+        <td>
+          <button class="btn btn-primary btn-sm" (click)="abrirModal(solicitacao)">
+            Visualizar Detalhes
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Modal -->
+  <div class="modal fade" id="solicitacaoModal" tabindex="-1" role="dialog" aria-labelledby="solicitacaoModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="solicitacaoModalLabel">Detalhes da Solicitação</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="fecharModal()"></button>
+        </div>
+        <div class="modal-body">
+          <h4>Detalhes</h4>
+          <p><strong>Data da Solicitação:</strong> {{ solicitacaoSelecionada?.dataHora | date: 'dd/MM/yyyy HH:mm' }}</p>
+          <p><strong>Descrição do Equipamento:</strong> {{ solicitacaoSelecionada?.descricao }}</p>
+          <p><strong>Categoria:</strong> {{ solicitacaoSelecionada?.categoria }}</p>
+          <p><strong>Estado:</strong> {{ solicitacaoSelecionada?.estado }}</p>
+          <p><strong>Valor do Serviço:</strong> R$ {{ solicitacaoSelecionada?.valor | number: '1.2-2' }}</p>
+
+          <h4>Histórico</h4>
+          <ul>
+            <li *ngFor="let passo of historicoPassos">
+              <p><strong>Data/Hora:</strong> {{ passo.dataHora }}</p>
+              <p><strong>Funcionário:</strong> {{ passo.funcionario }}</p>
+              <p><strong>Estado:</strong> {{ passo.estado }}</p>
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
