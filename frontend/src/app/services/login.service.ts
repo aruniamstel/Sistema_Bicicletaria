@@ -45,8 +45,10 @@ export class LoginService {
         }),
         catchError((err) => {
           if (err.status === 401) {
+            alert("Login ou senha inválidos!");
             return of(null);  // Retorna null em caso de erro 401
           } else {
+            alert("erro ao tentar efetuar login");
             return throwError(() => err);  // Lança outro erro caso contrário
           }
         })

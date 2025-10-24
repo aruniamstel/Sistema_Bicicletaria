@@ -1,5 +1,5 @@
 {
-  "name": "web2dev",
+  "name": "SistemaBicicletaria",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -26,7 +26,7 @@
     "ngx-mask": "^18.0.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "web2dev": "file:",
+    "SistemaBicicletaria": "file:",
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
