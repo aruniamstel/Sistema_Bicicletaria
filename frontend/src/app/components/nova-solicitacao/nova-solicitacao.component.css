@@ -76,3 +76,16 @@ button:disabled {
     cursor: pointer;
     transition: background-color 0.3s ease, transform
 }
+
+button:active {
+    transform: scale(0.98);button {
+    padding: 12px;
+    font-size: 16px;
+    background-color: #1e72cc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform
+}
+}

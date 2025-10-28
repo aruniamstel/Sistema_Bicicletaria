@@ -57,10 +57,10 @@ export class CadastroComponent {
       alert('E-mail inválido!');
       return false;
     }
-    if (!this.validarCPF(this.cpf)) {
+    /*if (!this.validarCPF(this.cpf)) {
       alert('CPF inválido!');
       return false;
-    }
+    }*/
     return true;
   }
 

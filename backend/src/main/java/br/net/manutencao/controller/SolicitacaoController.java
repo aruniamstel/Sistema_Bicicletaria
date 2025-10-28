@@ -50,7 +50,15 @@ public class SolicitacaoController {
     @PostMapping("/criar")
     public ResponseEntity<?> createSolicitacao(@RequestBody SolicitacaoCreateDTO novaSolicitacao) {
 
-        System.out.println("Dados recebidos: " + novaSolicitacao);
+        //System.out.println("Dados recebidos: " + novaSolicitacao);
+
+        System.out.println("=== DEBUG SOLICITACAO ===");
+    System.out.println("Description: " + novaSolicitacao.getDescription());
+    System.out.println("Categoria: " + novaSolicitacao.getCategoria());
+    System.out.println("Defeito: " + novaSolicitacao.getDefeito());
+    System.out.println("idCliente: " + novaSolicitacao.getIdCliente());
+    System.out.println("Tipo do idCliente: " + (novaSolicitacao.getIdCliente() != null ? novaSolicitacao.getIdCliente().getClass() : "null"));
+
         Map<String, String> response = new HashMap<>();
         try {
             solicitacaoService.createSolicitacao(novaSolicitacao);
