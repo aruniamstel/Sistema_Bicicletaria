@@ -27,10 +27,6 @@ public class ClienteService {
             throw new IllegalArgumentException("E-mail já cadastrado.");
         }
     
-        if (cadastroRepository.existsByCpf(cliente.getCpf())) {
-            throw new IllegalArgumentException("CPF já cadastrado.");
-        }
-    
         // Gera uma senha aleatória de 4 dígitos
         String senha = HashUtil.gerarSenha();
         String salt = HashUtil.gerarSalt();

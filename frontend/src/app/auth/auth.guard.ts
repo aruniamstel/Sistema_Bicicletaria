@@ -3,8 +3,8 @@ import { LoginService } from '../services/login.service';
 import { inject } from '@angular/core';
 
 export const authGuard: CanActivateFn = (route, state) => {
-
-  const loginService = inject(LoginService);
+  return true;
+  /*const loginService = inject(LoginService);
   const router = inject(Router);
 
   const usuarioLogado = loginService.usuarioLogado;
@@ -26,5 +26,5 @@ export const authGuard: CanActivateFn = (route, state) => {
       error: "Deve fazer o login antes de acessar " + url
     }
   });
-  return false;
+  return false; */
 };

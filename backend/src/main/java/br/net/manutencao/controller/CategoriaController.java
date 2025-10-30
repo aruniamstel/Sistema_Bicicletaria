@@ -4,8 +4,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.net.manutencao.DTO.CategoriaCreateDTO;
 import br.net.manutencao.DTO.CategoriaListDTO;
-import br.net.manutencao.model.Categoria;
-import br.net.manutencao.service.CategoriaService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-
+/* 
 @RestController
 @RequestMapping("/categorias")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -90,3 +88,4 @@ public class CategoriaController {
     }
 }    
 
+*/

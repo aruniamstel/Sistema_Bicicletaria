@@ -19,6 +19,7 @@ export class SolicitacaoManutencaoService {
     constructor(private http: HttpClient) {}
 
     enviarSolicitacao(solicitacao: SolicitacaoCreateDTO): Observable<any> {
+        alert ('Enviando solicitação: ' + JSON.stringify(this.http.post(this.apiUrl, solicitacao)));
         return this.http.post(this.apiUrl, solicitacao);
     }
 }

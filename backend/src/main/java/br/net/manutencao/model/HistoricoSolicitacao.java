@@ -14,7 +14,7 @@ public class HistoricoSolicitacao {
 
     @ManyToOne
     @JoinColumn(name = "solicitacao_id", nullable = false)
-    private Solicitacao solicitacao; // Referência à solicitação
+    private OrdemServico solicitacao; // Referência à solicitação
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
