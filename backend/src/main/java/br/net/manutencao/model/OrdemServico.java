@@ -24,7 +24,8 @@ public class OrdemServico {
     private String problemaRelatado;
     private String observacoes;
     private StatusOrdem status; // ABERTA, EM_ANDAMENTO, CONCLUIDA, ENTREGUE
-    
+    private BigDecimal valorTotal;
+
     @ManyToOne
     @JoinColumn(name = "bicicleta_id")
     private Bicicleta bicicleta;
@@ -36,7 +37,10 @@ public class OrdemServico {
     private List<OrdemServicoPeca> pecas = new ArrayList<>();
 
      // Constructors
-    public OrdemServico() {}
+
+    public OrdemServico() {
+        this.valorTotal = BigDecimal.ZERO;
+    }
     
     public OrdemServico(Long id, LocalDateTime dataEntrada, LocalDateTime dataSaida, String problemaRelatado, 
                        String observacoes, StatusOrdem status, Bicicleta bicicleta) {
@@ -47,6 +51,7 @@ public class OrdemServico {
         this.observacoes = observacoes;
         this.status = status;
         this.bicicleta = bicicleta;
+        this.valorTotal = BigDecimal.ZERO;
     }
     
     // Getters and Setters
@@ -77,8 +82,16 @@ public class OrdemServico {
     public List<OrdemServicoPeca> getPecas() { return pecas; }
     public void setPecas(List<OrdemServicoPeca> pecas) { this.pecas = pecas; }
 
+    public BigDecimal getValorTotal() { 
+        return valorTotal; 
+    }
+    
+    public void setValorTotal(BigDecimal valorTotal) { 
+        this.valorTotal = valorTotal; 
+    }
+
     // Método para calcular valor total
-    public BigDecimal getValorTotal() {
+     public BigDecimal calcularValorTotal() {
         BigDecimal totalServicos = servicos.stream()
             .map(OrdemServicoServico::getValorTotal)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -87,7 +100,8 @@ public class OrdemServico {
             .map(OrdemServicoPeca::getValorTotal)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
             
-        return totalServicos.add(totalPecas);
+        this.valorTotal = totalServicos.add(totalPecas);
+        return this.valorTotal;
     }
 }
 

@@ -1,4 +1,4 @@
-package br.net.manutencao.service;
+/*package br.net.manutencao.service;
 
 import br.net.manutencao.HashUtil;
 import br.net.manutencao.DTO.FuncionarioCreateDTO;
@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public class FuncionarioService {
 
-    @Autowired
+    /*@Autowired
     private JavaMailSender mailSender;
 
     @Autowired
@@ -94,13 +94,16 @@ public class FuncionarioService {
     }
 
     // Envia o email com a senha gerada
+    /* 
     private void enviarEmailComSenha(String email, String senha) {
         SimpleMailMessage mensagem = new SimpleMailMessage();
         mensagem.setTo(email);
         mensagem.setSubject("Senha de Acesso");
         mensagem.setText("Bem-vindo ao sistema! Sua senha é: " + senha);
         mailSender.send(mensagem);
-    }
+    } 
 
 
 }
+
+*/

@@ -1,0 +1,37 @@
+-- LIMPAR TODAS AS TABELAS PRIMEIRO
+DELETE FROM ordem_servico_peca;
+DELETE FROM ordem_servico_servico;
+DELETE FROM ordem_servico;
+DELETE FROM bicicleta;
+DELETE FROM cliente;
+DELETE FROM peca;
+DELETE FROM servico;
+
+-- INSERIR DADOS NOVOS DO SISTEMA DE BICICLETARIA
+
+-- Serviços para bicicletaria
+INSERT INTO servico (descricao, categoria, valor_padrao) VALUES 
+('Revisão Básica', 'Manutenção', 50.00),
+('Revisão Completa', 'Manutenção', 100.00),
+('Troca de Pneu', 'Reparo', 25.00),
+('Ajuste de Freios', 'Ajuste', 15.00),
+('Limpeza e Lubrificação', 'Manutenção', 30.00);
+
+-- Peças para bicicletaria
+INSERT INTO peca (nome, descricao, categoria, valor_unitario, estoque) VALUES 
+('Pneu 26x1.95', 'Pneu para mountain bike 26 polegadas', 'Pneu', 45.00, 10),
+('Câmara de Ar 26', 'Câmara de ar para pneu 26', 'Pneu', 15.00, 20),
+('Corrente 8 velocidades', 'Corrente para bike com 8 marchas', 'Transmissão', 35.00, 8),
+('Pastilha de Freio', 'Pastilha de freio para freio a disco', 'Freio', 25.00, 15);
+
+-- Cliente de exemplo
+INSERT INTO cliente (nome, telefone, endereco, instagram) VALUES 
+('João Silva', '(11) 99999-9999', 'Rua das Bicicletas, 123', '@joaobike');
+
+-- Bicicleta do cliente
+INSERT INTO bicicleta (marca, modelo, tamanho_aro, cor, cliente_id) VALUES 
+('Caloi', 'Mountain Bike', 26, 'Vermelha', 1);
+
+-- Ordem de serviço de exemplo
+INSERT INTO ordem_servico (data_entrada, problema_relatado, observacoes, status, bicicleta_id, valor_total) VALUES 
+(CURRENT_TIMESTAMP, 'Pneu furado e freios rangendo', 'Cliente trouxe para revisão completa', 'ABERTA', 1, 0.00);

@@ -56,11 +56,12 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
-		</dependency>
+		</dependency> comentado para o MVP -->
+
 		<!-- <dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>

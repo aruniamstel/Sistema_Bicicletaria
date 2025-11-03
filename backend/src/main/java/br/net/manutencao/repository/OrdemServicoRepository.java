@@ -5,10 +5,12 @@ import br.net.manutencao.model.StatusOrdem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Repository
 public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long> {
 
     // Buscar ordens por cliente (através da bicicleta)
@@ -16,54 +18,53 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
     List<OrdemServico> findByClienteId(@Param("clienteId") Long clienteId);
 
     // Buscar ordens por bicicleta
-    List<OrdemServico> findByBicicletaId(Long bicicletaId);
+    @Query("SELECT os FROM OrdemServico os WHERE os.bicicleta.id = :bicicletaId")
+    List<OrdemServico> findByBicicletaId(@Param("bicicletaId") Long bicicletaId);
 
     // Buscar ordens por status
     List<OrdemServico> findByStatus(StatusOrdem status);
 
     // Buscar ordens em aberto
-    List<OrdemServico> findByStatusIn(List<StatusOrdem> statuses);
+    @Query("SELECT os FROM OrdemServico os WHERE os.status IN :statuses")
+    List<OrdemServico> findByStatusIn(@Param("statuses") List<StatusOrdem> statuses);
 
-    // Método removido - não temos mais funcionário no novo modelo
-    // public List<OrdemServico> findByFuncionarioId(Long funcionarioId);
-
-    // Relatório: Faturamento por data (ordens ENTREGUES)
+    // Relatório: Faturamento por data (ordens ENTREGUES) - CORRIGIDO
     @Query("SELECT FUNCTION('DATE', os.dataSaida) AS data, SUM(os.valorTotal) AS valorTotal " +
-           "FROM OrdemServico os WHERE os.status = 'ENTREGUE' AND os.dataSaida IS NOT NULL " +
+           "FROM OrdemServico os WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE AND os.dataSaida IS NOT NULL " +
            "GROUP BY FUNCTION('DATE', os.dataSaida) " +
            "ORDER BY FUNCTION('DATE', os.dataSaida)")
     List<Object[]> findOrdensEntreguesPorData();
 
-    // Relatório: Faturamento por serviço (mais útil para o Fabiano)
-    @Query("SELECT s.descricao AS servico, SUM(oss.quantidade * oss.valorUnitario) AS valorTotal " +
+    // Relatório: Faturamento por serviço - CORRIGIDO
+    @Query("SELECT s.descricao AS servico, SUM(oss.valorUnitario * oss.quantidade) AS valorTotal " +
            "FROM OrdemServicoServico oss " +
            "JOIN oss.servico s " +
            "JOIN oss.ordemServico os " +
-           "WHERE os.status = 'ENTREGUE' " +
+           "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
            "GROUP BY s.descricao " +
-           "ORDER BY valorTotal DESC")
+           "ORDER BY SUM(oss.valorUnitario * oss.quantidade) DESC")
     List<Object[]> findFaturamentoPorServico();
 
-    // Relatório: Faturamento por peça
-    @Query("SELECT p.nome AS peca, SUM(osp.quantidade * osp.valorUnitario) AS valorTotal " +
+    // Relatório: Faturamento por peça - CORRIGIDO
+    @Query("SELECT p.nome AS peca, SUM(osp.valorUnitario * osp.quantidade) AS valorTotal " +
            "FROM OrdemServicoPeca osp " +
            "JOIN osp.peca p " +
            "JOIN osp.ordemServico os " +
-           "WHERE os.status = 'ENTREGUE' " +
+           "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
            "GROUP BY p.nome " +
-           "ORDER BY valorTotal DESC")
+           "ORDER BY SUM(osp.valorUnitario * osp.quantidade) DESC")
     List<Object[]> findFaturamentoPorPeca();
 
-    // Buscar ordens por período (útil para dashboard)
+    // Buscar ordens por período
     @Query("SELECT os FROM OrdemServico os WHERE os.dataEntrada BETWEEN :dataInicio AND :dataFim")
     List<OrdemServico> findByPeriodo(@Param("dataInicio") LocalDate dataInicio, 
                                      @Param("dataFim") LocalDate dataFim);
 
-    // Contar ordens por status (para cards no dashboard)
+    // Contar ordens por status
     @Query("SELECT os.status, COUNT(os) FROM OrdemServico os GROUP BY os.status")
     List<Object[]> countOrdensByStatus();
 
-    // Buscar ordens atrasadas (entrada há mais de X dias e não entregues)
-    @Query("SELECT os FROM OrdemServico os WHERE os.status IN ('ABERTA', 'EM_ANDAMENTO') AND os.dataEntrada < :dataLimite")
+    // Buscar ordens atrasadas (entrada há mais de X dias e não entregues) - CORRIGIDO
+    @Query("SELECT os FROM OrdemServico os WHERE os.status IN (br.net.manutencao.model.StatusOrdem.ABERTA, br.net.manutencao.model.StatusOrdem.EM_ANDAMENTO) AND os.dataEntrada < :dataLimite")
     List<OrdemServico> findOrdensAtrasadas(@Param("dataLimite") LocalDate dataLimite);
 }

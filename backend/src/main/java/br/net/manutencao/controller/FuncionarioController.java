@@ -1,4 +1,4 @@
-package br.net.manutencao.controller;
+/*package br.net.manutencao.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -85,3 +85,4 @@ public class FuncionarioController {
         }
     }
 }
+*/
