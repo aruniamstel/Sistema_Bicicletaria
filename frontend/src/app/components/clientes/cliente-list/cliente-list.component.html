@@ -1,0 +1,57 @@
+<div class="cliente-list-container">
+  <div class="search-bar">
+    <input 
+      type="text" 
+      class="search-input" 
+      placeholder="Buscar por nome ou telefone..."
+      [(ngModel)]="searchTerm"
+      (input)="searchClientes()">
+    <button class="add-button" (click)="navigateToForm()">
+      Novo Cliente
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <table class="clientes-table" *ngIf="!loading && !error">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Telefone</th>
+        <th>Endereço</th>
+        <th>Instagram</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cliente of filteredClientes">
+        <td>{{ cliente.nome }}</td>
+        <td>{{ cliente.telefone }}</td>
+        <td>{{ cliente.endereco }}</td>
+        <td>{{ cliente.instagram || '-' }}</td>
+        <td class="action-buttons">
+          <button class="view-button" (click)="navigateToDetails(cliente.id!)">
+            Ver
+          </button>
+          <button class="edit-button" [routerLink]="['/clientes', cliente.id, 'editar']">
+            Editar
+          </button>
+          <button class="delete-button" (click)="deleteCliente(cliente.id!)">
+            Excluir
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="filteredClientes.length === 0">
+        <td colspan="5" style="text-align: center;">
+          Nenhum cliente encontrado
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

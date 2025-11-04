@@ -1,0 +1,134 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { OrdemServico } from '../../../shared/models/ordem-servico.model';
+import { OrdemServicoService } from '../../../services/ordem-servico.service';
+
+@Component({
+  selector: 'app-ordem-details',
+  templateUrl: './ordem-details.component.html',
+  styleUrls: ['./ordem-details.component.css']
+})
+export class OrdemDetailsComponent implements OnInit {
+  ordem: OrdemServico | null = null;
+  servicoForm: FormGroup;
+  pecaForm: FormGroup;
+  loading: boolean = false;
+  error: string = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private fb: FormBuilder,
+    private ordemService: OrdemServicoService
+  ) {
+    this.servicoForm = this.fb.group({
+      servicoId: ['', Validators.required],
+      quantidade: [1, [Validators.required, Validators.min(1)]]
+    });
+
+    this.pecaForm = this.fb.group({
+      pecaId: ['', Validators.required],
+      quantidade: [1, [Validators.required, Validators.min(1)]]
+    });
+  }
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadOrdem(+id);
+    }
+  }
+
+  loadOrdem(id: number): void {
+    this.loading = true;
+    this.ordemService.getById(id).subscribe({
+      next: (data) => {
+        this.ordem = data;
+        this.loading = false;
+      },
+      error: (error) => {
+        this.error = 'Erro ao carregar ordem de serviço: ' + error.message;
+        this.loading = false;
+      }
+    });
+  }
+
+  addServico(): void {
+    if (this.servicoForm.valid && this.ordem) {
+      const { servicoId, quantidade } = this.servicoForm.value;
+      this.loading = true;
+
+      this.ordemService.addServico(this.ordem.id!, servicoId, quantidade).subscribe({
+        next: (ordem) => {
+          this.ordem = ordem;
+          this.servicoForm.reset({ quantidade: 1 });
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = 'Erro ao adicionar serviço: ' + error.message;
+          this.loading = false;
+        }
+      });
+    }
+  }
+
+  addPeca(): void {
+    if (this.pecaForm.valid && this.ordem) {
+      const { pecaId, quantidade } = this.pecaForm.value;
+      this.loading = true;
+
+      this.ordemService.addPeca(this.ordem.id!, pecaId, quantidade).subscribe({
+        next: (ordem) => {
+          this.ordem = ordem;
+          this.pecaForm.reset({ quantidade: 1 });
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = 'Erro ao adicionar peça: ' + error.message;
+          this.loading = false;
+        }
+      });
+    }
+  }
+
+  updateStatus(status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE'): void {
+    if (this.ordem) {
+      this.loading = true;
+      this.ordemService.updateStatus(this.ordem.id!, status).subscribe({
+        next: (ordem) => {
+          this.ordem = ordem;
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = 'Erro ao atualizar status: ' + error.message;
+          this.loading = false;
+        }
+      });
+    }
+  }
+
+  formatStatus(status: string): string {
+    switch (status) {
+      case 'ABERTA': return 'Aberta';
+      case 'EM_ANDAMENTO': return 'Em Andamento';
+      case 'CONCLUIDA': return 'Concluída';
+      case 'ENTREGUE': return 'Entregue';
+      default: return status;
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'ABERTA': return 'status-aberta';
+      case 'EM_ANDAMENTO': return 'status-andamento';
+      case 'CONCLUIDA': return 'status-concluida';
+      case 'ENTREGUE': return 'status-entregue';
+      default: return '';
+    }
+  }
+
+  voltar(): void {
+    this.router.navigate(['/ordens-servico']);
+  }
+}

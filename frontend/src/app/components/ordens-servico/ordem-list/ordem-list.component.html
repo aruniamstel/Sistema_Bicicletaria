@@ -1,0 +1,81 @@
+<div class="ordem-list-container">
+  <div class="filters">
+    <input 
+      type="text" 
+      class="search-input" 
+      placeholder="Buscar por cliente, bicicleta ou problema..."
+      (input)="onSearch($event)">
+    
+    <select class="status-filter" (change)="onStatusFilterChange($any($event.target).value)">
+      <option value="">Todos os Status</option>
+      <option value="ABERTA">Aberta</option>
+      <option value="EM_ANDAMENTO">Em Andamento</option>
+      <option value="CONCLUIDA">Concluída</option>
+      <option value="ENTREGUE">Entregue</option>
+    </select>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <table class="ordens-table" *ngIf="!loading && !error">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Bicicleta</th>
+        <th>Data Entrada</th>
+        <th>Problema</th>
+        <th>Status</th>
+        <th>Valor Total</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let ordem of filteredOrdens">
+        <td>{{ ordem.bicicleta.cliente.nome }}</td>
+        <td>{{ ordem.bicicleta.marca }} - {{ ordem.bicicleta.modelo }}</td>
+        <td>{{ ordem.dataEntrada | date:'dd/MM/yyyy' }}</td>
+        <td>{{ ordem.problemaRelatado }}</td>
+        <td>
+          <span [class]="'status-badge ' + getStatusClass(ordem.status)">
+            {{ formatStatus(ordem.status) }}
+          </span>
+        </td>
+        <td>{{ ordem.valorTotal | currency:'BRL' }}</td>
+        <td class="action-buttons">
+          <button class="action-button view-button" (click)="navigateToDetails(ordem.id!)">
+            Ver Detalhes
+          </button>
+          
+          <button *ngIf="ordem.status === 'ABERTA'"
+                  class="action-button status-button"
+                  (click)="updateStatus(ordem, 'EM_ANDAMENTO')">
+            Iniciar
+          </button>
+          
+          <button *ngIf="ordem.status === 'EM_ANDAMENTO'"
+                  class="action-button status-button"
+                  (click)="updateStatus(ordem, 'CONCLUIDA')">
+            Concluir
+          </button>
+          
+          <button *ngIf="ordem.status === 'CONCLUIDA'"
+                  class="action-button status-button"
+                  (click)="updateStatus(ordem, 'ENTREGUE')">
+            Entregar
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="filteredOrdens.length === 0">
+        <td colspan="7" style="text-align: center;">
+          Nenhuma ordem de serviço encontrada
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
