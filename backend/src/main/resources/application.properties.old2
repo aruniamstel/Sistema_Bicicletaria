@@ -1,0 +1,38 @@
+spring.application.name=sistema-bicicletaria
+server.port=8081
+
+# ========== DATABASE H2 (EM MEMÓRIA) ==========
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+# H2 Console (acessível em http://localhost:8081/h2-console)
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+# ========== JPA CONFIGURATION ==========
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# ========== SQL INIT ==========
+# DESABILITA data.sql temporariamente
+spring.sql.init.mode=never
+spring.jpa.defer-datasource-initialization=false
+
+# ========== SECURITY ==========
+# Desabilita segurança
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+# ========== EMAIL (OPCIONAL - pode remover se não for usar) ==========
+# spring.mail.host=smtp.gmail.com
+# spring.mail.port=587
+# spring.mail.username=w966409@gmail.com
+# spring.mail.password=pcsz evzq jekf lhxy
+# spring.mail.properties.mail.smtp.auth=true
+# spring.mail.properties.mail.smtp.starttls.enable=true
+
+# ========== LOGGING ==========
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
