@@ -21,6 +21,13 @@ import { RelatorioCategoriaComponent } from './components/relatoriocategoria/rel
 // import { ExcluirCategoriaComponent } from './components/excluir-categoria/excluir-categoria.component';
 import { AtualizarCategoriaComponent } from './components/atualizar-categoria/atualizar-categoria.component';
 import { authGuard } from './auth/auth.guard';
+import { ClienteListComponent } from './components/clientes/cliente-list/cliente-list.component';
+import { ClienteFormComponent } from './components/clientes/cliente-form/cliente-form.component';
+import { ClienteDetailsComponent } from './components/clientes/cliente-details/cliente-details.component';
+import { BicicletaFormComponent } from './components/bicicletas/bicicleta-form/bicicleta-form.component';
+import { OrdemListComponent } from './components/ordens-servico/ordem-list/ordem-list.component';
+import { OrdemFormComponent } from './components/ordens-servico/ordem-form/ordem-form.component';
+import { OrdemDetailsComponent } from './components/ordens-servico/ordem-details/ordem-details.component';
 
 
 export const routes: Routes = [
@@ -202,5 +209,37 @@ export const routes: Routes = [
         data: {
             role: [ 'CLIENTE']
         }
+    },
+    // Clientes (lista, cadastro rápido, detalhes, edição)
+    {
+        path: 'clientes',
+        children: [
+            { path: '', component: ClienteListComponent },
+            { path: 'novo', component: ClienteFormComponent },
+            { path: ':id', component: ClienteDetailsComponent },
+            { path: ':id/editar', component: ClienteFormComponent }
+        ],
+        canActivate: [authGuard],
+        data: { role: ['ADMIN', 'FUNCIONARIO', 'CLIENTE'] }
+    },
+    // Bicicletas (vincular bicicleta a cliente)
+    {
+        path: 'bicicletas',
+        children: [
+            { path: 'novo', component: BicicletaFormComponent }
+        ],
+        canActivate: [authGuard],
+        data: { role: ['ADMIN', 'FUNCIONARIO', 'CLIENTE'] }
+    },
+    // Ordens de Serviço (listar, criar, detalhes)
+    {
+        path: 'ordens-servico',
+        children: [
+            { path: '', component: OrdemListComponent },
+            { path: 'novo', component: OrdemFormComponent },
+            { path: ':id', component: OrdemDetailsComponent }
+        ],
+        canActivate: [authGuard],
+        data: { role: ['ADMIN', 'FUNCIONARIO', 'CLIENTE'] }
     },
 ];

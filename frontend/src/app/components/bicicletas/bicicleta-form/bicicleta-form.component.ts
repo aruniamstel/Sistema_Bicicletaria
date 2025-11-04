@@ -69,7 +69,12 @@ export class BicicletaFormComponent implements OnInit {
         modelo: formValue.modelo,
         tamanhoAro: formValue.tamanhoAro,
         cor: formValue.cor,
-        cliente: { id: formValue.cliente }
+        cliente: {
+            id: formValue.cliente,
+            nome: '',
+            telefone: '',
+            endereco: ''
+        }
       };
 
       this.bicicletaService.create(bicicleta).subscribe({

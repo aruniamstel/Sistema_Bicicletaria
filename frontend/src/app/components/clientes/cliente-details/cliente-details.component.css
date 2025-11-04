@@ -1,0 +1,35 @@
+.cliente-details-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 16px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.cliente-details-container h2 {
+  margin-top: 0;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+.field label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.field input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 20px 0;
+}
+.buttons .danger { background: #e53935; color: #fff; }
+.bikes table { width: 100%; border-collapse: collapse; }
+.bikes th, .bikes td { padding: 8px 6px; border-bottom: 1px solid #eee; }
+.error { color: #b00020; margin-top: 8px; }
+.loading { text-align: center; padding: 24px; }

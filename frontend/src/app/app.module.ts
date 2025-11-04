@@ -23,12 +23,14 @@ import { BicicletaFormComponent } from './components/bicicletas/bicicleta-form/b
 import { OrdemListComponent } from './components/ordens-servico/ordem-list/ordem-list.component';
 import { OrdemFormComponent } from './components/ordens-servico/ordem-form/ordem-form.component';
 import { OrdemDetailsComponent } from './components/ordens-servico/ordem-details/ordem-details.component';
+import { ClienteDetailsComponent } from './components/clientes/cliente-details/cliente-details.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ClienteListComponent,
     ClienteFormComponent,
+  ClienteDetailsComponent,
     BicicletaFormComponent,
     OrdemListComponent,
     OrdemFormComponent,

@@ -1,0 +1,53 @@
+<div class="cliente-details-container" *ngIf="!loading">
+  <h2>Detalhes do Cliente</h2>
+
+  <form [formGroup]="clienteForm">
+    <div class="field">
+      <label>Nome</label>
+      <input formControlName="nome" />
+    </div>
+    <div class="field">
+      <label>Telefone</label>
+      <input formControlName="telefone" />
+    </div>
+    <div class="field">
+      <label>Endereço</label>
+      <input formControlName="endereco" />
+    </div>
+    <div class="field">
+      <label>Instagram</label>
+      <input formControlName="instagram" />
+    </div>
+
+    <div class="buttons">
+      <button type="button" (click)="save()" [disabled]="clienteForm.invalid">Salvar</button>
+      <button type="button" (click)="cancel()">Cancelar</button>
+      <button type="button" class="danger" (click)="delete()" *ngIf="clienteId">Excluir</button>
+      <button type="button" (click)="addBicicleta()">Adicionar Bicicleta</button>
+    </div>
+  </form>
+
+  <div class="bikes" *ngIf="cliente?.bicicletas?.length">
+    <h3>Bicicletas</h3>
+    <table>
+      <thead>
+        <tr><th>Marca</th><th>Modelo</th><th>Aro</th><th>Cor</th><th>Ações</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bike of cliente?.bicicletas">
+          <td>{{ bike.marca }}</td>
+          <td>{{ bike.modelo }}</td>
+          <td>{{ bike.tamanhoAro }}</td>
+          <td>{{ bike.cor }}</td>
+          <td>
+            <button (click)="criarOrdemComBicicleta(bike.id!)">Nova OS</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+</div>
+
+<div *ngIf="loading" class="loading">Carregando...</div>
