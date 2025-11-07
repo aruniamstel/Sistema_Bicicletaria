@@ -42,23 +42,24 @@ export class LoginComponent implements OnInit {
     this.loading = true;
   
     if (this.formLogin.form.valid) {
-      this.loginService.login(this.login).subscribe({
-        next: (usu) => {
-          if (usu) {
-            this.loginService.usuarioLogado = usu;
-            sessionStorage.setItem('id', usu.id.toString()); //armazena o id do usuário durante a sessão
-            this.redirecionarPorPerfil(usu.perfil);
-          } else {
-            this.message = "Usuário/senha inválido.";
-          }
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error("Erro no login:", err);
-          this.message = "Ocorreu um erro inesperado.";
-          this.loading = false;
-        },
-      });
+      this.router.navigate(['/ordens-servico']);
+      // this.loginService.login(this.login).subscribe({
+      //   next: (usu) => {
+      //     if (usu) {
+      //       this.loginService.usuarioLogado = usu;
+      //       sessionStorage.setItem('id', usu.id.toString()); //armazena o id do usuário durante a sessão
+      //       this.redirecionarPorPerfil(usu.perfil);
+      //     } else {
+      //       this.message = "Usuário/senha inválido.";
+      //     }
+      //     this.loading = false;
+      //   },
+      //   error: (err) => {
+      //     console.error("Erro no login:", err);
+      //     this.message = "Ocorreu um erro inesperado.";
+      //     this.loading = false;
+      //   },
+      // });
     } else {
       this.loading = false;
       this.message = "Preencha o formulário corretamente.";

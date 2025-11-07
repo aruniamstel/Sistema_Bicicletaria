@@ -1,48 +1,62 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
 import { Cliente } from '../shared/models/cliente.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ClienteService {
-  // Use backend base URL for clientes
-  private apiUrl = 'http://localhost:8081/clientes';
+  private storageKey = 'clientes';
 
-  constructor(private http: HttpClient) {}
+  private getAllFromStorage(): Cliente[] {
+    const data = localStorage.getItem(this.storageKey);
+    return data ? JSON.parse(data) : [];
+  }
+
+  private saveAllToStorage(clientes: Cliente[]): void {
+    localStorage.setItem(this.storageKey, JSON.stringify(clientes));
+  }
 
   getAll(): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(this.apiUrl).pipe(catchError(this.handleError));
+    return of(this.getAllFromStorage());
   }
 
   getById(id: number): Observable<Cliente> {
-    return this.http.get<Cliente>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
+    const cliente = this.getAllFromStorage().find(c => c.id === id);
+    return of(cliente!);
   }
 
   getByTelefone(telefone: string): Observable<Cliente> {
-    return this.http.get<Cliente>(`${this.apiUrl}/telefone/${telefone}`).pipe(catchError(this.handleError));
+    const cliente = this.getAllFromStorage().find(c => c.telefone === telefone);
+    return of(cliente!);
   }
 
   create(cliente: Cliente): Observable<Cliente> {
-    return this.http.post<Cliente>(this.apiUrl, cliente).pipe(catchError(this.handleError));
+    const clientes = this.getAllFromStorage();
+    const newId = clientes.length > 0 ? Math.max(...clientes.map(c => c.id || 0)) + 1 : 1;
+    const newCliente = { ...cliente, id: newId };
+    clientes.push(newCliente);
+    this.saveAllToStorage(clientes);
+    return of(newCliente);
   }
 
   update(id: number, cliente: Cliente): Observable<Cliente> {
-    return this.http.put<Cliente>(`${this.apiUrl}/${id}`, cliente).pipe(catchError(this.handleError));
+    const clientes = this.getAllFromStorage();
+    const idx = clientes.findIndex(c => c.id === id);
+    if (idx !== -1) {
+      clientes[idx] = { ...cliente, id };
+      this.saveAllToStorage(clientes);
+      return of(clientes[idx]);
+    }
+    return throwError(() => 'Cliente não encontrado');
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
+    let clientes = this.getAllFromStorage();
+    clientes = clientes.filter(c => c.id !== id);
+    this.saveAllToStorage(clientes);
+    return of(void 0);
   }
 
-  // Backwards-compatibility helper
   registrarCliente(cliente: Cliente): Observable<Cliente> {
     return this.create(cliente);
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    return throwError(() => error?.message || 'Algo deu errado!');
   }
 }

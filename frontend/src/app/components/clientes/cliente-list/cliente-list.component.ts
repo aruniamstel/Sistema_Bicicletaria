@@ -31,15 +31,30 @@ export class ClienteListComponent implements OnInit {
 
   loadClientes(): void {
     this.loading = true;
+    this.error = '';
+    
     this.clienteService.getAll().subscribe({
       next: (data) => {
         this.clientes = data;
         this.filteredClientes = data;
         this.loading = false;
+        console.log('Clientes carregados com sucesso:', data); // Debug
       },
       error: (error) => {
-        this.error = 'Erro ao carregar clientes: ' + error.message;
+        // ✅ CORREÇÃO: Acesse o erro corretamente
+        console.error('Erro completo:', error);
+        
+        if (error.status === 0) {
+          this.error = 'Erro de conexão: Verifique se o backend está rodando na porta 8081';
+        } else if (error.status === 404) {
+          this.error = 'Endpoint não encontrado: Verifique a URL da API';
+        } else {
+          this.error = `Erro ${error.status}: ${error.statusText || 'Erro ao carregar clientes'}`;
+        }
+        
         this.loading = false;
+        this.clientes = [];
+        this.filteredClientes = [];
       }
     });
   }
@@ -72,9 +87,15 @@ export class ClienteListComponent implements OnInit {
           this.loadClientes();
         },
         error: (error) => {
-          this.error = 'Erro ao excluir cliente: ' + error.message;
+          console.error('Erro ao excluir:', error);
+          this.error = `Erro ao excluir cliente: ${error.status || 'Erro desconhecido'}`;
         }
       });
     }
+  }
+
+  // Método para tentar novamente
+  retry(): void {
+    this.loadClientes();
   }
 }

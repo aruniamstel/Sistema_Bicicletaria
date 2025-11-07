@@ -35,46 +35,47 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let ordem of filteredOrdens">
-        <td>{{ ordem.bicicleta.cliente.nome }}</td>
-        <td>{{ ordem.bicicleta.marca }} - {{ ordem.bicicleta.modelo }}</td>
-        <td>{{ ordem.dataEntrada | date:'dd/MM/yyyy' }}</td>
-        <td>{{ ordem.problemaRelatado }}</td>
-        <td>
-          <span [class]="'status-badge ' + getStatusClass(ordem.status)">
-            {{ formatStatus(ordem.status) }}
-          </span>
-        </td>
-        <td>{{ ordem.valorTotal | currency:'BRL' }}</td>
-        <td class="action-buttons">
-          <button class="action-button view-button" (click)="navigateToDetails(ordem.id!)">
-            Ver Detalhes
-          </button>
-          
-          <button *ngIf="ordem.status === 'ABERTA'"
-                  class="action-button status-button"
-                  (click)="updateStatus(ordem, 'EM_ANDAMENTO')">
-            Iniciar
-          </button>
-          
-          <button *ngIf="ordem.status === 'EM_ANDAMENTO'"
-                  class="action-button status-button"
-                  (click)="updateStatus(ordem, 'CONCLUIDA')">
-            Concluir
-          </button>
-          
-          <button *ngIf="ordem.status === 'CONCLUIDA'"
-                  class="action-button status-button"
-                  (click)="updateStatus(ordem, 'ENTREGUE')">
-            Entregar
-          </button>
-        </td>
-      </tr>
-      <tr *ngIf="filteredOrdens.length === 0">
-        <td colspan="7" style="text-align: center;">
-          Nenhuma ordem de serviço encontrada
-        </td>
-      </tr>
-    </tbody>
+  <tr *ngFor="let ordem of filteredOrdens">
+    <!-- ✅ Adicione verificações de segurança -->
+    <td>{{ ordem.bicicleta?.cliente?.nome || 'Cliente não encontrado' }}</td>
+    <td>{{ ordem.bicicleta?.marca || 'Marca não informada' }} - {{ ordem.bicicleta?.modelo || 'Modelo não informado' }}</td>
+    <td>{{ ordem.dataEntrada | date:'dd/MM/yyyy' }}</td>
+    <td>{{ ordem.problemaRelatado }}</td>
+    <td>
+      <span [class]="'status-badge ' + getStatusClass(ordem.status)">
+        {{ formatStatus(ordem.status) }}
+      </span>
+    </td>
+    <td>{{ ordem.valorTotal | currency:'BRL' }}</td>
+    <td class="action-buttons">
+      <button class="action-button view-button" (click)="navigateToDetails(ordem.id!)">
+        Ver Detalhes
+      </button>
+      
+      <button *ngIf="ordem.status === 'ABERTA'"
+              class="action-button status-button"
+              (click)="updateStatus(ordem, 'EM_ANDAMENTO')">
+        Iniciar
+      </button>
+      
+      <button *ngIf="ordem.status === 'EM_ANDAMENTO'"
+              class="action-button status-button"
+              (click)="updateStatus(ordem, 'CONCLUIDA')">
+        Concluir
+      </button>
+      
+      <button *ngIf="ordem.status === 'CONCLUIDA'"
+              class="action-button status-button"
+              (click)="updateStatus(ordem, 'ENTREGUE')">
+        Entregar
+      </button>
+    </td>
+  </tr>
+  <tr *ngIf="filteredOrdens.length === 0">
+    <td colspan="7" style="text-align: center;">
+      Nenhuma ordem de serviço encontrada
+    </td>
+  </tr>
+</tbody>
   </table>
 </div>

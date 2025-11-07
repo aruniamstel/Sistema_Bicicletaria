@@ -25,31 +25,47 @@ export class OrdemListComponent implements OnInit {
     private router: Router
   ) { }
 
-  ngOnInit(): void {
+   ngOnInit(): void {
+    console.log('🔄 OrdemListComponent iniciado');
     this.loadOrdensServico();
   }
 
   loadOrdensServico(): void {
     this.loading = true;
+    this.error = '';
+    console.log('📡 Buscando ordens de serviço...');
+    
     this.ordemService.getAll().subscribe({
       next: (data) => {
+        console.log('✅ Dados recebidos:', data);
+        console.log('📊 Número de ordens:', data.length);
+        
         this.ordensServico = data;
         this.applyFilters();
         this.loading = false;
+        
+        console.log('🎯 Ordens após filtro:', this.filteredOrdens.length);
       },
       error: (error) => {
+        console.error('❌ Erro ao carregar ordens:', error);
         this.error = 'Erro ao carregar ordens de serviço: ' + error.message;
         this.loading = false;
+        this.ordensServico = [];
+        this.filteredOrdens = [];
       }
     });
   }
 
   applyFilters(): void {
+    console.log('🔍 Aplicando filtros...');
+    console.log('📋 Total de ordens:', this.ordensServico.length);
+    
     let filtered = this.ordensServico;
 
     // Apply status filter
     if (this.statusFilter) {
       filtered = filtered.filter(ordem => ordem.status === this.statusFilter);
+      console.log('🎯 Após filtro de status:', filtered.length);
     }
 
     // Apply search filter
@@ -61,9 +77,11 @@ export class OrdemListComponent implements OnInit {
         ordem.bicicleta.modelo.toLowerCase().includes(term) ||
         ordem.problemaRelatado.toLowerCase().includes(term)
       );
+      console.log('🔎 Após filtro de busca:', filtered.length);
     }
 
     this.filteredOrdens = filtered;
+    console.log('✅ Filtros aplicados. Ordens filtradas:', this.filteredOrdens.length);
   }
 
   onStatusFilterChange(status: string): void {

@@ -1,47 +1,112 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { OrdemServico } from '../shared/models/ordem-servico.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class OrdemServicoService {
-  private apiUrl = 'http://localhost:8081/ordens-servico';
+  private storageKey = 'ordens-servico';
 
-  constructor(private http: HttpClient) { }
+  private getAllFromStorage(): OrdemServico[] {
+    const data = localStorage.getItem(this.storageKey);
+    return data ? JSON.parse(data) : [];
+  }
+
+  private saveAllToStorage(ordens: OrdemServico[]): void {
+    localStorage.setItem(this.storageKey, JSON.stringify(ordens));
+  }
 
   getAll(): Observable<OrdemServico[]> {
-    return this.http.get<OrdemServico[]>(this.apiUrl);
+    return of(this.getAllFromStorage());
   }
 
   getById(id: number): Observable<OrdemServico> {
-    return this.http.get<OrdemServico>(`${this.apiUrl}/${id}`);
+    const ordem = this.getAllFromStorage().find(o => o.id === id);
+    return of(ordem!);
   }
 
   create(ordem: OrdemServico): Observable<OrdemServico> {
-    return this.http.post<OrdemServico>(this.apiUrl, ordem);
+    const ordens = this.getAllFromStorage();
+    const bicicletas = JSON.parse(localStorage.getItem('bicicletas') || '[]');
+    const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+    let bicicleta = bicicletas.find((b: any) => b.id === (ordem.bicicleta && ordem.bicicleta.id));
+    if (bicicleta && bicicleta.cliente && bicicleta.cliente.id) {
+      bicicleta.cliente = clientes.find((c: any) => c.id === bicicleta.cliente.id) || bicicleta.cliente;
+    }
+    const newId = ordens.length > 0 ? Math.max(...ordens.map(o => o.id || 0)) + 1 : 1;
+    // Calculate valorTotal
+    let valorTotal = 0;
+    if (ordem.servicos) {
+      valorTotal += ordem.servicos.reduce((sum, s) => sum + (s.quantidade * (s.servico.valor || 0)), 0);
+    }
+    if (ordem.pecas) {
+      valorTotal += ordem.pecas.reduce((sum, p) => sum + (p.quantidade * (p.peca.valor || 0)), 0);
+    }
+    const newOrdem = { ...ordem, id: newId, bicicleta, valorTotal };
+    ordens.push(newOrdem);
+    this.saveAllToStorage(ordens);
+    return of(newOrdem);
   }
 
   addServico(ordemId: number, servicoId: number, quantidade: number): Observable<OrdemServico> {
-    return this.http.post<OrdemServico>(`${this.apiUrl}/${ordemId}/servicos`, {
-      servicoId,
-      quantidade
-    });
+    const ordens = this.getAllFromStorage();
+    const ordem = ordens.find(o => o.id === ordemId);
+    if (ordem) {
+      ordem.servicos = ordem.servicos || [];
+      ordem.servicos.push({
+        servico: { id: servicoId, descricao: 'Serviço Local', valor: 100 },
+        quantidade,
+        valor: 100 * quantidade
+      });
+      // Recalculate valorTotal
+      ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + (s.quantidade * (s.servico.valor || 0)), 0) || 0)
+        + (ordem.pecas?.reduce((sum, p) => sum + (p.quantidade * (p.peca.valor || 0)), 0) || 0);
+      this.saveAllToStorage(ordens);
+    }
+    return of(ordem!);
   }
 
   addPeca(ordemId: number, pecaId: number, quantidade: number): Observable<OrdemServico> {
-    return this.http.post<OrdemServico>(`${this.apiUrl}/${ordemId}/pecas`, {
-      pecaId,
-      quantidade
-    });
+    const ordens = this.getAllFromStorage();
+    const ordem = ordens.find(o => o.id === ordemId);
+    if (ordem) {
+      ordem.pecas = ordem.pecas || [];
+      ordem.pecas.push({
+        peca: { id: pecaId, descricao: 'Peça Local', valor: 50, quantidade },
+        quantidade,
+        valor: 50 * quantidade
+      });
+      // Recalculate valorTotal
+      ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + (s.quantidade * (s.servico.valor || 0)), 0) || 0)
+        + (ordem.pecas?.reduce((sum, p) => sum + (p.quantidade * (p.peca.valor || 0)), 0) || 0);
+      this.saveAllToStorage(ordens);
+    }
+    return of(ordem!);
   }
 
   updateStatus(id: number, status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE'): Observable<OrdemServico> {
-    return this.http.put<OrdemServico>(`${this.apiUrl}/${id}/status`, { status });
+    const ordens = this.getAllFromStorage();
+    const ordem = ordens.find(o => o.id === id);
+    if (ordem) {
+      ordem.status = status;
+      // Recalculate valorTotal (in case status change triggers recalculation in future)
+      ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + (s.quantidade * (s.servico.valor || 0)), 0) || 0)
+        + (ordem.pecas?.reduce((sum, p) => sum + (p.quantidade * (p.peca.valor || 0)), 0) || 0);
+      this.saveAllToStorage(ordens);
+    }
+    return of(ordem!);
   }
 
   getValorTotal(id: number): Observable<number> {
-    return this.http.get<number>(`${this.apiUrl}/${id}/valor-total`);
+    const ordem = this.getAllFromStorage().find(o => o.id === id);
+    let total = 0;
+    if (ordem) {
+      if (ordem.servicos) {
+        total += ordem.servicos.reduce((sum, s) => sum + (s.quantidade * (s.servico.valor || 0)), 0);
+      }
+      if (ordem.pecas) {
+        total += ordem.pecas.reduce((sum, p) => sum + (p.quantidade * (p.peca.valor || 0)), 0);
+      }
+    }
+    return of(total);
   }
 }
