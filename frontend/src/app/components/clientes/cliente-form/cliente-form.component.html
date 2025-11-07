@@ -3,63 +3,37 @@
 
   <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nome</mat-label>
-        <input matInput formControlName="nome" placeholder="Nome do cliente">
-        <mat-error *ngIf="clienteForm.get('nome')?.errors?.['required']">
-          Nome é obrigatório
-        </mat-error>
-        <mat-error *ngIf="clienteForm.get('nome')?.errors?.['minlength']">
-          Nome deve ter no mínimo 3 caracteres
-        </mat-error>
-      </mat-form-field>
+      <label>Nome</label>
+      <input formControlName="nome" placeholder="Nome do cliente" />
+      <div class="error" *ngIf="clienteForm.get('nome')?.errors?.['required']">Nome é obrigatório</div>
+      <div class="error" *ngIf="clienteForm.get('nome')?.errors?.['minlength']">Nome deve ter no mínimo 3 caracteres</div>
     </div>
 
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Telefone</mat-label>
-        <input matInput formControlName="telefone" placeholder="(99) 99999-9999">
-        <mat-error *ngIf="clienteForm.get('telefone')?.errors?.['required']">
-          Telefone é obrigatório
-        </mat-error>
-        <mat-error *ngIf="clienteForm.get('telefone')?.errors?.['pattern']">
-          Telefone inválido
-        </mat-error>
-      </mat-form-field>
+      <label>Telefone</label>
+      <input formControlName="telefone" placeholder="(99) 99999-9999" />
+      <div class="error" *ngIf="clienteForm.get('telefone')?.errors?.['required']">Telefone é obrigatório</div>
+      <div class="error" *ngIf="clienteForm.get('telefone')?.errors?.['pattern']">Telefone inválido</div>
     </div>
 
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Endereço</mat-label>
-        <input matInput formControlName="endereco" placeholder="Endereço completo">
-        <mat-error *ngIf="clienteForm.get('endereco')?.errors?.['required']">
-          Endereço é obrigatório
-        </mat-error>
-      </mat-form-field>
+      <label>Endereço</label>
+      <input formControlName="endereco" placeholder="Endereço completo" />
+      <div class="error" *ngIf="clienteForm.get('endereco')?.errors?.['required']">Endereço é obrigatório</div>
     </div>
 
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Instagram</mat-label>
-        <input matInput formControlName="instagram" placeholder="@usuario">
-      </mat-form-field>
+      <label>Instagram</label>
+      <input formControlName="instagram" placeholder="@usuario" />
     </div>
 
     <div class="form-buttons">
-      <button type="button" class="cancel-button" (click)="cancel()">
-        Cancelar
-      </button>
-      <button type="submit" class="save-button" [disabled]="clienteForm.invalid || loading">
-        {{ isEditing ? 'Atualizar' : 'Cadastrar' }}
-      </button>
+      <button type="button" class="cancel-button" (click)="cancel()">Cancelar</button>
+      <button type="submit" class="save-button" [disabled]="clienteForm.invalid || loading">{{ isEditing ? 'Atualizar' : 'Cadastrar' }}</button>
     </div>
   </form>
 
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-  </div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <div *ngIf="loading" class="loading-overlay">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
+  <div *ngIf="loading" class="loading-overlay">Carregando...</div>
 </div>

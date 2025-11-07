@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../../../services/cliente.service';
 
 @Component({
   selector: 'app-cliente-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './cliente-form.component.html',
   styleUrls: ['./cliente-form.component.css']
 })

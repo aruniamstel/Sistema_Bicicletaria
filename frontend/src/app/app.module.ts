@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 
 // Angular Material Modules
 import { MatInputModule } from '@angular/material/input';
@@ -27,17 +28,11 @@ import { ClienteDetailsComponent } from './components/clientes/cliente-details/c
 
 @NgModule({
   declarations: [
-    AppComponent,
-    ClienteListComponent,
-    ClienteFormComponent,
-  ClienteDetailsComponent,
-    BicicletaFormComponent,
-    OrdemListComponent,
-    OrdemFormComponent,
-    OrdemDetailsComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,
+    CommonModule,
     BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
@@ -53,7 +48,7 @@ import { ClienteDetailsComponent } from './components/clientes/cliente-details/c
     MatCardModule,
     MatSnackBarModule
   ],
-  providers: [],
+  providers: [DatePipe, CurrencyPipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

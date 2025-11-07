@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../../../services/cliente.service';
 import { BicicletaService } from '../../../services/bicicleta.service';
 
 @Component({
   selector: 'app-cliente-details',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './cliente-details.component.html',
   styleUrls: ['./cliente-details.component.css']
 })
@@ -107,6 +111,10 @@ export class ClienteDetailsComponent implements OnInit {
   criarOrdemComBicicleta(bicicletaId: number): void {
     // navigate to ordem form preselecting cliente and bicicleta via query params
     this.router.navigate(['/ordens-servico/novo'], { queryParams: { clienteId: this.clienteId, bicicletaId } });
+  }
+
+  cancel() {
+  this.router.navigate(['/clientes']);
   }
 
 }

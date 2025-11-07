@@ -1,18 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { OrdemServico } from '../../../shared/models/ordem-servico.model';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-ordem-details',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './ordem-details.component.html',
-  styleUrls: ['./ordem-details.component.css']
+  styleUrls: ['./ordem-details.component.css'],
 })
 export class OrdemDetailsComponent implements OnInit {
   ordem: OrdemServico | null = null;
   servicoForm: FormGroup;
   pecaForm: FormGroup;
+  servicos: any[] = [];
+  pecas: any[] = [];
   loading: boolean = false;
   error: string = '';
 

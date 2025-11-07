@@ -1,8 +1,8 @@
 <div class="ordem-details" *ngIf="!loading && ordem">
   <div class="header">
-    <h2>Ordem de Serviço #{{ ordem.id }}</h2>
-    <span [class]="'status-badge ' + getStatusClass(ordem.status)">
-      {{ formatStatus(ordem.status) }}
+    <h2>Ordem de Serviço #{{ ordem?.id }}</h2>
+    <span [class]="'status-badge ' + getStatusClass(ordem?.status || '')">
+      {{ formatStatus(ordem?.status || '') }}
     </span>
   </div>
 
@@ -12,42 +12,42 @@
       
       <div class="info-row">
         <span class="info-label">Cliente:</span>
-        <span class="info-value">{{ ordem.bicicleta.cliente.nome }}</span>
+  <span class="info-value">{{ ordem?.bicicleta?.cliente?.nome }}</span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Telefone:</span>
-        <span class="info-value">{{ ordem.bicicleta.cliente.telefone }}</span>
+  <span class="info-value">{{ ordem?.bicicleta?.cliente?.telefone }}</span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Bicicleta:</span>
         <span class="info-value">
-          {{ ordem.bicicleta.marca }} - {{ ordem.bicicleta.modelo }}
-          ({{ ordem.bicicleta.cor }})
+          {{ ordem?.bicicleta?.marca }} - {{ ordem?.bicicleta?.modelo }}
+          ({{ ordem?.bicicleta?.cor }})
         </span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Data de Entrada:</span>
-        <span class="info-value">{{ ordem.dataEntrada | date:'dd/MM/yyyy' }}</span>
+  <span class="info-value">{{ ordem?.dataEntrada | date:'dd/MM/yyyy' }}</span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Data de Saída:</span>
         <span class="info-value">
-          {{ ordem.dataSaida ? (ordem.dataSaida | date:'dd/MM/yyyy') : 'Não definida' }}
+          {{ ordem?.dataSaida ? (ordem.dataSaida | date:'dd/MM/yyyy') : 'Não definida' }}
         </span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Problema Relatado:</span>
-        <span class="info-value">{{ ordem.problemaRelatado }}</span>
+  <span class="info-value">{{ ordem?.problemaRelatado }}</span>
       </div>
       
       <div class="info-row" *ngIf="ordem.observacoes">
         <span class="info-label">Observações:</span>
-        <span class="info-value">{{ ordem.observacoes }}</span>
+  <span class="info-value">{{ ordem?.observacoes }}</span>
       </div>
     </div>
 
@@ -55,33 +55,30 @@
       <h3>Serviços e Peças</h3>
 
       <!-- Adicionar Serviço -->
-      <div class="add-form" *ngIf="ordem.status !== 'CONCLUIDA' && ordem.status !== 'ENTREGUE'">
+  <div class="add-form" *ngIf="ordem?.status !== 'CONCLUIDA' && ordem?.status !== 'ENTREGUE'">
         <h4>Adicionar Serviço</h4>
-        <form [formGroup]="servicoForm" (ngSubmit)="addServico()">
+  <form [formGroup]="servicoForm" (ngSubmit)="addServico()">
           <div class="form-row">
-            <mat-form-field>
-              <mat-label>Serviço</mat-label>
-              <mat-select formControlName="servicoId">
-                <mat-option *ngFor="let servico of servicos" [value]="servico.id">
-                  {{ servico.descricao }} - R$ {{ servico.valor }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+            <div class="form-field">
+              <label>Serviço</label>
+              <select formControlName="servicoId">
+                <option value="">Selecione um serviço</option>
+                <option *ngFor="let servico of servicos" [value]="servico.id">{{ servico.descricao }} - R$ {{ servico.valor }}</option>
+              </select>
+            </div>
 
-            <mat-form-field>
-              <mat-label>Quantidade</mat-label>
-              <input matInput type="number" formControlName="quantidade" min="1">
-            </mat-form-field>
+            <div class="form-field">
+              <label>Quantidade</label>
+              <input type="number" formControlName="quantidade" min="1" />
+            </div>
 
-            <button type="submit" class="add-button" [disabled]="servicoForm.invalid">
-              Adicionar
-            </button>
+            <button type="submit" class="add-button" [disabled]="servicoForm.invalid">Adicionar</button>
           </div>
         </form>
       </div>
 
       <!-- Lista de Serviços -->
-      <table class="items-table" *ngIf="ordem.servicos.length > 0">
+  <table class="items-table" *ngIf="(ordem?.servicos?.length || 0) > 0">
         <thead>
           <tr>
             <th>Serviço</th>
@@ -91,43 +88,40 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of ordem.servicos">
-            <td>{{ item.servico.descricao }}</td>
+          <tr *ngFor="let item of ordem?.servicos">
+            <td>{{ item.servico?.descricao }}</td>
             <td>{{ item.quantidade }}</td>
-            <td>{{ item.servico.valor | currency:'BRL' }}</td>
-            <td>{{ item.quantidade * item.servico.valor | currency:'BRL' }}</td>
+            <td>{{ item.servico?.valor | currency:'BRL' }}</td>
+            <td>{{ (item.quantidade * (item.servico?.valor || 0)) | currency:'BRL' }}</td>
           </tr>
         </tbody>
       </table>
 
       <!-- Adicionar Peça -->
-      <div class="add-form" *ngIf="ordem.status !== 'CONCLUIDA' && ordem.status !== 'ENTREGUE'">
+  <div class="add-form" *ngIf="ordem?.status !== 'CONCLUIDA' && ordem?.status !== 'ENTREGUE'">
         <h4>Adicionar Peça</h4>
         <form [formGroup]="pecaForm" (ngSubmit)="addPeca()">
           <div class="form-row">
-            <mat-form-field>
-              <mat-label>Peça</mat-label>
-              <mat-select formControlName="pecaId">
-                <mat-option *ngFor="let peca of pecas" [value]="peca.id">
-                  {{ peca.descricao }} - R$ {{ peca.valor }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+            <div class="form-field">
+              <label>Peça</label>
+              <select formControlName="pecaId">
+                <option value="">Selecione uma peça</option>
+                <option *ngFor="let peca of pecas" [value]="peca.id">{{ peca.descricao }} - R$ {{ peca.valor }}</option>
+              </select>
+            </div>
 
-            <mat-form-field>
-              <mat-label>Quantidade</mat-label>
-              <input matInput type="number" formControlName="quantidade" min="1">
-            </mat-form-field>
+            <div class="form-field">
+              <label>Quantidade</label>
+              <input type="number" formControlName="quantidade" min="1" />
+            </div>
 
-            <button type="submit" class="add-button" [disabled]="pecaForm.invalid">
-              Adicionar
-            </button>
+            <button type="submit" class="add-button" [disabled]="pecaForm.invalid">Adicionar</button>
           </div>
         </form>
       </div>
 
       <!-- Lista de Peças -->
-      <table class="items-table" *ngIf="ordem.pecas.length > 0">
+  <table class="items-table" *ngIf="(ordem?.pecas?.length || 0) > 0">
         <thead>
           <tr>
             <th>Peça</th>
@@ -137,18 +131,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of ordem.pecas">
-            <td>{{ item.peca.descricao }}</td>
+          <tr *ngFor="let item of ordem?.pecas">
+            <td>{{ item.peca?.descricao }}</td>
             <td>{{ item.quantidade }}</td>
-            <td>{{ item.peca.valor | currency:'BRL' }}</td>
-            <td>{{ item.quantidade * item.peca.valor | currency:'BRL' }}</td>
+            <td>{{ item.peca?.valor | currency:'BRL' }}</td>
+            <td>{{ (item.quantidade * (item.peca?.valor || 0)) | currency:'BRL' }}</td>
           </tr>
         </tbody>
       </table>
 
       <!-- Valor Total -->
-      <div class="total-row" *ngIf="ordem.valorTotal">
-        <h3>Valor Total: {{ ordem.valorTotal | currency:'BRL' }}</h3>
+      <div class="total-row" *ngIf="ordem?.valorTotal">
+        <h3>Valor Total: {{ ordem?.valorTotal | currency:'BRL' }}</h3>
       </div>
     </div>
   </div>
@@ -159,8 +153,8 @@
       Voltar
     </button>
 
-    <ng-container [ngSwitch]="ordem.status">
-      <button *ngSwitchCase="'ABERTA'" 
+  <ng-container [ngSwitch]="ordem?.status">
+  <button *ngSwitchCase="'ABERTA'" 
               class="action-button status-button"
               (click)="updateStatus('EM_ANDAMENTO')">
         Iniciar Serviço
@@ -179,12 +173,8 @@
       </button>
     </ng-container>
   </div>
-</div>
+  </div>
 
-<div *ngIf="loading" class="loading-spinner">
-  <mat-spinner diameter="40"></mat-spinner>
-</div>
+  <div *ngIf="loading" class="loading-spinner">Carregando...</div>
 
-<div *ngIf="error" class="error-message">
-  {{ error }}
-</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>

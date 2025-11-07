@@ -15,9 +15,7 @@
     </select>
   </div>
 
-  <div *ngIf="loading" class="loading-spinner">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
+  <div *ngIf="loading" class="loading-spinner">Carregando...</div>
 
   <div *ngIf="error" class="error-message">
     {{ error }}

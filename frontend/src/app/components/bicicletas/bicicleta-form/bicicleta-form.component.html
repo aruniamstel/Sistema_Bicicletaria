@@ -3,77 +3,46 @@
 
   <form [formGroup]="bicicletaForm" (ngSubmit)="onSubmit()">
     <div *ngIf="!clienteId" class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Cliente</mat-label>
-        <mat-select formControlName="cliente">
-          <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
-            {{ cliente.nome }} - {{ cliente.telefone }}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="bicicletaForm.get('cliente')?.errors?.['required']">
-          Cliente é obrigatório
-        </mat-error>
-      </mat-form-field>
+      <label>Cliente</label>
+      <select formControlName="cliente">
+        <option value="">Selecione um cliente</option>
+        <option *ngFor="let cliente of clientes" [value]="cliente.id">{{ cliente.nome }} - {{ cliente.telefone }}</option>
+      </select>
+      <div class="error" *ngIf="bicicletaForm.get('cliente')?.errors?.['required']">Cliente é obrigatório</div>
     </div>
 
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Marca</mat-label>
-        <input matInput formControlName="marca" placeholder="Marca da bicicleta">
-        <mat-error *ngIf="bicicletaForm.get('marca')?.errors?.['required']">
-          Marca é obrigatória
-        </mat-error>
-      </mat-form-field>
+      <label>Marca</label>
+      <input formControlName="marca" placeholder="Marca da bicicleta" />
+      <div class="error" *ngIf="bicicletaForm.get('marca')?.errors?.['required']">Marca é obrigatória</div>
     </div>
 
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Modelo</mat-label>
-        <input matInput formControlName="modelo" placeholder="Modelo da bicicleta">
-        <mat-error *ngIf="bicicletaForm.get('modelo')?.errors?.['required']">
-          Modelo é obrigatório
-        </mat-error>
-      </mat-form-field>
+      <label>Modelo</label>
+      <input formControlName="modelo" placeholder="Modelo da bicicleta" />
+      <div class="error" *ngIf="bicicletaForm.get('modelo')?.errors?.['required']">Modelo é obrigatório</div>
     </div>
 
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Tamanho do Aro</mat-label>
-        <input matInput type="number" formControlName="tamanhoAro" placeholder="Tamanho do aro">
-        <mat-error *ngIf="bicicletaForm.get('tamanhoAro')?.errors?.['required']">
-          Tamanho do aro é obrigatório
-        </mat-error>
-        <mat-error *ngIf="bicicletaForm.get('tamanhoAro')?.errors?.['min'] || bicicletaForm.get('tamanhoAro')?.errors?.['max']">
-          Tamanho do aro deve estar entre 12 e 29
-        </mat-error>
-      </mat-form-field>
+      <label>Tamanho do Aro</label>
+      <input type="number" formControlName="tamanhoAro" placeholder="Tamanho do aro" />
+      <div class="error" *ngIf="bicicletaForm.get('tamanhoAro')?.errors?.['required']">Tamanho do aro é obrigatório</div>
+      <div class="error" *ngIf="bicicletaForm.get('tamanhoAro')?.errors?.['min'] || bicicletaForm.get('tamanhoAro')?.errors?.['max']">Tamanho do aro deve estar entre 12 e 29</div>
     </div>
 
     <div class="form-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Cor</mat-label>
-        <input matInput formControlName="cor" placeholder="Cor da bicicleta">
-        <mat-error *ngIf="bicicletaForm.get('cor')?.errors?.['required']">
-          Cor é obrigatória
-        </mat-error>
-      </mat-form-field>
+      <label>Cor</label>
+      <input formControlName="cor" placeholder="Cor da bicicleta" />
+      <div class="error" *ngIf="bicicletaForm.get('cor')?.errors?.['required']">Cor é obrigatória</div>
     </div>
 
     <div class="form-buttons">
-      <button type="button" class="cancel-button" (click)="cancel()">
-        Cancelar
-      </button>
-      <button type="submit" class="save-button" [disabled]="bicicletaForm.invalid || loading">
-        Cadastrar
-      </button>
+      <button type="button" class="cancel-button" (click)="cancel()">Cancelar</button>
+      <button type="submit" class="save-button" [disabled]="bicicletaForm.invalid || loading">Cadastrar</button>
     </div>
   </form>
 
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-  </div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <div *ngIf="loading" class="loading-overlay">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
+  <div *ngIf="loading" class="loading-overlay">Carregando...</div>
 </div>

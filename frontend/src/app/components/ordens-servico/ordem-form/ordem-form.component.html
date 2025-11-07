@@ -3,75 +3,43 @@
 
   <form [formGroup]="ordemForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
-      <mat-form-field class="form-field">
-        <mat-label>Cliente</mat-label>
-        <mat-select formControlName="cliente" (selectionChange)="onClienteChange($event.value)">
-          <mat-option [value]="">Selecione um cliente</mat-option>
-          <mat-option *ngFor="let cliente of clientes" [value]="cliente.id">
-            {{ cliente.nome }} - {{ cliente.telefone }}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="ordemForm.get('cliente')?.errors?.['required']">
-          Cliente é obrigatório
-        </mat-error>
-      </mat-form-field>
+      <div class="form-field">
+        <label>Cliente</label>
+        <select formControlName="cliente" (change)="onClienteChange($any($event.target).value)">
+          <option value="">Selecione um cliente</option>
+          <option *ngFor="let cliente of clientes" [value]="cliente.id">{{ cliente.nome }} - {{ cliente.telefone }}</option>
+        </select>
+        <div class="error" *ngIf="ordemForm.get('cliente')?.errors?.['required']">Cliente é obrigatório</div>
+      </div>
 
-      <mat-form-field class="form-field">
-        <mat-label>Bicicleta</mat-label>
-        <mat-select formControlName="bicicleta">
-          <mat-option [value]="">Selecione uma bicicleta</mat-option>
-          <mat-option *ngFor="let bicicleta of bicicletas" [value]="bicicleta.id">
-            {{ bicicleta.marca }} - {{ bicicleta.modelo }} ({{ bicicleta.cor }})
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="ordemForm.get('bicicleta')?.errors?.['required']">
-          Bicicleta é obrigatória
-        </mat-error>
-      </mat-form-field>
+      <div class="form-field">
+        <label>Bicicleta</label>
+        <select formControlName="bicicleta">
+          <option value="">Selecione uma bicicleta</option>
+          <option *ngFor="let bicicleta of bicicletas" [value]="bicicleta.id">{{ bicicleta.marca }} - {{ bicicleta.modelo }} ({{ bicicleta.cor }})</option>
+        </select>
+        <div class="error" *ngIf="ordemForm.get('bicicleta')?.errors?.['required']">Bicicleta é obrigatória</div>
+      </div>
     </div>
 
     <div class="form-field problema-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Problema Relatado</mat-label>
-        <textarea 
-          matInput 
-          formControlName="problemaRelatado" 
-          placeholder="Descreva o problema relatado pelo cliente"
-          rows="4">
-        </textarea>
-        <mat-error *ngIf="ordemForm.get('problemaRelatado')?.errors?.['required']">
-          Descrição do problema é obrigatória
-        </mat-error>
-      </mat-form-field>
+      <label>Problema Relatado</label>
+      <textarea formControlName="problemaRelatado" placeholder="Descreva o problema relatado pelo cliente" rows="4"></textarea>
+      <div class="error" *ngIf="ordemForm.get('problemaRelatado')?.errors?.['required']">Descrição do problema é obrigatória</div>
     </div>
 
     <div class="form-field observacoes-field">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Observações</mat-label>
-        <textarea 
-          matInput 
-          formControlName="observacoes" 
-          placeholder="Observações adicionais"
-          rows="3">
-        </textarea>
-      </mat-form-field>
+      <label>Observações</label>
+      <textarea formControlName="observacoes" placeholder="Observações adicionais" rows="3"></textarea>
     </div>
 
     <div class="form-buttons">
-      <button type="button" class="cancel-button" (click)="cancel()">
-        Cancelar
-      </button>
-      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading">
-        Criar Ordem de Serviço
-      </button>
+      <button type="button" class="cancel-button" (click)="cancel()">Cancelar</button>
+      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading">Criar Ordem de Serviço</button>
     </div>
   </form>
 
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-  </div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
-  <div *ngIf="loading" class="loading-overlay">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
+  <div *ngIf="loading" class="loading-overlay">Carregando...</div>
 </div>

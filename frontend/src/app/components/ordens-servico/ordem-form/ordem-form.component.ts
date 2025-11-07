@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Bicicleta } from '../../../shared/models/bicicleta.model';
 import { ClienteService } from '../../../services/cliente.service';
@@ -9,6 +10,8 @@ import { OrdemServicoService } from '../../../services/ordem-servico.service';
 
 @Component({
   selector: 'app-ordem-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './ordem-form.component.html',
   styleUrls: ['./ordem-form.component.css']
 })
@@ -80,8 +83,8 @@ export class OrdemFormComponent implements OnInit {
         dataEntrada: new Date().toISOString(),
         problemaRelatado: formValue.problemaRelatado,
         observacoes: formValue.observacoes,
-        status: 'ABERTA',
-        bicicleta: { id: formValue.bicicleta },
+        status: 'ABERTA' as const,
+        bicicleta: { id: formValue.bicicleta } as unknown as Bicicleta,
         servicos: [],
         pecas: []
       };

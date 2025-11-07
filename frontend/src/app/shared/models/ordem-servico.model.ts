@@ -39,3 +39,10 @@ export interface Peca {
   valor: number;
   quantidade: number;
 }
+
+export interface StatusOrdem {
+  ABERTA: 'ABERTA';
+  EM_ANDAMENTO: 'EM_ANDAMENTO';
+  CONCLUIDA: 'CONCLUIDA';
+  ENTREGUE: 'ENTREGUE';
+}

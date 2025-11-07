@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { Bicicleta } from '../../../shared/models/bicicleta.model';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { BicicletaService } from '../../../services/bicicleta.service';
@@ -8,6 +9,8 @@ import { ClienteService } from '../../../services/cliente.service';
 
 @Component({
   selector: 'app-bicicleta-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './bicicleta-form.component.html',
   styleUrls: ['./bicicleta-form.component.css']
 })
