@@ -1,12 +1,44 @@
-<header>
-    <div class="navbar navbar-expand-lg bg-body-tertiary p-4" >
-        <h1 class="navbar-brand">Manutenção de Bikes</h1>
-        <nav class="navbar-nav ms-auto p-4">
-            <a class="nav-link me-2" [routerLink]="['/pgcliente']">Minhas Ordens de serviço</a>
-            <a class="nav-link me-3" [routerLink]="['/novasolicitacao']">Nova Solicitação</a>
-            <a class="btn btn-danger me-1" [routerLink]="['/login']">
-                <i class="fas fa-sign-out-alt" style="margin-right: 5px;"></i> Sair
-            </a>
-        </nav>
+<header class="app-header">
+  <div class="navbar">
+    <!-- Logo e Título -->
+    <div class="nav-brand">
+      <h1>🚴‍♂️ Fabiano Bikes</h1>
+      <span class="subtitle">Sistema de Gestão</span>
     </div>
+
+    <!-- Menu de Navegação -->
+    <nav class="nav-menu">
+      <!-- Ação Principal: Nova Ordem -->
+      <a class="nav-link highlight" [routerLink]="['/ordens-servico/novo']">
+        <span class="nav-icon">➕</span>
+        Nova Ordem
+      </a>
+
+      <!-- Navegação Principal -->
+      <a class="nav-link" [routerLink]="['/dashboard']" routerLinkActive="active">
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      
+      <a class="nav-link" [routerLink]="['/ordens-servico']" routerLinkActive="active">
+        <span class="nav-icon">📋</span>
+        Ordens de Serviço
+        <span class="badge" *ngIf="ordensPendentes > 0">{{ ordensPendentes }}</span>
+      </a>
+      
+      <a class="nav-link" [routerLink]="['/clientes']" routerLinkActive="active">
+        <span class="nav-icon">👥</span>
+        Clientes
+      </a>
+
+      <!-- Usuário e Sair -->
+      <div class="user-section">
+        <span class="user-info">Fabiano</span>
+        <a class="btn-logout" [routerLink]="['/login']">
+          <span class="nav-icon">🚪</span>
+          Sair
+        </a>
+      </div>
+    </nav>
+  </div>
 </header>

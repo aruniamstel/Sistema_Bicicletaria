@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Categoria } from '../../shared/models/categoria.model';
-import { CategoriaService } from '../../services/categoria.service';
-import { SolicitacaoCreateDTO } from '../../shared/models/SolicitacaoCreateDTO';
+import { Categoria } from '../../../shared/models/categoria.model';
+import { CategoriaService } from '../../../services/categoria.service';
+import { SolicitacaoCreateDTO } from '../../../shared/models/SolicitacaoCreateDTO';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { SolicitacaoService } from '../../services/solicitacao.service'; // Importando o serviço
-import { HeaderComponent } from '../header/header.component';
+import { SolicitacaoService } from '../../../services/solicitacao.service'; // Importando o serviço
+import { HeaderComponent } from '../../header/header.component';
 import { Router } from '@angular/router';
 
 @Component({

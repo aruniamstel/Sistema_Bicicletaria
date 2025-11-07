@@ -4,11 +4,12 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../../../services/cliente.service';
+import { HeaderComponent } from "../../header/header.component";
 
 @Component({
   selector: 'app-cliente-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, HeaderComponent],
   templateUrl: './cliente-form.component.html',
   styleUrls: ['./cliente-form.component.css']
 })

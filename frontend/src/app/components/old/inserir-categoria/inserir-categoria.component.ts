@@ -1,11 +1,11 @@
 
 import { Component, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Categoria } from '../../shared/models/categoria.model';
-import { CategoriaService } from '../../services/categoria.service';
+import { Categoria } from '../../../shared/models/categoria.model';
+import { CategoriaService } from '../../../services/categoria.service';
 import { Route, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HeaderfuncionarioComponent } from "../headerfuncionario/headerfuncionario.component";
+import { HeaderfuncionarioComponent } from "../../headerfuncionario/headerfuncionario.component";
 
 @Component({
   selector: 'app-inserir-categoria',

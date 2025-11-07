@@ -3,11 +3,12 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OrdemServico } from '../../../shared/models/ordem-servico.model';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
+import { HeaderComponent } from "../../header/header.component";
 
 @Component({
   selector: 'app-ordem-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HeaderComponent],
   templateUrl: './ordem-list.component.html',
   styleUrls: ['./ordem-list.component.css']
 })

@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { OrdemServico } from '../../../shared/models/ordem-servico.model';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from "../../header/header.component";
 
 @Component({
   selector: 'app-ordem-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule,HeaderComponent],
   templateUrl: './ordem-details.component.html',
   styleUrls: ['./ordem-details.component.css'],
 })

@@ -9,7 +9,7 @@ import { Cliente } from '../shared/models/cliente.model';
 })
 export class ClienteService {
   // Use backend base URL for clientes
-  private apiUrl = 'http://localhost:8081/api/clientes';
+  private apiUrl = 'http://localhost:8081/clientes';
 
   constructor(private http: HttpClient) {}
 

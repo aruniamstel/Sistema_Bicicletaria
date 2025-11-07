@@ -6,11 +6,12 @@ import { Bicicleta } from '../../../shared/models/bicicleta.model';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { BicicletaService } from '../../../services/bicicleta.service';
 import { ClienteService } from '../../../services/cliente.service';
+import { HeaderComponent } from "../../header/header.component";
 
 @Component({
   selector: 'app-bicicleta-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, HeaderComponent],
   templateUrl: './bicicleta-form.component.html',
   styleUrls: ['./bicicleta-form.component.css']
 })

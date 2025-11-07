@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { SolicitacaoService } from '../../services/solicitacao.service';
-import { Solicitacao } from '../../shared/models/solicitacao.model';
+import { SolicitacaoService } from '../../../services/solicitacao.service';
+import { Solicitacao } from '../../../shared/models/solicitacao.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-import { HeaderfuncionarioComponent } from "../headerfuncionario/headerfuncionario.component";
+import { HeaderfuncionarioComponent } from "../../headerfuncionario/headerfuncionario.component";
 
 @Component({
   selector: 'app-efetuarorcamento',

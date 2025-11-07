@@ -6,11 +6,12 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../../../services/cliente.service';
 import { BicicletaService } from '../../../services/bicicleta.service';
+import { HeaderComponent } from "../../header/header.component";
 
 @Component({
   selector: 'app-cliente-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
   templateUrl: './cliente-details.component.html',
   styleUrls: ['./cliente-details.component.css']
 })

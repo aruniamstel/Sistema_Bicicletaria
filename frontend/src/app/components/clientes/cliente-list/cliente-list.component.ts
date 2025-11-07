@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../../../services/cliente.service';
+import { HeaderComponent } from "../../header/header.component";
 
 @Component({
   selector: 'app-cliente-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent],
   templateUrl: './cliente-list.component.html',
   styleUrls: ['./cliente-list.component.css']
 })

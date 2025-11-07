@@ -14,7 +14,7 @@ export class AppComponent {
 
   // Exemplo de requisição
   getData() {
-    this.http.get('http://localhost:8080/api/usuarios').subscribe(data => {
+    this.http.get('http://localhost:8080/ordens-servico').subscribe(data => {
       console.log(data);
     });
 }}

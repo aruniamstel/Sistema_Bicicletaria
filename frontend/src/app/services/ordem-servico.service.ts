@@ -7,7 +7,7 @@ import { OrdemServico } from '../shared/models/ordem-servico.model';
   providedIn: 'root'
 })
 export class OrdemServicoService {
-  private apiUrl = 'http://localhost:8081/api/ordens-servico';
+  private apiUrl = 'http://localhost:8081/ordens-servico';
 
   constructor(private http: HttpClient) { }
 

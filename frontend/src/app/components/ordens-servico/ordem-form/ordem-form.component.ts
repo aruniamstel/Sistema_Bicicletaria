@@ -7,11 +7,12 @@ import { Bicicleta } from '../../../shared/models/bicicleta.model';
 import { ClienteService } from '../../../services/cliente.service';
 import { BicicletaService } from '../../../services/bicicleta.service';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
+import { HeaderComponent } from "../../header/header.component";
 
 @Component({
   selector: 'app-ordem-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, HeaderComponent],
   templateUrl: './ordem-form.component.html',
   styleUrls: ['./ordem-form.component.css']
 })

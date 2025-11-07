@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HeaderfuncionarioComponent } from "../headerfuncionario/headerfuncionario.component";
+import { HeaderfuncionarioComponent } from "../../headerfuncionario/headerfuncionario.component";
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SolicitacaoService } from '../../services/solicitacao.service';
-import { FuncionarioService } from '../../services/funcionario.service';
-import { Solicitacao } from '../../shared/models/solicitacao.model';
+import { SolicitacaoService } from '../../../services/solicitacao.service';
+import { FuncionarioService } from '../../../services/funcionario.service';
+import { Solicitacao } from '../../../shared/models/solicitacao.model';
 
 
 @Component({

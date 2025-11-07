@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';  // Importando o serviço Router
 import { FormsModule } from '@angular/forms';
-import { Funcionario } from '../../shared/models/funcionario.model';
+import { Funcionario } from '../../../shared/models/funcionario.model';
 import { CommonModule } from '@angular/common';
-import { FuncionarioService } from '../../services/funcionario.service';
+import { FuncionarioService } from '../../../services/funcionario.service';
 
 @Component({
   selector: 'app-editar-funcionario',
