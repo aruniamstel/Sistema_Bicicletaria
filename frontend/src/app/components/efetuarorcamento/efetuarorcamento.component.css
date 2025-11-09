@@ -1,0 +1,106 @@
+html, body {
+    height: 100%; 
+    margin: 0; 
+    font-family: Arial, sans-serif; 
+    background-color: #e0e1dd; 
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+}
+
+.container {
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    background-color: #ffffff; 
+    padding: 40px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
+    width: 100%; 
+    max-width: 800px; 
+    margin: 30px auto;
+    transition: all 0.3s ease; 
+}
+
+.container:hover {
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
+header {
+    background-color: #ffffff; /* Cor de fundo do cabeçalho */
+    color: #ffffff; /* Cor do texto do cabeçalho */
+    padding: 20px; /* Espaçamento interno do cabeçalho */
+    border-radius: 12px 12px 0 0; /* Bordas arredondadas na parte superior */
+    text-align: center; /* Centraliza o texto do cabeçalho */
+    margin-top: 25px;
+}
+
+h2 {
+    margin: 0; /* Remove margens do cabeçalho */
+    font-size: 24px; /* Tamanho da fonte do cabeçalho */
+    color: #1b263b; /* Cor do texto */
+    font-family: 'Roboto', sans-serif; /* Fonte Roboto */
+}
+
+.solicitacao-detalhes p {
+    color: #415a77; /* Cor dos parágrafos */
+    font-size: 16px; /* Tamanho da fonte dos parágrafos */
+    line-height: 1.6; /* Espaçamento entre linhas */
+    margin: 10px 0; /* Margem entre parágrafos */
+}
+
+input[type="number"] {
+    width: 100%; /* Faz com que o input ocupe toda a largura disponível */
+    padding: 12px; /* Aumenta o padding para um melhor espaçamento interno */
+    border: 1px solid #415a77; /* Borda com cor consistente */
+    border-radius: 6px; /* Bordas arredondadas */
+    margin-top: 5px; /* Espaçamento acima do input */
+    font-size: 16px; /* Aumenta o tamanho da fonte do input */
+    background-color: #f9f9f9; /* Cor de fundo do input */
+}
+
+button {
+    padding: 12px 24px; /* Aumenta o padding para botões */
+    border: none;
+    border-radius: 6px; /* Bordas arredondadas */
+    cursor: pointer;
+    width: 100%; /* Faz o botão ocupar toda a largura do container */
+    margin-top: 15px; /* Espaço entre os botões */
+    font-size: 16px; /* Aumenta o tamanho da fonte do botão */
+    font-family: 'Roboto', sans-serif; /* Fonte Roboto */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Adiciona animação ao passar o mouse */
+}
+
+button.aprovar {
+    background-color: #4CAF50; /* Verde */
+    color: white;
+}
+
+button.rejeitar {
+    background-color: #f44336; /* Vermelho */
+    color: white;
+}
+
+button.resgatar, button.pagar, button.visualizar {
+    background-color: #6200ea; /* Roxo */
+    color: white;
+}
+
+button:hover.aprovar {
+    background-color: #45a049; /* Cor de hover para o botão aprovar */
+}
+
+button:hover.rejeitar {
+    background-color: #d32f2f; /* Cor de hover para o botão rejeitar */
+}
+
+button:hover.resgatar, button:hover.pagar, button:hover.visualizar {
+    background-color: #5e35b1; /* Cor de hover para os botões resgatar, pagar e visualizar */
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 90%; /* Ajusta a largura do container em telas pequenas */
+    }
+}

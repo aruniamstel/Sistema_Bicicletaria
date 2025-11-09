@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { CategoriaService } from '../../../services/categoria.service';
-import { Categoria } from '../../../shared/models/categoria.model';
+import { CategoriaService } from '../../services/categoria.service';
+import { Categoria } from '../../shared/models/categoria.model';
 import { CommonModule } from '@angular/common';
-import { HeaderfuncionarioComponent } from '../../headerfuncionario/headerfuncionario.component';
+import { HeaderfuncionarioComponent } from '../headerfuncionario/headerfuncionario.component';
 import { RouterModule } from '@angular/router';
 
 @Component({

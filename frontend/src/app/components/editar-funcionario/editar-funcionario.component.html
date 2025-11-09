@@ -1,0 +1,49 @@
+<h1>Editar Funcionário</h1>
+<div class="well">
+    <div class="form-group">
+        <label for="email">E-mail:</label>
+        <input type="email" class="form-control" id="email" name="email" [(ngModel)]="funcionario.email"
+            #email="ngModel" required>
+        <div *ngIf="email.errors && (email.dirty || email.touched)" class="alert alert-danger">
+            <div [hidden]="!email.errors['required']">Digite o e-mail do funcionário.</div>
+        </div>
+    </div>
+    
+    <form #formFuncionario="ngForm">
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" class="form-control" id="nome" name="nome" [(ngModel)]="funcionario.nome" #nome="ngModel"
+                minlength="2" required>
+            <div *ngIf="nome.errors && (nome.dirty || nome.touched)" class="alert alert-danger">
+                <div [hidden]="!nome.errors['required']">Digite o nome do funcionário.</div>
+                <div [hidden]="!nome.errors['minlength']">O nome deve conter ao menos 2 caracteres.</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="nascimento">Data de Nascimento:</label>
+            <input type="date" class="form-control" id="dataNasc" name="dataNasc"
+                [(ngModel)]="funcionario.dataNasc" #dataNasc="ngModel" required>
+            <div *ngIf="dataNasc.errors && (dataNasc.dirty || dataNasc.touched)" class="alert alert-danger">
+                <div [hidden]="!dataNasc.errors['required']">Digite a data de nascimento do funcionário.</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="senha">Senha:</label>
+            <input type="tel" class="form-control" id="senha" name="senha" [(ngModel)]="funcionario.senha"
+                #senha="ngModel" required>
+            <div *ngIf="senha.errors && (senha.dirty || senha.touched)" class="alert alert-danger">
+                <div [hidden]="!senha.errors['required']">Digite o senha do funcionário.</div>
+            </div>
+        </div>
+        <!-- Botões de Ação -->
+        <div class="form-group">
+            <button type="button" class="btn btn-primary" (click)="salvar()"
+                [disabled]="!formFuncionario.form.valid">
+                <i class="fa fa-save" aria-hidden="true"></i> Atualizar
+            </button>
+            <a class="btn btn-secondary" [routerLink]="['/funcionarios/listar']">
+                <i class="fa fa-arrow-left" aria-hidden="true"></i> Voltar
+            </a>
+        </div>
+    </form>
+</div>

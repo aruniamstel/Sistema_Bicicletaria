@@ -1,0 +1,62 @@
+<app-headerfuncionario></app-headerfuncionario>
+<div class="aplicarmanutencao">
+    <div class="container">
+
+        <h2>Dados da Solicitação de Manutenção</h2>
+        <div class="solicitacao-detalhes">
+            <p><strong>Nome do Cliente:</strong> {{ solicitacao?.cliente.nome }}</p>
+            <p><strong>Descrição do Equipamento:</strong> {{ solicitacao?.description }} </p>
+            <p><strong>Categoria:</strong> {{ solicitacao?.categoria.nome }} </p>
+            <p><strong>Descrição do Defeito:</strong> {{ solicitacao?.defeito }}</p>
+            <p><strong>Data da Solicitação:</strong> {{ solicitacao?.date | date: 'dd MMM yyyy, hh:mm a' }} </p>
+            <p><strong>Estado:</strong> <span> {{ solicitacao?.status }} </span></p>
+        </div>
+
+        <div class="maintenance-actions">
+            <h3>Efetuar Manutenção</h3>
+            <label for="descricaoManutencao">Descrição da Manutenção:</label>
+            <textarea id="descricaoManutencao" class="form-control" rows="4"
+                [(ngModel)]="descricaoManutencao"></textarea>
+
+            <label for="orientacoesCliente">Orientações para o Cliente:</label>
+            <textarea id="orientacoesCliente" class="form-control" rows="4" [(ngModel)]="orientacoesCliente"></textarea>
+
+            <button (click)="efetuarManutencao()" class="btn btn-success">Efetuar Manutenção</button>
+            <button (click)="abrirModal(solicitacao)" class="btn btn-danger">Redirecionar Manutenção</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" tabindex="-1" [ngClass]="{ 'show': isModalOpen }" [ngStyle]="{ display: isModalOpen ? 'block' : 'none' }" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Redirecionar Manutenção</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="fecharModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Selecione o funcionário para redirecionar esta solicitação:</p>
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownFuncionarios" data-bs-toggle="dropdown" aria-expanded="false">
+                {{ funcionarioNomeSelecionado || 'Selecionar Funcionário' }}
+              </button>
+              
+            <ul class="dropdown-menu" aria-labelledby="dropdownFuncionarios">
+                <li *ngFor="let funcionario of funcionarios">
+                  <button class="dropdown-item" (click)="selectOption(funcionario.id, funcionario.nome)">
+                    {{ funcionario.nome }}
+                  </button>
+                </li>
+              </ul>
+              
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="enviarRedirecionamento()">Confirmar Redirecionamento</button>
+          <button type="button" class="btn btn-secondary" (click)="fecharModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { HeaderfuncionarioComponent } from "../../headerfuncionario/headerfuncionario.component";
+import { HeaderfuncionarioComponent } from "../headerfuncionario/headerfuncionario.component";
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Solicitacao } from '../../../shared/models/solicitacao.model';
-import { SolicitacaoService } from '../../../services/solicitacao.service';
+import { Solicitacao } from '../../shared/models/solicitacao.model';
+import { SolicitacaoService } from '../../services/solicitacao.service';
 import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-finalizarsolicit',

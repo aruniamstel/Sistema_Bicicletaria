@@ -1,11 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { NgForm, FormsModule } from '@angular/forms';
-import { Funcionario } from '../../../shared/models/funcionario.model';
-import { FuncionarioService } from '../../../services/funcionario.service';
+import { Funcionario } from '../../shared/models/funcionario.model';
+import { FuncionarioService } from '../../services/funcionario.service';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { HeaderfuncionarioComponent } from '../../headerfuncionario/headerfuncionario.component';
+import { HeaderfuncionarioComponent } from '../headerfuncionario/headerfuncionario.component';
 
 @Component({
   selector: 'app-inserir-funcionario',
