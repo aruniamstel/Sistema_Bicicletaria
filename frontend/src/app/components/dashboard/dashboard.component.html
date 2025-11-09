@@ -1,0 +1,296 @@
+<app-header></app-header>
+
+<div class="dashboard-container">
+  <!-- Cabeçalho -->
+  <div class="dashboard-header">
+    <h1>📊 Dashboard - Gestão Completa</h1>
+    <p>Gerencie bicicletas, serviços e peças em um só lugar</p>
+  </div>
+
+  <!-- Navegação por Abas -->
+  <div class="tabs-navigation">
+    <button 
+      [class]="'tab-button ' + (activeTab === 'bicicletas' ? 'active' : '')"
+      (click)="setActiveTab('bicicletas')">
+      🚲 Bicicletas
+    </button>
+    <button 
+      [class]="'tab-button ' + (activeTab === 'servicos' ? 'active' : '')"
+      (click)="setActiveTab('servicos')">
+      🔧 Serviços
+    </button>
+    <button 
+      [class]="'tab-button ' + (activeTab === 'pecas' ? 'active' : '')"
+      (click)="setActiveTab('pecas')">
+      ⚙️ Peças
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Conteúdo das Abas -->
+  <div class="tab-content">
+    
+    <!-- === ABA BICICLETAS === -->
+    <div *ngIf="activeTab === 'bicicletas'" class="tab-pane active">
+      <div class="section-header">
+        <h2>🚲 Gestão de Bicicletas</h2>
+        <p>Cadastre e gerencie as bicicletas dos clientes</p>
+      </div>
+
+      <!-- Formulário de Bicicleta -->
+      <div class="form-section">
+        <h3>{{ editingBicicleta ? 'Editar' : 'Nova' }} Bicicleta</h3>
+        <form [formGroup]="bicicletaForm" (ngSubmit)="salvarBicicleta()" class="crud-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Marca</label>
+              <input type="text" formControlName="marca" placeholder="Ex: Caloi, Monark...">
+            </div>
+            <div class="form-field">
+              <label>Modelo</label>
+              <input type="text" formControlName="modelo" placeholder="Ex: Mountain Bike, Speed...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Tamanho do Aro</label>
+              <input type="number" formControlName="tamanhoAro" placeholder="Ex: 26, 28...">
+            </div>
+            <div class="form-field">
+              <label>Cor</label>
+              <input type="text" formControlName="cor" placeholder="Ex: Vermelha, Azul...">
+            </div>
+          </div>
+
+          <div class="form-section-divider">
+            <h4>👤 Dados do Cliente</h4>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>ID do Cliente</label>
+              <input type="number" formControlName="clienteId" placeholder="ID numérico">
+            </div>
+            <div class="form-field">
+              <label>Nome do Cliente</label>
+              <input type="text" formControlName="clienteNome" placeholder="Nome completo">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Telefone</label>
+              <input type="text" formControlName="clienteTelefone" placeholder="(11) 99999-9999">
+            </div>
+            <div class="form-field">
+              <label>Endereço</label>
+              <input type="text" formControlName="clienteEndereco" placeholder="Endereço completo">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="cancelarEdicaoBicicleta()" *ngIf="editingBicicleta">
+              ❌ Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="bicicletaForm.invalid">
+              {{ editingBicicleta ? '💾 Atualizar' : '✅ Salvar' }} Bicicleta
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de Bicicletas -->
+      <div class="list-section">
+        <h3>Bicicletas Cadastradas ({{ bicicletas.length }})</h3>
+        
+        <div *ngIf="bicicletas.length === 0" class="empty-state">
+          <p>Nenhuma bicicleta cadastrada.</p>
+        </div>
+
+        <div class="grid-cards" *ngIf="bicicletas.length > 0">
+          <div *ngFor="let bicicleta of bicicletas" class="card">
+            <div class="card-header">
+              <h4>{{ bicicleta.marca }} {{ bicicleta.modelo }}</h4>
+              <div class="card-actions">
+                <button class="btn-icon edit" (click)="editarBicicleta(bicicleta)" title="Editar">
+                  ✏️
+                </button>
+                <button class="btn-icon delete" (click)="excluirBicicleta(bicicleta.id!)" title="Excluir">
+                  🗑️
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <p><strong>Aro:</strong> {{ bicicleta.tamanhoAro }}"</p>
+              <p><strong>Cor:</strong> {{ bicicleta.cor }}</p>
+              <p><strong>Cliente:</strong> {{ bicicleta.cliente.nome }}</p>
+              <p><strong>Telefone:</strong> {{ bicicleta.cliente.telefone }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- === ABA SERVIÇOS === -->
+    <div *ngIf="activeTab === 'servicos'" class="tab-pane active">
+      <div class="section-header">
+        <h2>🔧 Gestão de Serviços</h2>
+        <p>Cadastre e gerencie os serviços disponíveis</p>
+      </div>
+
+      <!-- Formulário de Serviço -->
+      <div class="form-section">
+        <h3>{{ editingServico ? 'Editar' : 'Novo' }} Serviço</h3>
+        <form [formGroup]="servicoForm" (ngSubmit)="salvarServico()" class="crud-form">
+          <div class="form-row">
+            <div class="form-field full-width">
+              <label>Descrição do Serviço</label>
+              <input type="text" formControlName="descricao" placeholder="Ex: Troca de pneu, Ajuste de freios...">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Valor (R$)</label>
+              <input type="number" formControlName="valor" step="0.01" placeholder="0.00">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="cancelarEdicaoServico()" *ngIf="editingServico">
+              ❌ Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="servicoForm.invalid">
+              {{ editingServico ? '💾 Atualizar' : '✅ Salvar' }} Serviço
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de Serviços -->
+      <div class="list-section">
+        <h3>Serviços Disponíveis ({{ servicos.length }})</h3>
+        
+        <div *ngIf="servicos.length === 0" class="empty-state">
+          <p>Nenhum serviço cadastrado.</p>
+        </div>
+
+        <div class="table-container" *ngIf="servicos.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let servico of servicos">
+                <td>{{ servico.descricao }}</td>
+                <td>R$ {{ servico.valor | number:'1.2-2' }}</td>
+                <td class="action-buttons">
+                  <button class="btn-icon edit" (click)="editarServico(servico)" title="Editar">
+                    ✏️
+                  </button>
+                  <button class="btn-icon delete" (click)="excluirServico(servico.id!)" title="Excluir">
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- === ABA PEÇAS === -->
+    <div *ngIf="activeTab === 'pecas'" class="tab-pane active">
+      <div class="section-header">
+        <h2>⚙️ Gestão de Peças</h2>
+        <p>Cadastre e gerencie o estoque de peças</p>
+      </div>
+
+      <!-- Formulário de Peça -->
+      <div class="form-section">
+        <h3>{{ editingPeca ? 'Editar' : 'Nova' }} Peça</h3>
+        <form [formGroup]="pecaForm" (ngSubmit)="salvarPeca()" class="crud-form">
+          <div class="form-row">
+            <div class="form-field full-width">
+              <label>Descrição da Peça</label>
+              <input type="text" formControlName="descricao" placeholder="Ex: Pneu 26\, Corrente, Pedal...">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Valor (R$)</label>
+              <input type="number" formControlName="valor" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-field">
+              <label>Quantidade em Estoque</label>
+              <input type="number" formControlName="quantidade" placeholder="0">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="cancelarEdicaoPeca()" *ngIf="editingPeca">
+              ❌ Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="pecaForm.invalid">
+              {{ editingPeca ? '💾 Atualizar' : '✅ Salvar' }} Peça
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de Peças -->
+      <div class="list-section">
+        <h3>Estoque de Peças ({{ pecas.length }})</h3>
+        
+        <div *ngIf="pecas.length === 0" class="empty-state">
+          <p>Nenhuma peça cadastrada.</p>
+        </div>
+
+        <div class="table-container" *ngIf="pecas.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Estoque</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let peca of pecas" [class.low-stock]="peca.quantidade < 5">
+                <td>{{ peca.descricao }}</td>
+                <td>R$ {{ peca.valor | number:'1.2-2' }}</td>
+                <td>
+                  <span [class]="peca.quantidade < 5 ? 'stock-low' : 'stock-ok'">
+                    {{ peca.quantidade }} unidades
+                  </span>
+                </td>
+                <td class="action-buttons">
+                  <button class="btn-icon edit" (click)="editarPeca(peca)" title="Editar">
+                    ✏️
+                  </button>
+                  <button class="btn-icon delete" (click)="excluirPeca(peca.id!)" title="Excluir">
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
