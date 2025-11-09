@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit {
     this.loading = true;
   
     if (this.formLogin.form.valid) {
-      this.router.navigate(['/ordens-servico']);
+      this.router.navigate(['/dashboard']);
       // this.loginService.login(this.login).subscribe({
       //   next: (usu) => {
       //     if (usu) {
