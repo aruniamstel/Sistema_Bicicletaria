@@ -23,6 +23,9 @@ export class OrdemFormComponent implements OnInit {
   loading: boolean = false;
   error: string = '';
 
+  clienteSelecionado?: Cliente;
+  bicicletaSelecionada?: Bicicleta;
+
   constructor(
     private fb: FormBuilder,
     private clienteService: ClienteService,
@@ -56,27 +59,48 @@ export class OrdemFormComponent implements OnInit {
     });
   }
 
-  onClienteChange(clienteId: number): void {
-    if (clienteId) {
-      this.loading = true;
-      this.bicicletaService.getByCliente(clienteId).subscribe({
-        next: (data) => {
-          this.bicicletas = data;
-          this.loading = false;
-        },
-        error: (error) => {
-          this.error = 'Erro ao carregar bicicletas: ' + error.message;
-          this.loading = false;
-        }
-      });
+onClienteChange(clienteId: string): void {
+  const id = Number(clienteId); // ✅ Converte para número
+  console.log('👤 Cliente selecionado ID:', id);
+  
+  if (id) {
+    this.loading = true;
+    
+    // ✅ Encontra o cliente selecionado
+    this.clienteSelecionado = this.clientes.find(c => c.id === id);
+    console.log('🔍 Cliente encontrado:', this.clienteSelecionado);
+    
+    this.bicicletaService.getByCliente(id).subscribe({
+      next: (data) => {
+        this.bicicletas = data;
+        this.loading = false;
+        console.log('🚲 Bicicletas carregadas:', this.bicicletas);
+      },
+      error: (error) => {
+        this.error = 'Erro ao carregar bicicletas: ' + error.message;
+        this.loading = false;
+        console.error('❌ Erro ao carregar bicicletas:', error);
+      }
+    });
+  } else {
+    this.bicicletas = [];
+    this.clienteSelecionado = undefined;
+    this.bicicletaSelecionada = undefined;
+    this.ordemForm.patchValue({ bicicleta: '' });
+    console.log('🗑️ Cliente deselecionado');
+  }
+}
+
+  onBicicletaChange(bicicletaId: number): void {
+    if (bicicletaId) {
+      this.bicicletaSelecionada = this.bicicletas.find(b => b.id === bicicletaId);
     } else {
-      this.bicicletas = [];
-      this.ordemForm.patchValue({ bicicleta: '' });
+      this.bicicletaSelecionada = undefined;
     }
   }
 
   onSubmit(): void {
-    if (this.ordemForm.valid) {
+    if (this.ordemForm.valid && this.clienteSelecionado && this.bicicletaSelecionada) {
       this.loading = true;
       const formValue = this.ordemForm.value;
 
@@ -85,21 +109,30 @@ export class OrdemFormComponent implements OnInit {
         problemaRelatado: formValue.problemaRelatado,
         observacoes: formValue.observacoes,
         status: 'ABERTA' as const,
-        bicicleta: { id: formValue.bicicleta } as unknown as Bicicleta,
+        cliente: this.clienteSelecionado, // ✅ Objeto completo do cliente
+        bicicleta: this.bicicletaSelecionada, // ✅ Objeto completo da bicicleta
         servicos: [],
-        pecas: []
+        pecas: [],
+        valorTotal: 0
       };
+
+      console.log('📦 Criando ordem com dados:', ordemServico);
 
       this.ordemService.create(ordemServico).subscribe({
         next: (ordem) => {
+          console.log(' Ordem criada com sucesso:', ordem);
           this.router.navigate(['/ordens-servico', ordem.id]);
         },
         error: (error) => {
+          console.error(' Erro ao criar ordem:', error);
           this.error = 'Erro ao criar ordem de serviço: ' + error.message;
           this.loading = false;
         }
       });
+    } else {
+      this.error = 'Por favor, selecione um cliente e uma bicicleta válidos.';
     }
+
   }
 
   cancel(): void {

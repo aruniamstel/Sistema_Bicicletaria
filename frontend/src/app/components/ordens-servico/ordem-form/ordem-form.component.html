@@ -1,46 +1,117 @@
 <app-header></app-header>
+<!-- Adicione esta seção de debug TEMPORARIAMENTE -->
+<!-- Seção de Debug (temporária) -->
+<div *ngIf="clienteSelecionado || bicicletaSelecionada" class="debug-info" style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #4caf50;">
+  <h4>🔍 Debug - Estado do Formulário</h4>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div>
+      <strong>👤 Cliente Selecionado:</strong><br>
+      <span *ngIf="clienteSelecionado; else noCliente">
+        {{ clienteSelecionado.nome }} (ID: {{ clienteSelecionado.id }})
+      </span>
+    </div>
+    <div>
+      <strong>🚲 Bicicleta Selecionada:</strong><br>
+      <span *ngIf="bicicletaSelecionada; else noBicicleta">
+        {{ bicicletaSelecionada.marca }} {{ bicicletaSelecionada.modelo }} (ID: {{ bicicletaSelecionada.id }})
+      </span>
+    </div>
+  </div>
+  <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc;">
+    <strong>📋 Status:</strong><br>
+    Formulário válido: {{ ordemForm.valid }} | 
+    Bicicletas carregadas: {{ bicicletas.length }} |
+    Botão habilitado: {{ !ordemForm.invalid && !loading && !!clienteSelecionado && !!bicicletaSelecionada }}
+  </div>
+</div>
+
+<ng-template #noCliente>
+  <span style="color: #f44336;">❌ Nenhum cliente selecionado</span>
+</ng-template>
+
+<ng-template #noBicicleta>
+  <span style="color: #f44336;">❌ Nenhuma bicicleta selecionada</span>
+</ng-template>
 <div class="form-container">
-  <h2 class="form-title">Nova Ordem de Serviço</h2>
+  <h2 class="form-title">🚴‍♂️ Nova Ordem de Serviço</h2>
 
   <form [formGroup]="ordemForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
       <div class="form-field">
-        <label>Cliente</label>
+        <label>👤 Cliente</label>
         <select formControlName="cliente" (change)="onClienteChange($any($event.target).value)">
           <option value="">Selecione um cliente</option>
-          <option *ngFor="let cliente of clientes" [value]="cliente.id">{{ cliente.nome }} - {{ cliente.telefone }}</option>
+          <option *ngFor="let cliente of clientes" [value]="cliente.id">
+            {{ cliente.nome }} - {{ cliente.telefone }}
+          </option>
         </select>
-        <div class="error" *ngIf="ordemForm.get('cliente')?.errors?.['required']">Cliente é obrigatório</div>
+        <div class="error" *ngIf="ordemForm.get('cliente')?.errors?.['required'] && ordemForm.get('cliente')?.touched">
+          Cliente é obrigatório
+        </div>
       </div>
 
       <div class="form-field">
-        <label>Bicicleta</label>
-        <select formControlName="bicicleta">
-          <option value="">Selecione uma bicicleta</option>
-          <option *ngFor="let bicicleta of bicicletas" [value]="bicicleta.id">{{ bicicleta.marca }} - {{ bicicleta.modelo }} ({{ bicicleta.cor }})</option>
-        </select>
-        <div class="error" *ngIf="ordemForm.get('bicicleta')?.errors?.['required']">Bicicleta é obrigatória</div>
-      </div>
+  <label>🚲 Bicicleta</label>
+  <select 
+    formControlName="bicicleta" 
+    (change)="onBicicletaChange($any($event.target).value)"
+  >
+    <option value="">Selecione uma bicicleta</option>
+    <option 
+      *ngFor="let bicicleta of bicicletas" 
+      [value]="bicicleta.id"
+      [selected]="bicicletaSelecionada?.id === bicicleta.id"
+    >
+      {{ bicicleta.marca }} - {{ bicicleta.modelo }} ({{ bicicleta.cor }})
+    </option>
+  </select>
+  <div class="error" *ngIf="ordemForm.get('bicicleta')?.errors?.['required'] && ordemForm.get('bicicleta')?.touched">
+    Bicicleta é obrigatória
+  </div>
+</div>
     </div>
 
     <div class="form-field problema-field">
-      <label>Problema Relatado</label>
-      <textarea formControlName="problemaRelatado" placeholder="Descreva o problema relatado pelo cliente" rows="4"></textarea>
-      <div class="error" *ngIf="ordemForm.get('problemaRelatado')?.errors?.['required']">Descrição do problema é obrigatória</div>
+      <label>🔧 Problema Relatado</label>
+      <textarea 
+        formControlName="problemaRelatado" 
+        placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
+        rows="4"
+      ></textarea>
+      <div class="error" *ngIf="ordemForm.get('problemaRelatado')?.errors?.['required'] && ordemForm.get('problemaRelatado')?.touched">
+        Descrição do problema é obrigatória
+      </div>
     </div>
 
     <div class="form-field observacoes-field">
-      <label>Observações</label>
-      <textarea formControlName="observacoes" placeholder="Observações adicionais" rows="3"></textarea>
+      <label>📝 Observações</label>
+      <textarea 
+        formControlName="observacoes" 
+        placeholder="Observações adicionais, condições da bicicleta, etc..."
+        rows="3"
+      ></textarea>
+    </div>
+
+    <!-- ✅ Informações de Debug (temporário) -->
+    <div *ngIf="clienteSelecionado || bicicletaSelecionada" class="debug-info" style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
+      <h4>🔍 Debug - Dados Selecionados:</h4>
+      <p *ngIf="clienteSelecionado"><strong>Cliente:</strong> {{ clienteSelecionado.nome }} (ID: {{ clienteSelecionado.id }})</p>
+      <p *ngIf="bicicletaSelecionada"><strong>Bicicleta:</strong> {{ bicicletaSelecionada.marca }} {{ bicicletaSelecionada.modelo }} (ID: {{ bicicletaSelecionada.id }})</p>
     </div>
 
     <div class="form-buttons">
-      <button type="button" class="cancel-button" (click)="cancel()">Cancelar</button>
-      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading">Criar Ordem de Serviço</button>
+      <button type="button" class="cancel-button" (click)="cancel()">
+        ❌ Cancelar
+      </button>
+      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading || !clienteSelecionado || !bicicletaSelecionada">
+        ✅ Criar Ordem de Serviço
+      </button>
     </div>
   </form>
 
-  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
 
-  <div *ngIf="loading" class="loading-overlay">Carregando...</div>
+  <div *ngIf="loading" class="loading-overlay"></div>
 </div>

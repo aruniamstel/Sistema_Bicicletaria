@@ -25,20 +25,51 @@ export class BicicletaService {
   }
 
   getByCliente(clienteId: number): Observable<Bicicleta[]> {
-    return of(this.getAllFromStorage().filter(b => b.cliente && b.cliente.id === clienteId));
+    console.log('🔍 Buscando bicicletas para cliente ID:', clienteId, '(tipo:', typeof clienteId, ')');
+    
+    const bicicletas = this.getAllFromStorage();
+    console.log('🚲 Todas as bicicletas:', bicicletas);
+    
+    // ✅ CORREÇÃO: Converte ambos para number antes de comparar
+    const bicicletasFiltradas = bicicletas.filter(b => {
+      if (!b.cliente) return false;
+      
+      const clienteIdBicicleta = Number(b.cliente.id); // Converte para number
+      const clienteIdBuscado = Number(clienteId); // Garante que é number
+      
+      console.log(`📊 Comparação: ${clienteIdBicicleta} (${typeof clienteIdBicicleta}) === ${clienteIdBuscado} (${typeof clienteIdBuscado}) → ${clienteIdBicicleta === clienteIdBuscado}`);
+      
+      return clienteIdBicicleta === clienteIdBuscado;
+    });
+    
+    console.log('✅ Bicicletas encontradas:', bicicletasFiltradas);
+    return of(bicicletasFiltradas);
   }
 
   create(bicicleta: Bicicleta): Observable<Bicicleta> {
     const bicicletas = this.getAllFromStorage();
     const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
     let cliente = bicicleta.cliente;
+    
+    // ✅ CORREÇÃO: Garante que o ID do cliente é number
     if (cliente && cliente.id) {
-      cliente = clientes.find((c: any) => c.id === cliente.id) || cliente;
+      cliente = clientes.find((c: any) => Number(c.id) === Number(cliente.id)) || cliente;
     }
+    
     const newId = bicicletas.length > 0 ? Math.max(...bicicletas.map(b => b.id || 0)) + 1 : 1;
-    const newBicicleta = { ...bicicleta, id: newId, cliente };
+    const newBicicleta = { 
+      ...bicicleta, 
+      id: newId, 
+      cliente: {
+        ...cliente,
+        id: Number(cliente.id) // ✅ Garante que é number
+      }
+    };
+    
     bicicletas.push(newBicicleta);
     this.saveAllToStorage(bicicletas);
+    
+    console.log('✅ Bicicleta criada:', newBicicleta);
     return of(newBicicleta);
   }
 }
