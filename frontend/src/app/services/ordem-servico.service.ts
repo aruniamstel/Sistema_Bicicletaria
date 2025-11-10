@@ -88,31 +88,40 @@ export class OrdemServicoService {
   ];
 }
 
-  addServico(ordemId: number, servicoId: number, quantidade: number): Observable<OrdemServico> {
+  addServico(ordemId: number, servicoId: any, quantidade: any): Observable<OrdemServico> {
   const ordens = this.getAllFromStorage();
-  const ordem = ordens.find(o => o.id === ordemId);
+  const ordem = ordens.find(o => o.id === Number(ordemId));
   
   if (ordem) {
-    // Busca serviço real
+    // ✅ CONVERSÃO ROBUSTA
+    const servicoIdNumber = Number(servicoId);
+    const quantidadeNumber = Number(quantidade);
+    
     const servicos = JSON.parse(localStorage.getItem('servicos') || '[]');
-    const servicoReal = servicos.find((s: any) => s.id === servicoId);
+    const servicoReal = servicos.find((s: any) => Number(s.id) === servicoIdNumber);
     
-    ordem.servicos = ordem.servicos || [];
-    ordem.servicos.push({
-      servico: {
-        id: servicoReal?.id || servicoId,
-        descricao: servicoReal?.descricao || 'Serviço',
-        valor: servicoReal?.valor || 0 // ✅ Valor real ou 0 se não encontrar
-      },
-      quantidade,
-      valor: (servicoReal?.valor || 0) * quantidade
-    });
-    
-    // Recalcula total
-    ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + s.valor, 0) || 0)
-      + (ordem.pecas?.reduce((sum, p) => sum + p.valor, 0) || 0);
-    
-    this.saveAllToStorage(ordens);
+    if (servicoReal) {
+      const valorServico = Number(servicoReal.valor);
+      const valorTotal = valorServico * quantidadeNumber;
+      
+      ordem.servicos = ordem.servicos || [];
+      ordem.servicos.push({
+        servico: {
+          id: Number(servicoReal.id),
+          descricao: servicoReal.descricao,
+          valor: valorServico
+        },
+        quantidade: quantidadeNumber,
+        valor: valorTotal
+      });
+      
+      // Recalcula total
+      ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + s.valor, 0) || 0)
+        + (ordem.pecas?.reduce((sum, p) => sum + p.valor, 0) || 0);
+      
+      this.saveAllToStorage(ordens);
+      console.log('✅ Serviço adicionado:', servicoReal.descricao, 'Valor:', valorServico);
+    }
   }
   return of(ordem!);
 }
@@ -122,27 +131,44 @@ addPeca(ordemId: number, pecaId: number, quantidade: number): Observable<OrdemSe
   const ordem = ordens.find(o => o.id === ordemId);
   
   if (ordem) {
-    // Busca peça real
+    console.log('⚙️ ADD PEÇA - Debug:');
+    console.log('  Peça ID (original):', pecaId, 'Tipo:', typeof pecaId);
+    
+    // ✅ CORREÇÃO: Converter para NUMBER
+    const pecaIdNumber = Number(pecaId);
+    console.log('  Peça ID (convertido):', pecaIdNumber, 'Tipo:', typeof pecaIdNumber);
+    
     const pecas = JSON.parse(localStorage.getItem('pecas') || '[]');
-    const pecaReal = pecas.find((p: any) => p.id === pecaId);
     
-    ordem.pecas = ordem.pecas || [];
-    ordem.pecas.push({
-      peca: {
-        id: pecaReal?.id || pecaId,
-        descricao: pecaReal?.descricao || 'Peça',
-        valor: pecaReal?.valor || 0, // ✅ Valor real ou 0 se não encontrar
-        quantidade: pecaReal?.quantidade || 0
-      },
-      quantidade,
-      valor: (pecaReal?.valor || 0) * quantidade
-    });
+    // ✅ CORREÇÃO: Buscar com ID convertido
+    const pecaReal = pecas.find((p: any) => p.id === pecaIdNumber);
+    console.log('  Peça encontrada:', pecaReal);
     
-    // Recalcula total
-    ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + s.valor, 0) || 0)
-      + (ordem.pecas?.reduce((sum, p) => sum + p.valor, 0) || 0);
-    
-    this.saveAllToStorage(ordens);
+    if (pecaReal) {
+      const valorPeca = pecaReal.valor;
+      const valorTotal = valorPeca * quantidade;
+      
+      ordem.pecas = ordem.pecas || [];
+      ordem.pecas.push({
+        peca: {
+          id: pecaReal.id,
+          descricao: pecaReal.descricao,
+          valor: valorPeca,
+          quantidade: pecaReal.quantidade
+        },
+        quantidade,
+        valor: valorTotal
+      });
+      
+      // Recalcula total
+      ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + s.valor, 0) || 0)
+        + (ordem.pecas?.reduce((sum, p) => sum + p.valor, 0) || 0);
+      
+      this.saveAllToStorage(ordens);
+      console.log('✅ Peça adicionada:', pecaReal.descricao, 'Valor:', valorPeca);
+    } else {
+      console.error('❌ Peça não encontrada para ID:', pecaIdNumber);
+    }
   }
   return of(ordem!);
 }
