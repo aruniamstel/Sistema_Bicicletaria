@@ -44,6 +44,25 @@ export class OrdemDetailsComponent implements OnInit {
     if (id) {
       this.loadOrdem(+id);
     }
+      this.carregarServicosEPecas();
+  }
+
+  private carregarServicosEPecas(): void {
+    try {
+      // Carrega serviços
+      const servicosData = localStorage.getItem('servicos');
+      this.servicos = servicosData ? JSON.parse(servicosData) : [];
+      console.log('🔧 Serviços carregados:', this.servicos);
+
+      // Carrega peças
+      const pecasData = localStorage.getItem('pecas');
+      this.pecas = pecasData ? JSON.parse(pecasData) : [];
+      console.log('⚙️ Peças carregadas:', this.pecas);
+    } catch (error) {
+      console.error('❌ Erro ao carregar serviços/peças:', error);
+      this.servicos = [];
+      this.pecas = [];
+    }
   }
 
   loadOrdem(id: number): void {
