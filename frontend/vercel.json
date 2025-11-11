@@ -1,7 +1,14 @@
 {
   "version": 2,
-  "buildCommand": "npm run build:vercel",
-  "outputDirectory": "dist/SistemaBicicletaria",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/SistemaBicicletaria"
+      }
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",
