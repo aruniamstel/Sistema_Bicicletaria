@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "dist/your-app-name",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

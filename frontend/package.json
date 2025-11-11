@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "build:vercel": "ng build --configuration production",
+    "postbuild": "cp dist/your-app-name/index.html dist/your-app-name/404.html"
   },
   "private": true,
   "dependencies": {
