@@ -60,7 +60,13 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "SistemaBicicletaria:build:production"
+              "buildTarget": "SistemaBicicletaria:build:production",
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             },
             "development": {
               "buildTarget": "SistemaBicicletaria:build:development"
