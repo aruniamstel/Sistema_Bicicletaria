@@ -41,6 +41,18 @@ export class ClienteFormComponent implements OnInit {
     }
   }
 
+  formatarTelefone(event: any) {
+  let value = event.target.value.replace(/\D/g, '');
+  
+  if (value.length <= 10) {
+    value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  } else {
+    value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  }
+  
+  event.target.value = value;
+  }
+
   loadCliente(id: number): void {
     this.loading = true;
     this.clienteService.getById(id).subscribe({

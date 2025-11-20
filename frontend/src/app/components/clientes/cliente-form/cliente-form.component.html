@@ -12,7 +12,7 @@
 
     <div class="form-field">
       <label>Telefone</label>
-      <input formControlName="telefone" placeholder="(99) 99999-9999" />
+      <input formControlName="telefone" (input)="formatarTelefone($event)" placeholder="(99) 99999-9999" />
       <div class="error" *ngIf="clienteForm.get('telefone')?.errors?.['required']">Telefone é obrigatório</div>
       <div class="error" *ngIf="clienteForm.get('telefone')?.errors?.['pattern']">Telefone inválido</div>
     </div>
