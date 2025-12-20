@@ -17,7 +17,6 @@ export class OrdemDetailsComponent implements OnInit {
   ordem: OrdemServico = {
     id: 0,
     status: 'ABERTA',
-    problemaRelatado: '',
     observacoes: '',
     dataEntrada: 'dd/mm/yyyy',
     dataSaida: 'dd/mm/yyyy',

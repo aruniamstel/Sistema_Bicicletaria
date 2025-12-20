@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Bicicleta } from '../../../shared/models/bicicleta.model';
+import { Servico } from '../../../shared/models/servico.model';
+import { Peca } from '../../../shared/models/peca.model';
 import { ClienteService } from '../../../services/cliente.service';
 import { BicicletaService } from '../../../services/bicicleta.service';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
+import { ServicoService } from '../../../services/servico.service';
+import { PecaService } from '../../../services/peca.service';
 import { HeaderComponent } from "../../header/header.component";
 
 @Component({
@@ -20,6 +24,9 @@ export class OrdemFormComponent implements OnInit {
   ordemForm: FormGroup;
   clientes: Cliente[] = [];
   bicicletas: Bicicleta[] = [];
+  servicosDisponiveis: Servico[] = [];
+  pecasDisponiveis: Peca[] = [];
+  
   loading: boolean = false;
   error: string = '';
 
@@ -31,105 +38,77 @@ export class OrdemFormComponent implements OnInit {
     private clienteService: ClienteService,
     private bicicletaService: BicicletaService,
     private ordemService: OrdemServicoService,
+    private servicoService: ServicoService,
+    private pecaService: PecaService,
     private router: Router
   ) {
     this.ordemForm = this.fb.group({
       cliente: ['', Validators.required],
       bicicleta: ['', Validators.required],
-      problemaRelatado: ['', Validators.required],
-      observacoes: ['']
+      observacoes: [''], // Não obrigatório 
+      exibirAviso30Dias: [true], // Novo requisito [cite: 19]
+      servicos: this.fb.array([]), // 
+      pecas: this.fb.array([])      // 
     });
   }
 
   ngOnInit(): void {
     this.loadClientes();
-
-    // ✅ Debug: Observa mudanças no form
-    this.ordemForm.valueChanges.subscribe(values => {
-      console.log('📝 Form values changed:', values);
-    });
-    
-    this.ordemForm.get('bicicleta')?.valueChanges.subscribe(bicicletaId => {
-      console.log('🚲 Bicicleta selection changed:', bicicletaId);
-    });
+    this.loadServicosEPecas();
   }
 
+  // Getters para os FormArrays
+  get servicosArray() { return this.ordemForm.get('servicos') as FormArray; }
+  get pecasArray() { return this.ordemForm.get('pecas') as FormArray; }
+
+  // Métodos para Manipular Itens Dinâmicos
+  adicionarServico(): void {
+    const servicoGroup = this.fb.group({
+      id: ['', Validators.required],
+      valor: [0]
+    });
+    this.servicosArray.push(servicoGroup);
+  }
+
+  adicionarPeca(): void {
+    const pecaGroup = this.fb.group({
+      id: ['', Validators.required],
+      quantidade: [1, [Validators.required, Validators.min(1)]],
+      valor: [0]
+    });
+    this.pecasArray.push(pecaGroup);
+  }
+
+  removerItem(array: FormArray, index: number): void {
+    array.removeAt(index);
+  }
+
+  // Carregamento de Dados
   loadClientes(): void {
-    this.loading = true;
-    this.clienteService.getAll().subscribe({
-      next: (data) => {
-        this.clientes = data;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = 'Erro ao carregar clientes: ' + error.message;
-        this.loading = false;
-      }
-    });
+    this.clienteService.getAll().subscribe(data => this.clientes = data);
   }
 
- onClienteChange(clienteId: string): void {
+  loadServicosEPecas(): void {
+    this.servicoService.getAll().subscribe(data => this.servicosDisponiveis = data);
+    this.pecaService.getAll().subscribe(data => this.pecasDisponiveis = data);
+  }
+
+  onClienteChange(clienteId: string): void {
     const id = Number(clienteId);
-    console.log('👤 Cliente selecionado ID:', id);
-    
     if (id) {
-      this.loading = true;
-      
-      // ✅ Encontra o cliente selecionado
       this.clienteSelecionado = this.clientes.find(c => c.id === id);
-      console.log('🔍 Cliente encontrado:', this.clienteSelecionado);
-      
-      this.bicicletaService.getByCliente(id).subscribe({
-        next: (data) => {
-          this.bicicletas = data;
-          this.loading = false;
-          console.log('🚲 Bicicletas carregadas:', this.bicicletas);
-          
-          // ✅ Se houver apenas uma bicicleta, seleciona automaticamente
-          if (this.bicicletas.length === 1) {
-            console.log('🎯 Apenas uma bicicleta, selecionando automaticamente...');
-            this.ordemForm.patchValue({ bicicleta: this.bicicletas[0].id });
-            //this.onBicicletaChange(this.bicicletas[0].id.toString());
-          }
-        },
-        error: (error) => {
-          console.error('❌ Erro ao carregar bicicletas:', error);
-          this.error = 'Erro ao carregar bicicletas: ' + error.message;
-          this.loading = false;
+      this.bicicletaService.getByCliente(id).subscribe(data => {
+        this.bicicletas = data;
+        if (this.bicicletas.length === 1) {
+          this.ordemForm.patchValue({ bicicleta: this.bicicletas[0].id });
+          this.onBicicletaChange(this.bicicletas[0].id.toString());
         }
       });
-    } else {
-      this.bicicletas = [];
-      this.clienteSelecionado = undefined;
-      this.bicicletaSelecionada = undefined;
-      this.ordemForm.patchValue({ bicicleta: '' });
-      console.log('🗑️ Cliente deselecionado - bicicletas limpas');
     }
   }
 
   onBicicletaChange(bicicletaId: string): void {
-    const id = Number(bicicletaId);
-    console.log('🚲 Bicicleta selecionada ID:', id);
-    
-    if (id) {
-      this.bicicletaSelecionada = this.bicicletas.find(b => b.id === id);
-      console.log('🔍 Bicicleta encontrada:', this.bicicletaSelecionada);
-      
-      // ✅ Atualiza o debug visual
-      this.updateDebugInfo();
-    } else {
-      this.bicicletaSelecionada = undefined;
-      console.log('🗑️ Bicicleta deselecionada');
-    }
-  }
-
-  // ✅ NOVO MÉTODO: Atualiza informações de debug
-  private updateDebugInfo(): void {
-    console.log('🔍 DEBUG - Estado atual:');
-    console.log('  👤 Cliente selecionado:', this.clienteSelecionado?.nome, '(ID:', this.clienteSelecionado?.id, ')');
-    console.log('  🚲 Bicicleta selecionada:', this.bicicletaSelecionada?.marca, this.bicicletaSelecionada?.modelo, '(ID:', this.bicicletaSelecionada?.id, ')');
-    console.log('  📋 Form válido:', this.ordemForm.valid);
-    console.log('  🔘 Botão habilitado:', !this.ordemForm.invalid && !this.loading && !!this.clienteSelecionado && !!this.bicicletaSelecionada);
+    this.bicicletaSelecionada = this.bicicletas.find(b => b.id === Number(bicicletaId));
   }
 
   onSubmit(): void {
@@ -137,44 +116,26 @@ export class OrdemFormComponent implements OnInit {
       this.loading = true;
       const formValue = this.ordemForm.value;
 
-      console.log('🎯 Criando ordem com:');
-      console.log('  👤 Cliente:', this.clienteSelecionado.nome);
-      console.log('  🚲 Bicicleta:', this.bicicletaSelecionada.marca, this.bicicletaSelecionada.modelo);
-      console.log('  🔧 Problema:', formValue.problemaRelatado);
-
-      const ordemServico = {
+      const novaOS = {
         dataEntrada: new Date().toISOString(),
-        problemaRelatado: formValue.problemaRelatado,
         observacoes: formValue.observacoes,
-        status: 'ABERTA' as const,
+        exibirAviso30Dias: formValue.exibirAviso30Dias,
+        status: 'ABERTA',
         cliente: this.clienteSelecionado,
         bicicleta: this.bicicletaSelecionada,
-        servicos: [],
-        pecas: [],
-        valorTotal: 0
+        servicos: formValue.servicos,
+        pecas: formValue.pecas
       };
 
-      this.ordemService.create(ordemServico).subscribe({
-        next: (ordem) => {
-          console.log('✅ Ordem criada com sucesso:', ordem);
-          this.router.navigate(['/ordens-servico', ordem.id]);
-        },
-        error: (error) => {
-          console.error('❌ Erro ao criar ordem:', error);
-          this.error = 'Erro ao criar ordem de serviço: ' + error.message;
+      this.ordemService.create(novaOS).subscribe({
+        next: (os) => this.router.navigate(['/ordens-servico', os.id]),
+        error: (err) => {
+          this.error = 'Erro ao criar OS: ' + err.message;
           this.loading = false;
         }
       });
-    } else {
-      console.warn('⚠️ Form inválido para envio:');
-      console.log('  📋 Form válido:', this.ordemForm.valid);
-      console.log('  👤 Cliente selecionado:', !!this.clienteSelecionado);
-      console.log('  🚲 Bicicleta selecionada:', !!this.bicicletaSelecionada);
-      this.error = 'Por favor, preencha todos os campos obrigatórios.';
     }
   }
 
-  cancel(): void {
-    this.router.navigate(['/ordens-servico']);
-  }
+  cancel(): void { this.router.navigate(['/ordens-servico']); }
 }
