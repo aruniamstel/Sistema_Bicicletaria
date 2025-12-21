@@ -1,16 +1,27 @@
 import { Bicicleta } from './bicicleta.model';
+import { Cliente } from './cliente.model';
 
 export interface OrdemServico {
   id?: number;
-  dataEntrada: string;
-  dataSaida?: string;
-  problemaRelatado: string;
-  observacoes?: string;
-  status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE';
+  cliente: Cliente; // Adicionado para compatibilidade com o formulário
   bicicleta: Bicicleta;
+  
+  // Datas conforme Requisito 
+  dataEntrada: string;
+  dataPrevisaoSaida?: string; // Novo campo solicitado
+  dataSaida?: string;         // Saída real
+  
+  observacoes?: string; // Opcional conforme Requisito [cite: 5]
+  status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE';
+  
+  // Itens da OS
   servicos: OrdemServicoServico[];
   pecas: OrdemServicoPeca[];
+  
   valorTotal?: number;
+  
+  // Controle do PDF conforme Requisito 
+  exibirAviso30Dias: boolean; 
 }
 
 export interface OrdemServicoServico {

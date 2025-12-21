@@ -74,8 +74,7 @@ export class OrdemListComponent implements OnInit {
       filtered = filtered.filter(ordem => 
         ordem.bicicleta.cliente.nome.toLowerCase().includes(term) ||
         ordem.bicicleta.marca.toLowerCase().includes(term) ||
-        ordem.bicicleta.modelo.toLowerCase().includes(term) ||
-        ordem.problemaRelatado.toLowerCase().includes(term)
+        ordem.bicicleta.modelo.toLowerCase().includes(term)
       );
       console.log('🔎 Após filtro de busca:', filtered.length);
     }

@@ -47,46 +47,7 @@ export class OrdemServicoService {
     return of(newOrdem);
   }
 
-  private criarOrdensExemplo(): OrdemServico[] {
-  return [
-    {
-      id: 1,
-      problemaRelatado: 'Pneu furado e freios rangendo',
-      dataEntrada: '2024-01-15',
-      dataSaida: undefined,
-      status: 'EM_ANDAMENTO',
-      valorTotal: 85.00,
-      observacoes: 'Cliente relatou que o pneu traseiro está furado e os freios estão fazendo barulho',
-      bicicleta: { 
-        id: 1, 
-        marca: 'Caloi', 
-        modelo: 'Mountain Bike', 
-        tamanhoAro: 26,
-        cor: 'Vermelha',
-        cliente: {  // ✅ GARANTIR que bicicleta.cliente existe
-          id: 1, 
-          nome: 'João Silva', 
-          telefone: '(11) 99999-9999', 
-          endereco: 'Rua das Bicicletas, 123' 
-        }
-      },
-      servicos: [
-        {
-          servico: { id: 1, descricao: 'Troca completa do pneu traseiro', valor: 50 },
-          quantidade: 1,
-          valor: 50
-        },
-        {
-          servico: { id: 2, descricao: 'Limpeza e ajuste dos freios', valor: 35 },
-          quantidade: 1,
-          valor: 35
-        }
-      ],
-      pecas: []
-    },
-    // ... outras ordens com a mesma estrutura completa
-  ];
-}
+
 
   addServico(ordemId: number, servicoId: any, quantidade: any): Observable<OrdemServico> {
   const ordens = this.getAllFromStorage();
