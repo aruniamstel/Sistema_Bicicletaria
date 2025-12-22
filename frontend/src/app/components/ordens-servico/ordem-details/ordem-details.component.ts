@@ -5,6 +5,8 @@ import { OrdemServico } from '../../../shared/models/ordem-servico.model';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from "../../header/header.component";
+import { Cliente } from '../../../shared/models/cliente.model';
+import { Bicicleta } from '../../../shared/models/bicicleta.model';
 
 @Component({
   selector: 'app-ordem-details',
@@ -14,27 +16,21 @@ import { HeaderComponent } from "../../header/header.component";
   styleUrls: ['./ordem-details.component.css'],
 })
 export class OrdemDetailsComponent implements OnInit {
-  ordem: OrdemServico = {
-    id: 0,
-    status: 'ABERTA',
-    observacoes: '',
-    dataEntrada: 'dd/mm/yyyy',
-    dataSaida: 'dd/mm/yyyy',
-    valorTotal: 0,
-    bicicleta: {
-      marca: '',
-      modelo: '',
-      cor: '',
-      tamanhoAro: 0,
-      cliente: {
-        nome: '',
-        endereco: '',
-        telefone: ''
-      }
-    },
-    servicos: [],
-    pecas: []
-  };
+  // Exemplo de correção no ordem-details.component.ts
+//ordem?: OrdemServico; // Mudar para opcional e carregar no ngOnInit
+// OU se precisar de um valor inicial:
+ordem: OrdemServico = {
+  id: 0,
+  status: "ABERTA",
+  observacoes: '',
+  dataEntrada: new Date().toISOString(),
+  exibirAviso30Dias: true, // Adicionado
+  cliente: {} as Cliente,   // Adicionado
+  bicicleta: {} as Bicicleta,
+  servicos: [],
+  pecas: [],
+  valorTotal: 0
+};
 
   servicoForm: FormGroup;
   pecaForm: FormGroup;

@@ -24,6 +24,8 @@ export interface OrdemServico {
   exibirAviso30Dias: boolean; 
 }
 
+
+
 export interface OrdemServicoServico {
   id?: number;
   servico: Servico;

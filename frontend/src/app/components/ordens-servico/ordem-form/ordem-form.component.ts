@@ -58,8 +58,8 @@ export class OrdemFormComponent implements OnInit {
   }
 
   // Getters para os FormArrays
-  get servicosArray() { return this.ordemForm.get('servicos') as FormArray; }
-  get pecasArray() { return this.ordemForm.get('pecas') as FormArray; }
+  get servicos() { return this.ordemForm.get('servicos') as FormArray; }
+  get pecas() { return this.ordemForm.get('pecas') as FormArray; }
 
   // Métodos para Manipular Itens Dinâmicos
   adicionarServico(): void {
@@ -67,7 +67,7 @@ export class OrdemFormComponent implements OnInit {
       id: ['', Validators.required],
       valor: [0]
     });
-    this.servicosArray.push(servicoGroup);
+    this.servicos.push(servicoGroup);
   }
 
   adicionarPeca(): void {
@@ -76,7 +76,7 @@ export class OrdemFormComponent implements OnInit {
       quantidade: [1, [Validators.required, Validators.min(1)]],
       valor: [0]
     });
-    this.pecasArray.push(pecaGroup);
+    this.pecas.push(pecaGroup);
   }
 
   removerItem(array: FormArray, index: number): void {
@@ -120,7 +120,7 @@ export class OrdemFormComponent implements OnInit {
         dataEntrada: new Date().toISOString(),
         observacoes: formValue.observacoes,
         exibirAviso30Dias: formValue.exibirAviso30Dias,
-        status: 'ABERTA',
+        status: 'ABERTA' as const,
         cliente: this.clienteSelecionado,
         bicicleta: this.bicicletaSelecionada,
         servicos: formValue.servicos,
