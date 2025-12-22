@@ -1,10 +1,36 @@
 <app-header></app-header>
+
 <div class="form-container">
   <h2 class="form-title">🚴‍♂️ Nova Ordem de Serviço</h2>
 
   <form [formGroup]="ordemForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
+      <div class="form-field">
+        <label>👤 Cliente</label>
+        <select formControlName="cliente" (change)="onClienteChange($any($event.target).value)">
+          <option value="">Selecione um cliente</option>
+          <option *ngFor="let cliente of clientes" [value]="cliente.id">
+            {{ cliente.nome }} - {{ cliente.telefone }}
+          </option>
+        </select>
+        <div class="error" *ngIf="ordemForm.get('cliente')?.errors?.['required'] && ordemForm.get('cliente')?.touched">
+          Cliente é obrigatório
+        </div>
       </div>
+
+      <div class="form-field">
+        <label>🚲 Bicicleta</label>
+        <select formControlName="bicicleta" (change)="onBicicletaChange($any($event.target).value)">
+          <option value="">Selecione uma bicicleta</option>
+          <option *ngFor="let bicicleta of bicicletas" [value]="bicicleta.id">
+            {{ bicicleta.marca }} - {{ bicicleta.modelo }} ({{ bicicleta.cor }})
+          </option>
+        </select>
+        <div class="error" *ngIf="ordemForm.get('bicicleta')?.errors?.['required'] && ordemForm.get('bicicleta')?.touched">
+          Bicicleta é obrigatória
+        </div>
+      </div>
+    </div>
 
     <div class="itens-section">
       <h3>🛠️ Serviços</h3>
@@ -12,9 +38,11 @@
         <div *ngFor="let s of servicos.controls; let i=index" [formGroupName]="i" class="item-row">
           <select formControlName="id">
             <option value="">Selecione o serviço</option>
-            <option *ngFor="let item of listaServicosDisponiveis" [value]="item.id">{{item.descricao}}</option>
+            <option *ngFor="let item of listaServicosDisponiveis" [value]="item.id">
+              {{item.descricao}} - R$ {{item.valor}}
+            </option>
           </select>
-          <button type="button" (click)="removerItem(servicos, i)">🗑️</button>
+          <button type="button" class="remove-item-btn" (click)="removerItem(servicos, i)">🗑️</button>
         </div>
       </div>
       <button type="button" class="add-button" (click)="adicionarServico()">+ Adicionar Serviço</button>
@@ -26,10 +54,12 @@
         <div *ngFor="let p of pecas.controls; let i=index" [formGroupName]="i" class="item-row">
           <select formControlName="id">
             <option value="">Selecione a peça</option>
-            <option *ngFor="let item of listaPecasDisponiveis" [value]="item.id">{{item.nome}}</option>
+            <option *ngFor="let item of listaPecasDisponiveis" [value]="item.id">
+              {{item.nome}} - R$ {{item.valorVenda}}
+            </option>
           </select>
-          <input type="number" formControlName="quantidade" placeholder="Qtd">
-          <button type="button" (click)="removerItem(pecas, i)">🗑️</button>
+          <input type="number" formControlName="quantidade" placeholder="Qtd" min="1">
+          <button type="button" class="remove-item-btn" (click)="removerItem(pecas, i)">🗑️</button>
         </div>
       </div>
       <button type="button" class="add-button" (click)="adicionarPeca()">+ Adicionar Peça</button>
@@ -47,15 +77,18 @@
     <div class="form-field checkbox-field">
       <label>
         <input type="checkbox" formControlName="exibirAvisoTrintaDias"> 
-        ⚠️ Exibir aviso de 30 dias no PDF
+        ⚠️ Exibir aviso de 30 dias no PDF [cite: 42, 43]
       </label>
     </div>
 
     <div class="form-buttons">
       <button type="button" class="cancel-button" (click)="cancel()">❌ Cancelar</button>
-      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading">
+      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading || !clienteSelecionado || !bicicletaSelecionada">
         ✅ Criar Ordem de Serviço
       </button>
     </div>
   </form>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="loading" class="loading-overlay"></div>
 </div>

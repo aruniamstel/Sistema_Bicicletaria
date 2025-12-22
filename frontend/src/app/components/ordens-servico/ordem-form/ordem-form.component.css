@@ -299,3 +299,93 @@
 .form-field textarea::-webkit-scrollbar-thumb:hover {
   background: #95a5a6;
 }
+
+/* Estilo para as Seções Dinâmicas (Peças e Serviços) */
+.itens-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.itens-section h3 {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+  border-left: 4px solid #3498db;
+  padding-left: 0.8rem;
+}
+
+.item-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+  align-items: center;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.item-row select {
+  flex: 2;
+  padding: 0.6rem !important;
+}
+
+.item-row input[type="number"] {
+  width: 80px;
+  padding: 0.6rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+}
+
+/* Botão de Adicionar (Estilo secundário verde) */
+.add-button {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px dashed #22c55e;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.add-button:hover {
+  background: #dcfce7;
+  border-style: solid;
+}
+
+/* Botão de Remover */
+.item-row button {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.item-row button:hover {
+  background: #fecaca;
+}
+
+/* Ajuste no Checkbox */
+.checkbox-field label {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}

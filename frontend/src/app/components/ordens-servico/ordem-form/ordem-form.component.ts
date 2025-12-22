@@ -24,8 +24,10 @@ export class OrdemFormComponent implements OnInit {
   ordemForm: FormGroup;
   clientes: Cliente[] = [];
   bicicletas: Bicicleta[] = [];
-  servicosDisponiveis: Servico[] = [];
-  pecasDisponiveis: Peca[] = [];
+  
+  // Nomes ajustados para bater com o HTML fornecido
+  listaServicosDisponiveis: Servico[] = [];
+  listaPecasDisponiveis: Peca[] = [];
   
   loading: boolean = false;
   error: string = '';
@@ -45,70 +47,107 @@ export class OrdemFormComponent implements OnInit {
     this.ordemForm = this.fb.group({
       cliente: ['', Validators.required],
       bicicleta: ['', Validators.required],
-      observacoes: [''], // Não obrigatório 
-      exibirAviso30Dias: [true], // Novo requisito [cite: 19]
-      servicos: this.fb.array([]), // 
-      pecas: this.fb.array([])      // 
+      observacoes: [''], 
+      exibirAvisoTrintaDias: [true], // Conforme requisito [cite: 1, 19]
+      servicosSelecionados: this.fb.array([]), 
+      pecasSelecionadas: this.fb.array([])      
     });
   }
 
   ngOnInit(): void {
     this.loadClientes();
     this.loadServicosEPecas();
-  }
 
-  // Getters para os FormArrays
-  get servicos() { return this.ordemForm.get('servicos') as FormArray; }
-  get pecas() { return this.ordemForm.get('pecas') as FormArray; }
-
-  // Métodos para Manipular Itens Dinâmicos
-  adicionarServico(): void {
-    const servicoGroup = this.fb.group({
-      id: ['', Validators.required],
-      valor: [0]
+    // ✅ Debug: Observa mudanças no formulário (Restaurado do original) 
+    this.ordemForm.valueChanges.subscribe(values => {
+      console.log('📝 Mudança no formulário:', values);
     });
-    this.servicos.push(servicoGroup);
   }
 
-  adicionarPeca(): void {
-    const pecaGroup = this.fb.group({
-      id: ['', Validators.required],
-      quantidade: [1, [Validators.required, Validators.min(1)]],
-      valor: [0]
-    });
-    this.pecas.push(pecaGroup);
-  }
+  // Getters ajustados para o seu HTML [cite: 4]
+  get servicos() { return this.ordemForm.get('servicosSelecionados') as FormArray; }
+  get pecas() { return this.ordemForm.get('pecasSelecionadas') as FormArray; }
 
-  removerItem(array: FormArray, index: number): void {
-    array.removeAt(index);
-  }
-
-  // Carregamento de Dados
   loadClientes(): void {
-    this.clienteService.getAll().subscribe(data => this.clientes = data);
+    this.loading = true;
+    this.clienteService.getAll().subscribe({
+      next: (data) => {
+        this.clientes = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Erro ao carregar clientes: ' + err.message;
+        this.loading = false;
+      }
+    });
   }
 
+  // Função para carregar as listas dos dropdowns [cite: 4]
   loadServicosEPecas(): void {
-    this.servicoService.getAll().subscribe(data => this.servicosDisponiveis = data);
-    this.pecaService.getAll().subscribe(data => this.pecasDisponiveis = data);
+    this.servicoService.getAll().subscribe(data => this.listaServicosDisponiveis = data);
+    this.pecaService.getAll().subscribe(data => this.listaPecasDisponiveis = data);
   }
 
   onClienteChange(clienteId: string): void {
     const id = Number(clienteId);
+    console.log('👤 ID Cliente:', id);
+    
     if (id) {
+      this.loading = true;
       this.clienteSelecionado = this.clientes.find(c => c.id === id);
-      this.bicicletaService.getByCliente(id).subscribe(data => {
-        this.bicicletas = data;
-        if (this.bicicletas.length === 1) {
-          this.ordemForm.patchValue({ bicicleta: this.bicicletas[0].id });
-          this.onBicicletaChange(this.bicicletas[0].id.toString());
+      
+      this.bicicletaService.getByCliente(id).subscribe({
+        next: (data) => {
+          this.bicicletas = data;
+          this.loading = false;
+          // Seleção automática se houver apenas uma 
+          if (this.bicicletas.length === 1) {
+            this.ordemForm.patchValue({ bicicleta: this.bicicletas[0].id });
+            this.onBicicletaChange(this.bicicletas[0].id.toString());
+          }
+        },
+        error: (err) => {
+          this.error = 'Erro ao carregar bicicletas: ' + err.message;
+          this.loading = false;
         }
       });
     }
   }
 
   onBicicletaChange(bicicletaId: string): void {
-    this.bicicletaSelecionada = this.bicicletas.find(b => b.id === Number(bicicletaId));
+    const id = Number(bicicletaId);
+    if (id) {
+      this.bicicletaSelecionada = this.bicicletas.find(b => b.id === id);
+      this.updateDebugInfo(); // Chamada de debug restaurada 
+    }
+  }
+
+  // Métodos de manipulação de itens
+  adicionarServico(): void {
+    this.servicos.push(this.fb.group({
+      id: ['', Validators.required],
+      valor: [0]
+    }));
+  }
+
+  adicionarPeca(): void {
+    this.pecas.push(this.fb.group({
+      id: ['', Validators.required],
+      quantidade: [1, [Validators.required, Validators.min(1)]],
+      valor: [0]
+    }));
+  }
+
+  removerItem(array: FormArray, index: number): void {
+    array.removeAt(index);
+  }
+
+  // ✅ Método de Debug Restaurado 
+  private updateDebugInfo(): void {
+    console.log('🔍 ESTADO ATUAL:');
+    console.log('  Cliente:', this.clienteSelecionado?.nome);
+    console.log('  Bicicleta:', this.bicicletaSelecionada?.marca);
+    console.log('  Válido:', this.ordemForm.valid);
   }
 
   onSubmit(): void {
@@ -119,13 +158,16 @@ export class OrdemFormComponent implements OnInit {
       const novaOS = {
         dataEntrada: new Date().toISOString(),
         observacoes: formValue.observacoes,
-        exibirAviso30Dias: formValue.exibirAviso30Dias,
+        exibirAviso30Dias: formValue.exibirAvisoTrintaDias,
         status: 'ABERTA' as const,
         cliente: this.clienteSelecionado,
         bicicleta: this.bicicletaSelecionada,
-        servicos: formValue.servicos,
-        pecas: formValue.pecas
+        servicos: formValue.servicosSelecionados,
+        pecas: formValue.pecasSelecionadas,
+        valorTotal: 0
       };
+
+      console.log('🎯 Enviando nova OS:', novaOS);
 
       this.ordemService.create(novaOS).subscribe({
         next: (os) => this.router.navigate(['/ordens-servico', os.id]),
