@@ -56,7 +56,7 @@ export class OrdemFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClientes();
-    this.loadServicosEPecas();
+    this.carregarServicosEPecas();
 
     // ✅ Debug: Observa mudanças no formulário (Restaurado do original) 
     this.ordemForm.valueChanges.subscribe(values => {
@@ -67,6 +67,25 @@ export class OrdemFormComponent implements OnInit {
   // Getters ajustados para o seu HTML [cite: 4]
   get servicos() { return this.ordemForm.get('servicosSelecionados') as FormArray; }
   get pecas() { return this.ordemForm.get('pecasSelecionadas') as FormArray; }
+
+  // Novo método baseado no OrdemDetailsComponent 
+  private carregarServicosEPecas(): void {
+    try {
+      // Carrega serviços conforme padrão do ordem-details
+      const servicosData = localStorage.getItem('servicos');
+      this.listaServicosDisponiveis = servicosData ? JSON.parse(servicosData) : [];
+      console.log('🛠️ Serviços carregados no Form:', this.listaServicosDisponiveis);
+
+      // Carrega peças conforme padrão do ordem-details
+      const pecasData = localStorage.getItem('pecas');
+      this.listaPecasDisponiveis = pecasData ? JSON.parse(pecasData) : [];
+      console.log('⚙️ Peças carregadas no Form:', this.listaPecasDisponiveis);
+    } catch (error) {
+      console.error('❌ Erro ao carregar serviços/peças do LocalStorage:', error);
+      this.listaServicosDisponiveis = [];
+      this.listaPecasDisponiveis = [];
+    }
+  }
 
   loadClientes(): void {
     this.loading = true;

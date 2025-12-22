@@ -49,21 +49,25 @@
     </div>
 
     <div class="itens-section">
-      <h3>⚙️ Peças</h3>
-      <div formArrayName="pecasSelecionadas">
-        <div *ngFor="let p of pecas.controls; let i=index" [formGroupName]="i" class="item-row">
-          <select formControlName="id">
-            <option value="">Selecione a peça</option>
-            <option *ngFor="let item of listaPecasDisponiveis" [value]="item.id">
-              {{item.nome}} - R$ {{item.valorVenda}}
-            </option>
-          </select>
-          <input type="number" formControlName="quantidade" placeholder="Qtd" min="1">
-          <button type="button" class="remove-item-btn" (click)="removerItem(pecas, i)">🗑️</button>
-        </div>
-      </div>
-      <button type="button" class="add-button" (click)="adicionarPeca()">+ Adicionar Peça</button>
+  <h3>⚙️ Peças</h3>
+  <div formArrayName="pecasSelecionadas">
+    <div *ngFor="let p of pecas.controls; let i=index" [formGroupName]="i" class="item-row">
+      
+      <select formControlName="id">
+        <option value="">Selecione a peça</option>
+        <option *ngFor="let item of listaPecasDisponiveis" [value]="item.id">
+          {{ item.nome || item.descricao || 'Peça sem nome' }} 
+          - 
+          R$ {{ item.valorVenda || item.valor || '0,00' }}
+        </option>
+      </select>
+
+      <input type="number" formControlName="quantidade" placeholder="Qtd" min="1">
+      <button type="button" class="remove-item-btn" (click)="removerItem(pecas, i)">🗑️</button>
     </div>
+  </div>
+  <button type="button" class="add-button" (click)="adicionarPeca()">+ Adicionar Peça</button>
+</div>
 
     <div class="form-field observacoes-field">
       <label>📝 Observações</label>
