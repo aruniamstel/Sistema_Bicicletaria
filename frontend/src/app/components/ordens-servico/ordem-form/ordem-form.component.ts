@@ -170,33 +170,51 @@ export class OrdemFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.ordemForm.valid && this.clienteSelecionado && this.bicicletaSelecionada) {
-      this.loading = true;
-      const formValue = this.ordemForm.value;
+  if (this.ordemForm.valid && this.clienteSelecionado && this.bicicletaSelecionada) {
+    this.loading = true;
+    const formValue = this.ordemForm.value;
 
-      const novaOS = {
-        dataEntrada: new Date().toISOString(),
-        observacoes: formValue.observacoes,
-        exibirAviso30Dias: formValue.exibirAvisoTrintaDias,
-        status: 'ABERTA' as const,
-        cliente: this.clienteSelecionado,
-        bicicleta: this.bicicletaSelecionada,
-        servicos: formValue.servicosSelecionados,
-        pecas: formValue.pecasSelecionadas,
-        valorTotal: 0
+    // ✅ REPLICAÇÃO DA LÓGICA DO DETAILS: 
+    // Mapeia os IDs selecionados para os objetos completos com preço
+    const servicosFormatados = formValue.servicosSelecionados.map((s: any) => {
+      const servicoInfo = this.listaServicosDisponiveis.find(item => item.id == s.id);
+      return {
+        servico: servicoInfo,
+        quantidade: 1 // No form de criação, geralmente é 1 por padrão
       };
+    }).filter((s: any) => s.servico); // Remove se o find falhar
 
-      console.log('🎯 Enviando nova OS:', novaOS);
+    const pecasFormatadas = formValue.pecasSelecionadas.map((p: any) => {
+      const pecaInfo = this.listaPecasDisponiveis.find(item => item.id == p.id);
+      return {
+        peca: pecaInfo,
+        quantidade: p.quantidade || 1
+      };
+    }).filter((p: any) => p.peca);
 
-      this.ordemService.create(novaOS).subscribe({
-        next: (os) => this.router.navigate(['/ordens-servico', os.id]),
-        error: (err) => {
-          this.error = 'Erro ao criar OS: ' + err.message;
-          this.loading = false;
-        }
-      });
-    }
+    const novaOS = {
+      ...formValue,
+      dataEntrada: new Date().toISOString(),
+      status: 'ABERTA' as const,
+      cliente: this.clienteSelecionado,
+      bicicleta: this.bicicletaSelecionada,
+      servicos: servicosFormatados, // Agora com objetos completos
+      pecas: pecasFormatadas,       // Agora com objetos completos
+      exibirAviso30Dias: formValue.exibirAvisoTrintaDias
+    };
+
+    this.ordemService.create(novaOS).subscribe({
+      next: (ordem) => {
+        console.log('✅ OS Criada com valor:', ordem.valorTotal);
+        this.router.navigate(['/ordens-servico']);
+      },
+      error: (err) => {
+        this.error = 'Erro ao salvar OS';
+        this.loading = false;
+      }
+    });
   }
+}
 
   cancel(): void { this.router.navigate(['/ordens-servico']); }
 }
