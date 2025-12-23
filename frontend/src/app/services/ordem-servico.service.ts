@@ -24,28 +24,53 @@ export class OrdemServicoService {
     return of(ordem!);
   }
 
-  create(ordem: OrdemServico): Observable<OrdemServico> {
-    const ordens = this.getAllFromStorage();
-    const bicicletas = JSON.parse(localStorage.getItem('bicicletas') || '[]');
-    const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-    let bicicleta = bicicletas.find((b: any) => b.id === (ordem.bicicleta && ordem.bicicleta.id));
-    if (bicicleta && bicicleta.cliente && bicicleta.cliente.id) {
-      bicicleta.cliente = clientes.find((c: any) => c.id === bicicleta.cliente.id) || bicicleta.cliente;
-    }
-    const newId = ordens.length > 0 ? Math.max(...ordens.map(o => o.id || 0)) + 1 : 1;
-    // Calculate valorTotal
-    let valorTotal = 0;
-    if (ordem.servicos) {
-      valorTotal += ordem.servicos.reduce((sum, s) => sum + (s.quantidade * (s.servico.valor || 0)), 0);
-    }
-    if (ordem.pecas) {
-      valorTotal += ordem.pecas.reduce((sum, p) => sum + (p.quantidade * (p.peca.valor || 0)), 0);
-    }
-    const newOrdem = { ...ordem, id: newId, bicicleta, valorTotal };
-    ordens.push(newOrdem);
-    this.saveAllToStorage(ordens);
-    return of(newOrdem);
+create(ordem: OrdemServico): Observable<OrdemServico> {
+  const ordens = this.getAllFromStorage();
+  const bicicletas = JSON.parse(localStorage.getItem('bicicletas') || '[]');
+  const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+
+  // 1. Mantém a lógica original de vincular a bicicleta e hidratar o cliente
+  let bicicletaEncontrada = bicicletas.find((b: any) => b.id === (ordem.bicicleta && ordem.bicicleta.id));
+  if (bicicletaEncontrada && bicicletaEncontrada.cliente && bicicletaEncontrada.cliente.id) {
+    bicicletaEncontrada.cliente = clientes.find((c: any) => c.id === bicicletaEncontrada.cliente.id) || bicicletaEncontrada.cliente;
   }
+
+  // 2. Geração de ID único
+  const newId = ordens.length > 0 ? Math.max(...ordens.map(o => o.id || 0)) + 1 : 1;
+
+  // 3. Cálculo SEGURO do valorTotal
+  // Usamos Number() para garantir que não ocorra concatenação de strings
+  // Usamos verificações múltiplas para aceitar 's.valor' ou 's.servico.valor'
+  
+  const totalServicos = (ordem.servicos || []).reduce((sum, s: any) => {
+    const valor = s?.valor || s?.servico?.valor || 0;
+    const qtd = s?.quantidade || 1;
+    return sum + (Number(valor) * Number(qtd));
+  }, 0);
+
+  const totalPecas = (ordem.pecas || []).reduce((sum, p: any) => {
+    // Busca por valorVenda (comum em peças) ou valor (comum em serviços)
+    const valor = p?.valorVenda || p?.valor || p?.peca?.valorVenda || p?.peca?.valor || 0;
+    const qtd = p?.quantidade || 1;
+    return sum + (Number(valor) * Number(qtd));
+  }, 0);
+
+  // 4. Montagem do objeto final mantendo a compatibilidade
+  const newOrdem: OrdemServico = { 
+    ...ordem, 
+    id: newId, 
+    bicicleta: bicicletaEncontrada || ordem.bicicleta, 
+    valorTotal: totalServicos + totalPecas,
+    // Garante que a data de entrada exista
+    dataEntrada: ordem.dataEntrada || new Date().toISOString()
+  };
+
+  ordens.push(newOrdem);
+  this.saveAllToStorage(ordens);
+  
+  console.log('✅ Nova Ordem de Serviço criada com sucesso. Total: R$', newOrdem.valorTotal);
+  return of(newOrdem);
+}
 
 
 
