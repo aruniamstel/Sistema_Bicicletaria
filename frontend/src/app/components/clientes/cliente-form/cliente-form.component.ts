@@ -26,11 +26,12 @@ export class ClienteFormComponent implements OnInit {
     private route: ActivatedRoute
   ) {
     this.clienteForm = this.fb.group({
-      nome: ['', [Validators.required, Validators.minLength(3)]],
-      telefone: ['', [Validators.required, Validators.pattern('^\\d{10,11}$')]],
-      endereco: ['', Validators.required],
-      instagram: ['']
-    });
+  nome: ['', [Validators.required, Validators.minLength(3)]],
+  // Novo Pattern que aceita: (99) 9999-9999 ou (99) 99999-9999
+  telefone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)]], 
+  endereco: ['', Validators.required],
+  instagram: ['']
+  });
   }
 
   ngOnInit(): void {
@@ -42,16 +43,23 @@ export class ClienteFormComponent implements OnInit {
   }
 
   formatarTelefone(event: any) {
-  let value = event.target.value.replace(/\D/g, '');
-  
-  if (value.length <= 10) {
-    value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-  } else {
-    value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  let value = event.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+  if (value.length > 11) value = value.substring(0, 11); // Limita a 11 dígitos
+
+  if (value.length > 2) {
+    // Formata conforme a quantidade de dígitos (celular vs fixo)
+    if (value.length <= 10) {
+      value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else {
+      value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    }
+  } else if (value.length > 0) {
+    value = value.replace(/^(\d{0,2})/, '($1');
   }
-  
-  event.target.value = value;
-  }
+
+  // Atualiza o valor no controle do formulário para o Angular reconhecer
+  this.clienteForm.get('telefone')?.setValue(value, { emitEvent: false });
+}
 
   loadCliente(id: number): void {
     this.loading = true;
