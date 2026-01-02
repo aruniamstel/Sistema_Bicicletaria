@@ -1,0 +1,82 @@
+<div class="section-header">
+  <h2>⚙️ Gestão de Peças</h2>
+  <p>Cadastre e gerencie o estoque de peças</p>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" class="loading-state">
+  <div class="spinner"></div>
+  <p>Carregando dados...</p>
+</div>
+
+<!-- Formulário de Peça -->
+<div class="form-section">
+  <h3>{{ editingPeca ? 'Editar' : 'Nova' }} Peça</h3>
+  <form [formGroup]="pecaForm" (ngSubmit)="salvarPeca()" class="crud-form">
+    <div class="form-row">
+      <div class="form-field full-width">
+        <label>Descrição da Peça</label>
+        <input type="text" formControlName="descricao" placeholder="Ex: Pneu 26\, Corrente, Pedal...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Valor (R$)</label>
+        <input type="number" formControlName="valor" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-field">
+        <label>Quantidade em Estoque</label>
+        <input type="number" formControlName="quantidade" placeholder="0">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="cancelarEdicaoPeca()" *ngIf="editingPeca">
+        ❌ Cancelar
+      </button>
+      <button type="submit" class="btn-primary" [disabled]="pecaForm.invalid">
+        {{ editingPeca ? '💾 Atualizar' : '✅ Salvar' }} Peça
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Lista de Peças -->
+<div class="list-section">
+  <h3>Estoque de Peças ({{ pecas.length }})</h3>
+
+  <div *ngIf="pecas.length === 0" class="empty-state">
+    <p>Nenhuma peça cadastrada.</p>
+  </div>
+
+  <div class="table-container" *ngIf="pecas.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Estoque</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let peca of pecas" [class.low-stock]="peca.quantidade < 5">
+          <td>{{ peca.descricao }}</td>
+          <td>R$ {{ peca.valor | number:'1.2-2' }}</td>
+          <td>
+            <span [class]="peca.quantidade < 5 ? 'stock-low' : 'stock-ok'">
+              {{ peca.quantidade }} unidades
+            </span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn-icon edit" (click)="editarPeca(peca)" title="Editar">
+              ✏️
+            </button>
+            <button class="btn-icon delete" (click)="excluirPeca(peca.id!)" title="Excluir">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

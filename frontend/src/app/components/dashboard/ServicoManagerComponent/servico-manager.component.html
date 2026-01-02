@@ -1,0 +1,72 @@
+<div class="section-header">
+  <h2>🔧 Gestão de Serviços</h2>
+  <p>Cadastre e gerencie os serviços disponíveis</p>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" class="loading-state">
+  <div class="spinner"></div>
+  <p>Carregando dados...</p>
+</div>
+
+<!-- Formulário de Serviço -->
+<div class="form-section">
+  <h3>{{ editingServico ? 'Editar' : 'Novo' }} Serviço</h3>
+  <form [formGroup]="servicoForm" (ngSubmit)="salvarServico()" class="crud-form">
+    <div class="form-row">
+      <div class="form-field full-width">
+        <label>Descrição do Serviço</label>
+        <input type="text" formControlName="descricao" placeholder="Ex: Troca de pneu, Ajuste de freios...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Valor (R$)</label>
+        <input type="number" formControlName="valor" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="cancelarEdicaoServico()" *ngIf="editingServico">
+        ❌ Cancelar
+      </button>
+      <button type="submit" class="btn-primary" [disabled]="servicoForm.invalid">
+        {{ editingServico ? '💾 Atualizar' : '✅ Salvar' }} Serviço
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Lista de Serviços -->
+<div class="list-section">
+  <h3>Serviços Disponíveis ({{ servicos.length }})</h3>
+
+  <div *ngIf="servicos.length === 0" class="empty-state">
+    <p>Nenhum serviço cadastrado.</p>
+  </div>
+
+  <div class="table-container" *ngIf="servicos.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let servico of servicos">
+          <td>{{ servico.descricao }}</td>
+          <td>R$ {{ servico.valor | number:'1.2-2' }}</td>
+          <td class="action-buttons">
+            <button class="btn-icon edit" (click)="editarServico(servico)" title="Editar">
+              ✏️
+            </button>
+            <button class="btn-icon delete" (click)="excluirServico(servico.id!)" title="Excluir">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
