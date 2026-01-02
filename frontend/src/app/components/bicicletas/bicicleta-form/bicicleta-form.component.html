@@ -1,49 +1,93 @@
 <app-header></app-header>
 <div class="form-container">
-  <h2 class="form-title">Nova Bicicleta</h2>
+  <h2 class="form-title">🚲 Cadastrar Nova Bicicleta</h2>
 
   <form [formGroup]="bicicletaForm" (ngSubmit)="onSubmit()">
-    <div *ngIf="!clienteId" class="form-field">
-      <label>Cliente</label>
-      <select formControlName="cliente">
-        <option value="">Selecione um cliente</option>
-        <option *ngFor="let cliente of clientes" [value]="cliente.id">{{ cliente.nome }} - {{ cliente.telefone }}</option>
-      </select>
-      <div class="error" *ngIf="bicicletaForm.get('cliente')?.errors?.['required']">Cliente é obrigatório</div>
+    
+    <div class="form-section">
+      <label class="section-label">👤 Proprietário</label>
+      
+      <div class="form-field" *ngIf="!clienteId">
+        <label>Escolher Cliente Cadastrado</label>
+        <select formControlName="clienteExistente">
+          <option value="">-- Criar um novo cliente abaixo --</option>
+          <option *ngFor="let cliente of clientes" [value]="cliente.id">
+            {{ cliente.nome }} - {{ cliente.telefone }}
+          </option>
+        </select>
+      </div>
+
+      <div class="novo-cliente-container" *ngIf="!bicicletaForm.get('clienteExistente')?.value">
+        <p class="hint-text">Ou preencha para cadastrar um novo cliente agora:</p>
+        <div class="form-row">
+          <div class="form-field">
+            <input formControlName="nomeNovoCliente" placeholder="Nome do Cliente" />
+          </div>
+          <div class="form-field">
+            <input 
+              formControlName="telefoneNovoCliente" 
+              (input)="formatarTelefone($event)" 
+              placeholder="Telefone (WhatsApp)" 
+              maxlength="15"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="form-field">
-      <label>Marca</label>
-      <input formControlName="marca" placeholder="Marca da bicicleta" />
-      <div class="error" *ngIf="bicicletaForm.get('marca')?.errors?.['required']">Marca é obrigatória</div>
+    <hr class="divider">
+
+    <div class="form-section">
+      <label class="section-label">⚙️ Dados da Bicicleta</label>
+      
+      <div class="form-row">
+        <div class="form-field">
+          <label>Marca</label>
+          <input formControlName="marca" placeholder="Ex: Oggi, Caloi, Specialized..." />
+          <div class="error" *ngIf="bicicletaForm.get('marca')?.errors?.['required'] && bicicletaForm.get('marca')?.touched">
+            Marca é obrigatória
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Modelo</label>
+          <input formControlName="modelo" placeholder="Ex: Big Wheel 7.0, Explorer..." />
+          <div class="error" *ngIf="bicicletaForm.get('modelo')?.errors?.['required'] && bicicletaForm.get('modelo')?.touched">
+            Modelo é obrigatório
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Tamanho do Aro</label>
+          <input type="number" formControlName="tamanhoAro" placeholder="26, 29..." />
+          <div class="error" *ngIf="bicicletaForm.get('tamanhoAro')?.touched && (bicicletaForm.get('tamanhoAro')?.errors?.['required'] || bicicletaForm.get('tamanhoAro')?.errors?.['min'] || bicicletaForm.get('tamanhoAro')?.errors?.['max'])">
+            Aro deve ser entre 12 e 29
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Cor</label>
+          <input formControlName="cor" placeholder="Ex: Preto fosco, Azul..." />
+          <div class="error" *ngIf="bicicletaForm.get('cor')?.errors?.['required'] && bicicletaForm.get('cor')?.touched">
+            Cor é obrigatória
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="form-field">
-      <label>Modelo</label>
-      <input formControlName="modelo" placeholder="Modelo da bicicleta" />
-      <div class="error" *ngIf="bicicletaForm.get('modelo')?.errors?.['required']">Modelo é obrigatório</div>
-    </div>
-
-    <div class="form-field">
-      <label>Tamanho do Aro</label>
-      <input type="number" formControlName="tamanhoAro" placeholder="Tamanho do aro" />
-      <div class="error" *ngIf="bicicletaForm.get('tamanhoAro')?.errors?.['required']">Tamanho do aro é obrigatório</div>
-      <div class="error" *ngIf="bicicletaForm.get('tamanhoAro')?.errors?.['min'] || bicicletaForm.get('tamanhoAro')?.errors?.['max']">Tamanho do aro deve estar entre 12 e 29</div>
-    </div>
-
-    <div class="form-field">
-      <label>Cor</label>
-      <input formControlName="cor" placeholder="Cor da bicicleta" />
-      <div class="error" *ngIf="bicicletaForm.get('cor')?.errors?.['required']">Cor é obrigatória</div>
+    <div class="error-banner" *ngIf="error">
+      ⚠️ {{ error }}
     </div>
 
     <div class="form-buttons">
-      <button type="button" class="cancel-button" (click)="cancel()">Cancelar</button>
-      <button type="submit" class="save-button" [disabled]="bicicletaForm.invalid || loading">Cadastrar</button>
+      <button type="button" class="cancel-button" (click)="cancel()">
+        ❌ Cancelar
+      </button>
+      <button type="submit" class="save-button" [disabled]="bicicletaForm.invalid || loading">
+        {{ loading ? 'Salvando...' : '✅ Salvar Bicicleta' }}
+      </button>
     </div>
   </form>
-
-  <div *ngIf="error" class="error-message">{{ error }}</div>
-
-  <div *ngIf="loading" class="loading-overlay">Carregando...</div>
 </div>

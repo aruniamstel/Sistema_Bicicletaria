@@ -32,6 +32,14 @@ export interface Bicicleta {
   };
 }
 
+export interface Cliente {
+  id?: number;
+  nome: string;
+  telefone: string;
+  endereco: string;
+  instagram?: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -44,6 +52,7 @@ export class DashboardComponent implements OnInit {
   bicicletas: Bicicleta[] = [];
   servicos: Servico[] = [];
   pecas: Peca[] = [];
+  clientes: Cliente[] = [];
   
   // Forms
   bicicletaForm: FormGroup;
@@ -65,10 +74,10 @@ export class DashboardComponent implements OnInit {
       modelo: ['', Validators.required],
       tamanhoAro: ['', [Validators.required, Validators.min(1)]],
       cor: ['', Validators.required],
-      clienteId: ['', Validators.required],
-      clienteNome: ['', Validators.required],
-      clienteTelefone: ['', Validators.required],
-      clienteEndereco: ['', Validators.required]
+      selectedClienteId: [null],
+      clienteNome: [''],
+      clienteTelefone: [''],
+      clienteEndereco: ['']
     });
 
     // Formulário de Serviço
@@ -103,6 +112,10 @@ export class DashboardComponent implements OnInit {
     // Carrega peças
     const pecasData = localStorage.getItem('pecas');
     this.pecas = pecasData ? JSON.parse(pecasData) : this.criarPecasPadrao();
+
+    // Carrega clientes
+    const clientesData = localStorage.getItem('clientes');
+    this.clientes = clientesData ? JSON.parse(clientesData) : [];
     
     this.loading = false;
   }
@@ -116,12 +129,40 @@ export class DashboardComponent implements OnInit {
         modelo: formValue.modelo,
         tamanhoAro: formValue.tamanhoAro,
         cor: formValue.cor,
-        cliente: {
-          id: formValue.clienteId,
+        cliente: {} as any // será preenchido abaixo
+      };
+
+      let clienteSelecionado: Cliente | null = null;
+
+      if (formValue.selectedClienteId) {
+        // Cliente existente selecionado
+        clienteSelecionado = this.clientes.find(c => c.id === formValue.selectedClienteId) || null;
+        if (!clienteSelecionado) {
+          this.error = 'Cliente selecionado não encontrado.';
+          return;
+        }
+      } else if (formValue.clienteNome || formValue.clienteTelefone) {
+        // Criar novo cliente
+        const novoCliente: Cliente = {
           nome: formValue.clienteNome,
           telefone: formValue.clienteTelefone,
-          endereco: formValue.clienteEndereco
-        }
+          endereco: formValue.clienteEndereco || ''
+        };
+        const newClienteId = this.clientes.length > 0 ? Math.max(...this.clientes.map(c => c.id || 0)) + 1 : 1;
+        novoCliente.id = newClienteId;
+        this.clientes.push(novoCliente);
+        this.salvarNoLocalStorage('clientes', this.clientes);
+        clienteSelecionado = novoCliente;
+      } else {
+        this.error = 'Selecione um cliente existente ou preencha pelo menos nome ou telefone para criar um novo.';
+        return;
+      }
+
+      novaBicicleta.cliente = {
+        id: clienteSelecionado.id!,
+        nome: clienteSelecionado.nome,
+        telefone: clienteSelecionado.telefone,
+        endereco: clienteSelecionado.endereco
       };
 
       if (this.editingBicicleta) {
@@ -140,6 +181,7 @@ export class DashboardComponent implements OnInit {
       this.salvarNoLocalStorage('bicicletas', this.bicicletas);
       this.bicicletaForm.reset();
       this.editingBicicleta = null;
+      this.error = '';
     }
   }
 
@@ -150,10 +192,10 @@ export class DashboardComponent implements OnInit {
       modelo: bicicleta.modelo,
       tamanhoAro: bicicleta.tamanhoAro,
       cor: bicicleta.cor,
-      clienteId: bicicleta.cliente.id,
-      clienteNome: bicicleta.cliente.nome,
-      clienteTelefone: bicicleta.cliente.telefone,
-      clienteEndereco: bicicleta.cliente.endereco
+      selectedClienteId: bicicleta.cliente.id,
+      clienteNome: '',
+      clienteTelefone: '',
+      clienteEndereco: ''
     });
   }
 
@@ -167,6 +209,25 @@ export class DashboardComponent implements OnInit {
   cancelarEdicaoBicicleta(): void {
     this.bicicletaForm.reset();
     this.editingBicicleta = null;
+  }
+
+  formatarTelefone(event: any): void {
+    let value = event.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+    if (value.length > 11) value = value.substring(0, 11); // Limita a 11 dígitos
+
+    if (value.length > 2) {
+      // Formata conforme a quantidade de dígitos (celular vs fixo)
+      if (value.length <= 10) {
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+      } else {
+        value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+      }
+    } else if (value.length > 0) {
+      value = value.replace(/^(\d{0,2})/, '($1');
+    }
+
+    // Atualiza o valor no controle do formulário para o Angular reconhecer
+    this.bicicletaForm.get('clienteTelefone')?.setValue(value, { emitEvent: false });
   }
 
   // === SERVIÇOS ===
