@@ -32,7 +32,7 @@ export class EstoqueManagerComponent implements OnInit {
     this.pecaForm = this.fb.group({
       descricao: ['', Validators.required],
       valor: ['', [Validators.required, Validators.min(0)]],
-      quantidade: ['', [Validators.required, Validators.min(0)]]
+      quantidade: ['', [Validators.min(0)]]
     });
   }
 
@@ -55,7 +55,7 @@ export class EstoqueManagerComponent implements OnInit {
       const novaPeca: Peca = {
         descricao: formValue.descricao,
         valor: formValue.valor,
-        quantidade: formValue.quantidade
+        quantidade: formValue.quantidade ?? 0
       };
 
       if (this.editingPeca) {
