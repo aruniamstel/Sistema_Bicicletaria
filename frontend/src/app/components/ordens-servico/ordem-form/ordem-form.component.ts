@@ -47,6 +47,7 @@ export class OrdemFormComponent implements OnInit {
     this.ordemForm = this.fb.group({
       cliente: ['', Validators.required],
       bicicleta: ['', Validators.required],
+      dataPrevisaoSaida: [''], // Novo campo opcional
       observacoes: [''], 
       exibirAvisoTrintaDias: [true], // Conforme requisito [cite: 1, 19]
       servicosSelecionados: this.fb.array([]), 

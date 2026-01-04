@@ -9,7 +9,7 @@ export interface OrdemServico {
   // Datas conforme Requisito 
   dataEntrada: string;
   dataPrevisaoSaida?: string; // Novo campo solicitado
-  dataSaida?: string;         // Saída real
+  dataSaidaReal?: string;         // Saída real
   
   observacoes?: string; // Opcional conforme Requisito [cite: 5]
   status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE';

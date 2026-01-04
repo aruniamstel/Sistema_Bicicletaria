@@ -164,6 +164,10 @@ addPeca(ordemId: number, pecaId: number, quantidade: number): Observable<OrdemSe
     const ordem = ordens.find(o => o.id === id);
     if (ordem) {
       ordem.status = status;
+      // Se o status for ENTREGUE, definir dataSaidaReal
+      if (status === 'ENTREGUE') {
+        ordem.dataSaidaReal = new Date().toISOString();
+      }
       // Recalculate valorTotal (in case status change triggers recalculation in future)
       ordem.valorTotal = (ordem.servicos?.reduce((sum, s) => sum + (s.quantidade * (s.servico.valor || 0)), 0) || 0)
         + (ordem.pecas?.reduce((sum, p) => sum + (p.quantidade * (p.peca.valor || 0)), 0) || 0);
