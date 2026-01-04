@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-// Interfaces
 export interface Cliente {
   id?: number;
   nome: string;
@@ -33,28 +32,23 @@ export interface Bicicleta {
   styleUrls: ['./bicicleta-manager.component.css']
 })
 export class BicicletaManagerComponent implements OnInit {
-  // Dados
   bicicletas: Bicicleta[] = [];
   clientes: Cliente[] = [];
-
-  // Form
   bicicletaForm: FormGroup;
-
-  // Estados
   loading = false;
   error = '';
   editingBicicleta: Bicicleta | null = null;
 
   constructor(private fb: FormBuilder) {
     this.bicicletaForm = this.fb.group({
+      selectedClienteId: [''], // ID do cliente existente
+      clienteNome: [''],       // Campos para novo cliente
+      clienteTelefone: [''],
+      clienteEndereco: [''],
       marca: ['', Validators.required],
       modelo: ['', Validators.required],
-      tamanhoAro: ['', [Validators.required, Validators.min(1)]],
-      cor: ['', Validators.required],
-      selectedClienteId: [null],
-      clienteNome: [''],
-      clienteTelefone: [''],
-      clienteEndereco: ['']
+      tamanhoAro: ['', [Validators.required, Validators.min(12), Validators.max(29)]],
+      cor: ['', Validators.required]
     });
   }
 
@@ -63,69 +57,64 @@ export class BicicletaManagerComponent implements OnInit {
   }
 
   carregarDados(): void {
-    this.loading = true;
-
-    // Carrega bicicletas
-    const bicicletasData = localStorage.getItem('bicicletas');
-    this.bicicletas = bicicletasData ? JSON.parse(bicicletasData) : [];
-
-    // Carrega clientes
-    const clientesData = localStorage.getItem('clientes');
-    this.clientes = clientesData ? JSON.parse(clientesData) : [];
-
-    this.loading = false;
+    const bks = localStorage.getItem('bicicletas');
+    const cls = localStorage.getItem('clientes');
+    this.bicicletas = bks ? JSON.parse(bks) : [];
+    this.clientes = cls ? JSON.parse(cls) : [];
   }
 
   salvarBicicleta(): void {
     if (this.bicicletaForm.valid) {
       const formValue = this.bicicletaForm.value;
+      let clienteFinal: any = null;
+
+      // 1. Lógica para Cliente Existente
+      if (formValue.selectedClienteId) {
+        // ✅ CORREÇÃO AQUI: Converter para Number para garantir a comparação correta
+        const idProcurado = Number(formValue.selectedClienteId);
+        clienteFinal = this.clientes.find(c => c.id === idProcurado);
+
+        if (!clienteFinal) {
+          this.error = 'O cliente selecionado não foi encontrado na base de dados.';
+          return;
+        }
+      } 
+      // 2. Lógica para Novo Cliente
+      else if (formValue.clienteNome && formValue.clienteTelefone) {
+        clienteFinal = {
+          id: Date.now(),
+          nome: formValue.clienteNome,
+          telefone: formValue.clienteTelefone,
+          endereco: formValue.clienteEndereco || 'Endereço não informado'
+        };
+        // Salva o novo cliente no LocalStorage
+        this.clientes.push(clienteFinal);
+        localStorage.setItem('clientes', JSON.stringify(this.clientes));
+      }
+
+      if (!clienteFinal) {
+        this.error = 'Por favor, selecione um cliente ou preencha os dados de um novo.';
+        return;
+      }
+
       const novaBicicleta: Bicicleta = {
+        id: this.editingBicicleta ? this.editingBicicleta.id : Date.now(),
         marca: formValue.marca,
         modelo: formValue.modelo,
         tamanhoAro: formValue.tamanhoAro,
         cor: formValue.cor,
-        cliente: {} as any
-      };
-
-      let clienteSelecionado: Cliente | null = null;
-
-      if (formValue.selectedClienteId) {
-        clienteSelecionado = this.clientes.find(c => c.id === formValue.selectedClienteId) || null;
-        if (!clienteSelecionado) {
-          this.error = 'Cliente selecionado não encontrado.';
-          return;
+        cliente: {
+          id: clienteFinal.id,
+          nome: clienteFinal.nome,
+          telefone: clienteFinal.telefone,
+          endereco: clienteFinal.endereco
         }
-      } else if (formValue.clienteNome || formValue.clienteTelefone) {
-        const novoCliente: Cliente = {
-          nome: formValue.clienteNome,
-          telefone: formValue.clienteTelefone,
-          endereco: formValue.clienteEndereco || ''
-        };
-        const newClienteId = this.clientes.length > 0 ? Math.max(...this.clientes.map(c => c.id || 0)) + 1 : 1;
-        novoCliente.id = newClienteId;
-        this.clientes.push(novoCliente);
-        this.salvarNoLocalStorage('clientes', this.clientes);
-        clienteSelecionado = novoCliente;
-      } else {
-        this.error = 'Selecione um cliente existente ou preencha pelo menos nome ou telefone para criar um novo.';
-        return;
-      }
-
-      novaBicicleta.cliente = {
-        id: clienteSelecionado.id!,
-        nome: clienteSelecionado.nome,
-        telefone: clienteSelecionado.telefone,
-        endereco: clienteSelecionado.endereco
       };
 
       if (this.editingBicicleta) {
-        const index = this.bicicletas.findIndex(b => b.id === this.editingBicicleta!.id);
-        if (index !== -1) {
-          this.bicicletas[index] = { ...novaBicicleta, id: this.editingBicicleta.id };
-        }
+        const index = this.bicicletas.findIndex(b => b.id === this.editingBicicleta?.id);
+        this.bicicletas[index] = novaBicicleta;
       } else {
-        const newId = this.bicicletas.length > 0 ? Math.max(...this.bicicletas.map(b => b.id || 0)) + 1 : 1;
-        novaBicicleta.id = newId;
         this.bicicletas.push(novaBicicleta);
       }
 
@@ -133,7 +122,12 @@ export class BicicletaManagerComponent implements OnInit {
       this.bicicletaForm.reset();
       this.editingBicicleta = null;
       this.error = '';
+      alert('Bicicleta salva com sucesso!');
     }
+  }
+
+  private salvarNoLocalStorage(key: string, data: any): void {
+    localStorage.setItem(key, JSON.stringify(data));
   }
 
   editarBicicleta(bicicleta: Bicicleta): void {
@@ -179,7 +173,4 @@ export class BicicletaManagerComponent implements OnInit {
     this.bicicletaForm.get('clienteTelefone')?.setValue(value, { emitEvent: false });
   }
 
-  private salvarNoLocalStorage(key: string, data: any): void {
-    localStorage.setItem(key, JSON.stringify(data));
-  }
 }
