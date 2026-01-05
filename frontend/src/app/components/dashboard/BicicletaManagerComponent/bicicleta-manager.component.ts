@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { OrdemServico } from '../../../shared/models/ordem-servico.model';
+import { HistoricoBicicletaComponent } from '../HistoricoBicicletaComponent/historico-bicicleta.component';
 
 export interface Cliente {
   id?: number;
@@ -27,17 +29,24 @@ export interface Bicicleta {
 @Component({
   selector: 'app-bicicleta-manager',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, HistoricoBicicletaComponent],
   templateUrl: './bicicleta-manager.component.html',
   styleUrls: ['./bicicleta-manager.component.css']
 })
 export class BicicletaManagerComponent implements OnInit {
   bicicletas: Bicicleta[] = [];
+  bicicletasEmServico: Bicicleta[] = [];
   clientes: Cliente[] = [];
+  ordensServico: OrdemServico[] = [];
   bicicletaForm: FormGroup;
+  filtrosForm: FormGroup;
   loading = false;
   error = '';
   editingBicicleta: Bicicleta | null = null;
+  showModal = false;
+  selectedBicicletaId: number | null = null;
+
+  @ViewChild('modalHistorico') modal!: ElementRef<HTMLDialogElement>;
 
   constructor(private fb: FormBuilder) {
     this.bicicletaForm = this.fb.group({
@@ -50,6 +59,17 @@ export class BicicletaManagerComponent implements OnInit {
       tamanhoAro: ['', [Validators.required, Validators.min(12), Validators.max(29)]],
       cor: ['', Validators.required]
     });
+
+    this.filtrosForm = this.fb.group({
+      cliente: [''],
+      dataEntradaInicio: [''],
+      dataEntradaFim: [''],
+      dataPrevisaoInicio: [''],
+      dataPrevisaoFim: [''],
+      marca: [''],
+      cor: [''],
+      status: ['']
+    });
   }
 
   ngOnInit(): void {
@@ -59,8 +79,18 @@ export class BicicletaManagerComponent implements OnInit {
   carregarDados(): void {
     const bks = localStorage.getItem('bicicletas');
     const cls = localStorage.getItem('clientes');
+    const ordens = localStorage.getItem('ordens-servico');
     this.bicicletas = bks ? JSON.parse(bks) : [];
     this.clientes = cls ? JSON.parse(cls) : [];
+    this.ordensServico = ordens ? JSON.parse(ordens) : [];
+
+    // Filtrar apenas bicicletas com OS ativa
+    this.bicicletasEmServico = this.bicicletas.filter(bike => {
+      const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
+      return osDaBike && (osDaBike.status === 'EM_ANDAMENTO' || osDaBike.status === 'CONCLUIDA');
+    });
+
+    this.aplicarFiltros();
   }
 
   salvarBicicleta(): void {
@@ -156,21 +186,109 @@ export class BicicletaManagerComponent implements OnInit {
     this.editingBicicleta = null;
   }
 
-  formatarTelefone(event: any): void {
-    let value = event.target.value.replace(/\D/g, '');
-    if (value.length > 11) value = value.substring(0, 11);
+  aplicarFiltros(): void {
+    const filtros = this.filtrosForm.value;
+    let filtradas = [...this.bicicletasEmServico];
 
-    if (value.length > 2) {
-      if (value.length <= 10) {
-        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-      } else {
-        value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
-      }
-    } else if (value.length > 0) {
-      value = value.replace(/^(\d{0,2})/, '($1');
+    if (filtros.cliente) {
+      filtradas = filtradas.filter(bike =>
+        bike.cliente.nome.toLowerCase().includes(filtros.cliente.toLowerCase())
+      );
     }
 
-    this.bicicletaForm.get('clienteTelefone')?.setValue(value, { emitEvent: false });
+    if (filtros.marca) {
+      filtradas = filtradas.filter(bike =>
+        bike.marca.toLowerCase().includes(filtros.marca.toLowerCase())
+      );
+    }
+
+    if (filtros.cor) {
+      filtradas = filtradas.filter(bike =>
+        bike.cor.toLowerCase().includes(filtros.cor.toLowerCase())
+      );
+    }
+
+    if (filtros.status) {
+      filtradas = filtradas.filter(bike => {
+        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
+        return osDaBike && osDaBike.status === filtros.status;
+      });
+    }
+
+    // Filtros de data
+    if (filtros.dataEntradaInicio || filtros.dataEntradaFim) {
+      filtradas = filtradas.filter(bike => {
+        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
+        if (!osDaBike || !osDaBike.dataEntrada) return false;
+        const dataEntrada = new Date(osDaBike.dataEntrada);
+        if (filtros.dataEntradaInicio && dataEntrada < new Date(filtros.dataEntradaInicio)) return false;
+        if (filtros.dataEntradaFim && dataEntrada > new Date(filtros.dataEntradaFim)) return false;
+        return true;
+      });
+    }
+
+    if (filtros.dataPrevisaoInicio || filtros.dataPrevisaoFim) {
+      filtradas = filtradas.filter(bike => {
+        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
+        if (!osDaBike || !osDaBike.dataPrevisaoSaida) return false;
+        const dataPrevisao = new Date(osDaBike.dataPrevisaoSaida);
+        if (filtros.dataPrevisaoInicio && dataPrevisao < new Date(filtros.dataPrevisaoInicio)) return false;
+        if (filtros.dataPrevisaoFim && dataPrevisao > new Date(filtros.dataPrevisaoFim)) return false;
+        return true;
+      });
+    }
+
+    this.bicicletasEmServico = filtradas;
+  }
+
+  filtrar(): void {
+    this.carregarDados();
+  }
+
+  limparFiltros(): void {
+    this.filtrosForm.reset();
+    this.carregarDados();
+  }
+
+  abrirHistorico(bicicleta: Bicicleta): void {
+    this.selectedBicicletaId = bicicleta.id!;
+    this.showModal = true;
+    if (this.modal) {
+      this.modal.nativeElement.showModal();
+    }
+  }
+
+  fecharModal(): void {
+    this.showModal = false;
+    this.selectedBicicletaId = null;
+    if (this.modal) {
+      this.modal.nativeElement.close();
+    }
+  }
+
+  getStatusOS(bicicletaId: number): string {
+    const os = this.ordensServico.find(os => os.bicicleta.id === bicicletaId);
+    return os ? os.status : '';
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'ABERTA': return 'aberta';
+      case 'EM_ANDAMENTO': return 'em-andamento';
+      case 'CONCLUIDA': return 'concluida';
+      case 'ENTREGUE': return 'entregue';
+      default: return '';
+    }
+  }
+
+  formatStatus(status: string): string {
+    switch (status) {
+      case 'ABERTA': return 'Aberta';
+      case 'EM_ANDAMENTO': return 'Em Andamento';
+      case 'CONCLUIDA': return 'Concluída';
+      case 'ENTREGUE': return 'Entregue';
+      default: return status;
+    }
   }
 
 }

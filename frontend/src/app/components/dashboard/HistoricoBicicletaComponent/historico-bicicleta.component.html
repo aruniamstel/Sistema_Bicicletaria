@@ -1,0 +1,30 @@
+<div class="historico-container">
+  <h3>📋 Histórico da Bicicleta</h3>
+
+  <div *ngIf="historico.length === 0" class="empty-state">
+    <p>Nenhuma ordem de serviço encontrada para esta bicicleta.</p>
+  </div>
+
+  <table *ngIf="historico.length > 0" class="historico-table">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Serviço(s) Realizado(s)</th>
+        <th>Valor</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let os of historico">
+        <td>{{ os.dataEntrada | date:'dd/MM/yyyy' }}</td>
+        <td>{{ getServicosRealizados(os) }}</td>
+        <td>{{ os.valorTotal | currency:'BRL' }}</td>
+        <td>
+          <span [class]="'status-badge ' + getStatusClass(os.status)">
+            {{ formatStatus(os.status) }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
