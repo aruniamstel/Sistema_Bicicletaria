@@ -29,6 +29,20 @@
         <input type="number" formControlName="quantidade" placeholder="0">
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Código Interno</label>
+        <input type="text" formControlName="codigoInterno" placeholder="Ex: PEC001">
+      </div>
+      <div class="form-field">
+        <label>Categoria</label>
+        <input type="text" formControlName="categoria" placeholder="Ex: Freios, Transmissão">
+      </div>
+      <div class="form-field">
+        <label>Subcategoria</label>
+        <input type="text" formControlName="subcategoria" placeholder="Ex: Disco, Corrente">
+      </div>
+    </div>
     <div class="form-actions">
       <button type="button" class="btn-secondary" (click)="cancelarEdicaoPeca()" *ngIf="editingPeca">
         ❌ Cancelar
@@ -40,27 +54,59 @@
   </form>
 </div>
 
+<!-- Filtros de Pesquisa -->
+<div class="filters-section">
+  <h4>🔍 Filtros de Pesquisa</h4>
+  <form [formGroup]="filtrosForm" class="filters-form">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>Nome/Descrição</label>
+        <input type="text" formControlName="termoBusca" placeholder="Buscar por nome...">
+      </div>
+      <div class="filter-field">
+        <label>Código Interno</label>
+        <input type="text" formControlName="codigoInterno" placeholder="Buscar por código...">
+      </div>
+      <div class="filter-field">
+        <label>Categoria</label>
+        <input type="text" formControlName="categoria" placeholder="Buscar por categoria...">
+      </div>
+      <div class="filter-field">
+        <label>Subcategoria</label>
+        <input type="text" formControlName="subcategoria" placeholder="Buscar por subcategoria...">
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button type="button" class="btn-secondary" (click)="limparFiltros()">🧹 Limpar Filtros</button>
+    </div>
+  </form>
+</div>
+
 <!-- Lista de Peças -->
 <div class="list-section">
-  <h3>Estoque de Peças ({{ pecas.length }})</h3>
+  <h3>Estoque de Peças ({{ pecasFiltradas.length }})</h3>
 
-  <div *ngIf="pecas.length === 0" class="empty-state">
-    <p>Nenhuma peça cadastrada.</p>
+  <div *ngIf="pecasFiltradas.length === 0" class="empty-state">
+    <p>Nenhuma peça encontrada com os filtros aplicados.</p>
   </div>
 
-  <div class="table-container" *ngIf="pecas.length > 0">
+  <div class="table-container" *ngIf="pecasFiltradas.length > 0">
     <table class="data-table">
       <thead>
         <tr>
           <th>Descrição</th>
+          <th>Código</th>
+          <th>Categoria</th>
           <th>Valor</th>
           <th>Estoque</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let peca of pecas" [class.low-stock]="peca.quantidade < 5">
+        <tr *ngFor="let peca of pecasFiltradas" [class.low-stock]="peca.quantidade < 5">
           <td>{{ peca.descricao }}</td>
+          <td>{{ peca.codigoInterno || '-' }}</td>
+          <td>{{ peca.categoria || '-' }}</td>
           <td>R$ {{ peca.valor | number:'1.2-2' }}</td>
           <td>
             <span [class]="peca.quantidade < 5 ? 'stock-low' : 'stock-ok'">

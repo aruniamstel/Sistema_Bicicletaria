@@ -8,6 +8,9 @@ export interface Peca {
   descricao: string;
   valor: number;
   quantidade: number;
+  codigoInterno?: string;
+  categoria?: string;
+  subcategoria?: string;
 }
 
 @Component({
@@ -20,9 +23,11 @@ export interface Peca {
 export class EstoqueManagerComponent implements OnInit {
   // Dados
   pecas: Peca[] = [];
+  pecasFiltradas: Peca[] = [];
 
   // Form
   pecaForm: FormGroup;
+  filtrosForm: FormGroup;
 
   // Estados
   loading = false;
@@ -32,7 +37,22 @@ export class EstoqueManagerComponent implements OnInit {
     this.pecaForm = this.fb.group({
       descricao: ['', Validators.required],
       valor: ['', [Validators.required, Validators.min(0)]],
-      quantidade: ['', [Validators.min(0)]]
+      quantidade: ['', [Validators.min(0)]],
+      codigoInterno: [''],
+      categoria: [''],
+      subcategoria: ['']
+    });
+
+    this.filtrosForm = this.fb.group({
+      termoBusca: [''],
+      codigoInterno: [''],
+      categoria: [''],
+      subcategoria: ['']
+    });
+
+    // Filtragem reativa
+    this.filtrosForm.valueChanges.subscribe(() => {
+      this.aplicarFiltros();
     });
   }
 
@@ -46,6 +66,7 @@ export class EstoqueManagerComponent implements OnInit {
     const pecasData = localStorage.getItem('pecas');
     this.pecas = pecasData ? JSON.parse(pecasData) : this.criarPecasPadrao();
 
+    this.aplicarFiltros();
     this.loading = false;
   }
 
@@ -55,7 +76,10 @@ export class EstoqueManagerComponent implements OnInit {
       const novaPeca: Peca = {
         descricao: formValue.descricao,
         valor: formValue.valor,
-        quantidade: formValue.quantidade ?? 0
+        quantidade: formValue.quantidade ?? 0,
+        codigoInterno: formValue.codigoInterno || undefined,
+        categoria: formValue.categoria || undefined,
+        subcategoria: formValue.subcategoria || undefined
       };
 
       if (this.editingPeca) {
@@ -70,6 +94,7 @@ export class EstoqueManagerComponent implements OnInit {
       }
 
       this.salvarNoLocalStorage('pecas', this.pecas);
+      this.aplicarFiltros();
       this.pecaForm.reset();
       this.editingPeca = null;
     }
@@ -80,7 +105,10 @@ export class EstoqueManagerComponent implements OnInit {
     this.pecaForm.patchValue({
       descricao: peca.descricao,
       valor: peca.valor,
-      quantidade: peca.quantidade
+      quantidade: peca.quantidade,
+      codigoInterno: peca.codigoInterno || '',
+      categoria: peca.categoria || '',
+      subcategoria: peca.subcategoria || ''
     });
   }
 
@@ -94,6 +122,42 @@ export class EstoqueManagerComponent implements OnInit {
   cancelarEdicaoPeca(): void {
     this.pecaForm.reset();
     this.editingPeca = null;
+  }
+
+  aplicarFiltros(): void {
+    const filtros = this.filtrosForm.value;
+    let filtradas = [...this.pecas];
+
+    if (filtros.termoBusca) {
+      filtradas = filtradas.filter(peca =>
+        peca.descricao.toLowerCase().includes(filtros.termoBusca.toLowerCase())
+      );
+    }
+
+    if (filtros.codigoInterno) {
+      filtradas = filtradas.filter(peca =>
+        peca.codigoInterno && peca.codigoInterno.toLowerCase().includes(filtros.codigoInterno.toLowerCase())
+      );
+    }
+
+    if (filtros.categoria) {
+      filtradas = filtradas.filter(peca =>
+        peca.categoria && peca.categoria.toLowerCase().includes(filtros.categoria.toLowerCase())
+      );
+    }
+
+    if (filtros.subcategoria) {
+      filtradas = filtradas.filter(peca =>
+        peca.subcategoria && peca.subcategoria.toLowerCase().includes(filtros.subcategoria.toLowerCase())
+      );
+    }
+
+    this.pecasFiltradas = filtradas;
+  }
+
+  limparFiltros(): void {
+    this.filtrosForm.reset();
+    this.pecasFiltradas = [...this.pecas];
   }
 
   private salvarNoLocalStorage(key: string, data: any): void {
