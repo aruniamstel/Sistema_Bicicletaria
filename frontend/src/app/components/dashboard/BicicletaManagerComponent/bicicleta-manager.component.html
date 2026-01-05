@@ -185,14 +185,8 @@
 </div>
 
 <!-- Modal de Histórico -->
-<dialog #modalHistorico class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Histórico da Bicicleta</h3>
-      <button class="close-btn" (click)="fecharModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <app-historico-bicicleta [idBicicleta]="selectedBicicletaId"></app-historico-bicicleta>
-    </div>
-  </div>
-</dialog>
+<app-historico-bicicleta 
+  *ngIf="showModal" 
+  [idBicicleta]="selectedBicicletaId"
+  (fechar)="fecharModal()">
+</app-historico-bicicleta>
