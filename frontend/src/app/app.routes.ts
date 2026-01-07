@@ -19,22 +19,12 @@ import { OrdemListComponent } from './components/ordens-servico/ordem-list/ordem
 import { OrdemFormComponent } from './components/ordens-servico/ordem-form/ordem-form.component';
 import { OrdemDetailsComponent } from './components/ordens-servico/ordem-details/ordem-details.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AgendaComponent } from './components/agenda/agenda.component';
 
 
 export const routes: Routes = [
     { path: '', redirectTo: '/login', pathMatch: 'full' },
     { 'path': 'login', component: LoginComponent },
-    // {
-
-    //     'path': 'pgcliente',
-    //     component: PgClienteComponent,
-    //     // o que precisa add permissoes de rotas
-    //     canActivate: [authGuard],
-    //     data: {
-    //         role: ['CLIENTE']
-    //     }
-    // },
-    // 
     { 'path': 'cadastro', component: CadastroComponent },
     {
         'path': 'orcamentocliente',
@@ -147,4 +137,5 @@ export const routes: Routes = [
     },
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     { path: 'dashboard', component: DashboardComponent },
+    { path: 'agenda', component: AgendaComponent }
 ];

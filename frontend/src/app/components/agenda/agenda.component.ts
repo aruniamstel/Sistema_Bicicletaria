@@ -10,22 +10,18 @@ import {
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { addMonths, subMonths, startOfToday } from 'date-fns'; // Importações necessárias
 import { OrdemServico } from '../../shared/models/ordem-servico.model';
+import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-agenda',
   standalone: true,
   imports: [
     CommonModule, 
+    HeaderComponent,
     CalendarModule // Removido o .forRoot daqui para evitar conflitos em standalone
   ],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css'],
-  providers: [
-    {
-      provide: DateAdapter,
-      useFactory: adapterFactory,
-    }
-  ],
 })
 export class AgendaComponent implements OnInit {
   view: CalendarView = CalendarView.Month;
@@ -91,9 +87,8 @@ export class AgendaComponent implements OnInit {
   }
 
   eventClicked({ event }: { event: CalendarEvent }): void {
-    if (event.id) {
-      // Ajuste a rota conforme o seu sistema de rotas
-      this.router.navigate(['/ordens-servico/detalhes', event.id]);
-    }
+  if (event.id) {
+    this.router.navigate(['/ordens-servico', event.id]);
+  }
   }
 }
