@@ -6,6 +6,7 @@ import { BicicletaFormComponent } from './components/bicicletas/bicicleta-form/b
 import { OrdemListComponent } from './components/ordens-servico/ordem-list/ordem-list.component';
 import { OrdemFormComponent } from './components/ordens-servico/ordem-form/ordem-form.component';
 import { OrdemDetailsComponent } from './components/ordens-servico/ordem-details/ordem-details.component';
+import { AgendaComponent } from './components/agenda/agenda.component';
 import { authGuard } from './auth/auth.guard';
 
 const routes: Routes = [
@@ -32,6 +33,11 @@ const routes: Routes = [
       { path: 'novo', component: OrdemFormComponent },
       { path: ':id', component: OrdemDetailsComponent },
     ],
+    canActivate: [authGuard]
+  },
+  {
+    path: 'agenda',
+    component: AgendaComponent,
     canActivate: [authGuard]
   },
   {

@@ -1,0 +1,38 @@
+<div class="agenda-container">
+  <div class="agenda-header">
+    <h2>📅 Agenda de Entregas</h2>
+    <p>Visualize as entregas programadas das bicicletas</p>
+  </div>
+
+  <div class="calendar-controls">
+    <button class="btn-secondary" (click)="previous()">⬅️ Anterior</button>
+    <button class="btn-primary" (click)="today()">📅 Hoje</button>
+    <button class="btn-secondary" (click)="next()">Próximo ➡️</button>
+    <h3 class="month-title">{{ viewDate | date:'MMMM yyyy' }}</h3>
+  </div>
+
+  <div class="calendar-wrapper">
+    <mwl-calendar-month-view
+      [viewDate]="viewDate"
+      [events]="events"
+      [activeDayIsOpen]="false"
+      (eventClicked)="eventClicked($event)">
+    </mwl-calendar-month-view>
+  </div>
+
+  <div class="legend">
+    <h4>Legenda:</h4>
+    <div class="legend-item">
+      <div class="color-box" style="background-color: #FFC107;"></div>
+      <span>Em Andamento</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-box" style="background-color: #28A745;"></div>
+      <span>Concluída</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-box" style="background-color: #6C757D;"></div>
+      <span>Entregue</span>
+    </div>
+  </div>
+</div>

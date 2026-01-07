@@ -1,0 +1,186 @@
+.agenda-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.agenda-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.agenda-header h2 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.agenda-header p {
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.calendar-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.month-title {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.calendar-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Estilos do calendário */
+:host ::ng-deep .cal-month-view {
+  width: 100%;
+}
+
+:host ::ng-deep .cal-month-view .cal-cell-row {
+  display: flex;
+}
+
+:host ::ng-deep .cal-month-view .cal-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  font-weight: 600;
+  color: #495057;
+}
+
+:host ::ng-deep .cal-month-view .cal-cell {
+  flex: 1;
+  min-height: 120px;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  padding: 5px;
+  position: relative;
+}
+
+:host ::ng-deep .cal-month-view .cal-cell.cal-out-month {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+:host ::ng-deep .cal-month-view .cal-cell.cal-today {
+  background-color: #fff3cd;
+}
+
+:host ::ng-deep .cal-month-view .cal-cell .cal-cell-top {
+  min-height: 20px;
+  font-weight: 600;
+  color: #495057;
+}
+
+:host ::ng-deep .cal-month-view .cal-cell .cal-events {
+  margin-top: 5px;
+}
+
+:host ::ng-deep .cal-month-view .cal-event {
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+:host ::ng-deep .cal-month-view .cal-event:hover {
+  opacity: 0.8;
+}
+
+.legend {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.legend h4 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.legend-item span {
+  font-size: 14px;
+  color: #495057;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .agenda-container {
+    padding: 10px;
+  }
+
+  .calendar-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .month-title {
+    font-size: 1.2em;
+  }
+
+  :host ::ng-deep .cal-month-view .cal-cell {
+    min-height: 100px;
+  }
+
+  :host ::ng-deep .cal-month-view .cal-event {
+    font-size: 11px;
+  }
+}
