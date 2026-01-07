@@ -1,22 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CalendarModule, CalendarEvent, CalendarView, CalendarDateFormatter, DateAdapter } from 'angular-calendar';
+import { 
+  CalendarModule, 
+  CalendarEvent, 
+  CalendarView, 
+  DateAdapter 
+} from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
+import { addMonths, subMonths, startOfToday } from 'date-fns'; // Importações necessárias
 import { OrdemServico } from '../../shared/models/ordem-servico.model';
 
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, CalendarModule],
+  imports: [
+    CommonModule, 
+    CalendarModule // Removido o .forRoot daqui para evitar conflitos em standalone
+  ],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css'],
   providers: [
     {
       provide: DateAdapter,
       useFactory: adapterFactory,
-    },
-    CalendarDateFormatter,
+    }
   ],
 })
 export class AgendaComponent implements OnInit {
@@ -38,8 +46,21 @@ export class AgendaComponent implements OnInit {
     }
   }
 
+  // FUNÇÕES DE NAVEGAÇÃO (Faltavam no seu código)
+  next(): void {
+    this.viewDate = addMonths(this.viewDate, 1);
+  }
+
+  previous(): void {
+    this.viewDate = subMonths(this.viewDate, 1);
+  }
+
+  today(): void {
+    this.viewDate = startOfToday();
+  }
+
   mapearParaCalendarEvent(os: OrdemServico): CalendarEvent {
-    // Usar dataPrevisaoSaida ou dataEntrada + 3 dias
+    // Lógica para definir a data de entrega (previsão ou entrada + 3 dias)
     let dataEntrega = os.dataPrevisaoSaida ? new Date(os.dataPrevisaoSaida) : new Date(os.dataEntrada);
     if (!os.dataPrevisaoSaida) {
       dataEntrega.setDate(dataEntrega.getDate() + 3);
@@ -59,39 +80,20 @@ export class AgendaComponent implements OnInit {
   getCorPorStatus(status: string): any {
     switch (status) {
       case 'EM_ANDAMENTO':
-        return { primary: '#FFC107', secondary: '#FFF3CD' }; // Amarelo
+        return { primary: '#FFC107', secondary: '#FFF3CD' };
       case 'CONCLUIDA':
-        return { primary: '#28A745', secondary: '#D4EDDA' }; // Verde
+        return { primary: '#28A745', secondary: '#D4EDDA' };
       case 'ENTREGUE':
-        return { primary: '#6C757D', secondary: '#E2E3E5' }; // Cinza
+        return { primary: '#6C757D', secondary: '#E2E3E5' };
       default:
-        return { primary: '#007BFF', secondary: '#CCE5FF' }; // Azul
+        return { primary: '#007BFF', secondary: '#CCE5FF' };
     }
   }
 
-  eventClicked(event: CalendarEvent): void {
+  eventClicked({ event }: { event: CalendarEvent }): void {
     if (event.id) {
-      this.router.navigate(['/ordem-servico', event.id]);
+      // Ajuste a rota conforme o seu sistema de rotas
+      this.router.navigate(['/ordens-servico/detalhes', event.id]);
     }
-  }
-
-  setView(view: CalendarView): void {
-    this.view = view;
-  }
-
-  today(): void {
-    this.viewDate = new Date();
-  }
-
-  previous(): void {
-    const current = new Date(this.viewDate);
-    current.setMonth(current.getMonth() - 1);
-    this.viewDate = current;
-  }
-
-  next(): void {
-    const current = new Date(this.viewDate);
-    current.setMonth(current.getMonth() + 1);
-    this.viewDate = current;
   }
 }
