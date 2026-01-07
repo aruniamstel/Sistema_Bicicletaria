@@ -1,1 +1,5 @@
 node_modules
+firebase-debug.log
+frontend/key.pem
+frontend/.firebase/hosting.ZGlzdFxTaXN0ZW1hQmljaWNsZXRhcmlhXGJyb3dzZXI.cache
+frontend/src/app/components/ordens-servico/ordem-form/versaoantiga-form.html
