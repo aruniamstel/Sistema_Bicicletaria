@@ -4,7 +4,7 @@
   <!-- Cabeçalho -->
   <div class="dashboard-header">
     <h1>📊 Dashboard - Gestão Completa</h1>
-    <p>Gerencie bicicletas, serviços e peças em um só lugar</p>
+    <p>Gerencie bicicletas, serviços, peças e clientes em um só lugar</p>
   </div>
 
   <!-- Navegação por Abas -->
@@ -23,6 +23,11 @@
       [class]="'tab-button ' + (activeTab === 'pecas' ? 'active' : '')"
       (click)="setActiveTab('pecas')">
       ⚙️ Peças
+    </button>
+    <button 
+      [class]="'tab-button ' + (activeTab === 'clientes' ? 'active' : '')"
+      (click)="setActiveTab('clientes')">
+      👥 Clientes
     </button>
   </div>
 
@@ -48,6 +53,11 @@
     <!-- === ABA PEÇAS === -->
     <div *ngIf="activeTab === 'pecas'" class="tab-pane active">
       <app-estoque-manager></app-estoque-manager>
+    </div>
+
+    <!-- === ABA CLIENTES === -->
+    <div *ngIf="activeTab === 'clientes'" class="tab-pane active">
+      <app-cliente-manager></app-cliente-manager>
     </div>
   </div>
 </div>

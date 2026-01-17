@@ -1,0 +1,151 @@
+<div class="section-header">
+  <h2>👥 Gestão de Clientes</h2>
+  <p>Cadastre e gerencie os clientes da bicicletaria</p>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" class="loading-state">
+  <div class="spinner"></div>
+  <p>Carregando dados...</p>
+</div>
+
+<!-- Error -->
+<div *ngIf="error" class="error-state">
+  <div class="error-icon">⚠️</div>
+  <p>{{ error }}</p>
+  <button (click)="retry()" class="btn-retry">🔄 Tentar Novamente</button>
+</div>
+
+<!-- Formulário de Cliente -->
+<div *ngIf="!error" class="form-section">
+  <h3>{{ editingCliente ? 'Editar' : 'Novo' }} Cliente</h3>
+  <form [formGroup]="clienteForm" (ngSubmit)="salvarCliente()" class="crud-form">
+    <div class="form-row">
+      <div class="form-field full-width">
+        <label>Nome do Cliente</label>
+        <input 
+          type="text" 
+          formControlName="nome" 
+          placeholder="Nome completo do cliente">
+        <small *ngIf="clienteForm.get('nome')?.invalid && clienteForm.get('nome')?.touched" class="error-message">
+          Nome é obrigatório e deve ter pelo menos 3 caracteres
+        </small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Telefone</label>
+        <input 
+          type="text" 
+          formControlName="telefone" 
+          placeholder="(11) 99999-9999"
+          (input)="formatarTelefone($event)">
+        <small *ngIf="clienteForm.get('telefone')?.invalid && clienteForm.get('telefone')?.touched" class="error-message">
+          Telefone inválido. Use o formato: (11) 99999-9999
+        </small>
+      </div>
+      <div class="form-field">
+        <label>Instagram</label>
+        <input 
+          type="text" 
+          formControlName="instagram" 
+          placeholder="@usuario (opcional)">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field full-width">
+        <label>Endereço</label>
+        <input 
+          type="text" 
+          formControlName="endereco" 
+          placeholder="Endereço completo">
+        <small *ngIf="clienteForm.get('endereco')?.invalid && clienteForm.get('endereco')?.touched" class="error-message">
+          Endereço é obrigatório
+        </small>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="cancelarEdicaoCliente()" *ngIf="editingCliente">
+        ❌ Cancelar
+      </button>
+      <button type="submit" class="btn-primary" [disabled]="clienteForm.invalid">
+        {{ editingCliente ? '💾 Atualizar' : '✅ Salvar' }} Cliente
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Lista de Clientes -->
+<div *ngIf="!error" class="list-section">
+  <h3>Clientes ({{ clientesFiltrados.length }})</h3>
+
+  <!-- Barra de Filtros -->
+  <div class="filters-section">
+    <form [formGroup]="filtrosForm" class="filters-form">
+      <div class="filter-field">
+        <input 
+          type="text" 
+          formControlName="termoBusca" 
+          placeholder="🔍 Buscar por nome...">
+      </div>
+      <div class="filter-field">
+        <input 
+          type="text" 
+          formControlName="telefone" 
+          placeholder="📱 Buscar por telefone...">
+      </div>
+      <button type="button" (click)="limparFiltros()" class="btn-filter-clear">
+        ❌ Limpar Filtros
+      </button>
+    </form>
+  </div>
+
+  <!-- Tabela de Clientes -->
+  <div class="list-container">
+    <div *ngIf="clientesFiltrados.length === 0" class="empty-state">
+      <p>📭 Nenhum cliente encontrado</p>
+    </div>
+
+    <table *ngIf="clientesFiltrados.length > 0" class="data-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Telefone</th>
+          <th>Endereço</th>
+          <th>Instagram</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cliente of clientesFiltrados" class="table-row">
+          <td class="col-nome">{{ cliente.nome }}</td>
+          <td class="col-telefone">{{ cliente.telefone }}</td>
+          <td class="col-endereco">{{ cliente.endereco }}</td>
+          <td class="col-instagram">
+            <span *ngIf="cliente.instagram" class="instagram-badge">{{ cliente.instagram }}</span>
+            <span *ngIf="!cliente.instagram" class="empty-badge">-</span>
+          </td>
+          <td class="col-actions">
+            <button 
+              type="button" 
+              (click)="editarCliente(cliente)" 
+              class="btn-action btn-edit"
+              title="Editar cliente">
+              ✏️
+            </button>
+            <button 
+              type="button" 
+              (click)="excluirCliente(cliente.id!)" 
+              class="btn-action btn-delete"
+              title="Excluir cliente">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

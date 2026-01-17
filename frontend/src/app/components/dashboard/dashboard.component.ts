@@ -5,6 +5,7 @@ import { HeaderComponent } from "../header/header.component";
 import { BicicletaManagerComponent } from "./BicicletaManagerComponent/bicicleta-manager.component";
 import { ServicoManagerComponent } from "./ServicoManagerComponent/servico-manager.component";
 import { EstoqueManagerComponent } from "./EstoqueManagerComponent/estoque-manager.component";
+import { ClienteManagerComponent } from "./ClienteManagerComponent/cliente-manager.component";
 
 @Component({
   selector: 'app-dashboard',
@@ -15,15 +16,16 @@ import { EstoqueManagerComponent } from "./EstoqueManagerComponent/estoque-manag
     HeaderComponent,
     BicicletaManagerComponent,
     ServicoManagerComponent,
-    EstoqueManagerComponent
+    EstoqueManagerComponent,
+    ClienteManagerComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
-  activeTab: 'bicicletas' | 'servicos' | 'pecas' = 'bicicletas';
+  activeTab: 'bicicletas' | 'servicos' | 'pecas' | 'clientes' = 'bicicletas';
 
-  setActiveTab(tab: 'bicicletas' | 'servicos' | 'pecas'): void {
+  setActiveTab(tab: 'bicicletas' | 'servicos' | 'pecas' | 'clientes'): void {
     this.activeTab = tab;
   }
 }
