@@ -15,6 +15,7 @@ import { ClienteListComponent } from './components/clientes/cliente-list/cliente
 import { ClienteFormComponent } from './components/clientes/cliente-form/cliente-form.component';
 import { ClienteDetailsComponent } from './components/clientes/cliente-details/cliente-details.component';
 import { BicicletaFormComponent } from './components/bicicletas/bicicleta-form/bicicleta-form.component';
+import { BicicletasEmServicoComponent } from './components/bicicletas-em-servico/bicicletas-em-servico.component';
 import { OrdemListComponent } from './components/ordens-servico/ordem-list/ordem-list.component';
 import { OrdemFormComponent } from './components/ordens-servico/ordem-form/ordem-form.component';
 import { OrdemDetailsComponent } from './components/ordens-servico/ordem-details/ordem-details.component';
@@ -123,6 +124,13 @@ export const routes: Routes = [
         ],
         canActivate: [authGuard],
         data: { role: ['ADMIN', 'FUNCIONARIO', 'CLIENTE'] }
+    },
+    // Bicicletas em Serviço (novo componente)
+    {
+        path: 'bicicletas-em-servico',
+        component: BicicletasEmServicoComponent,
+        canActivate: [authGuard],
+        data: { role: ['ADMIN', 'FUNCIONARIO'] }
     },
     // Ordens de Serviço (listar, criar, detalhes)
     {

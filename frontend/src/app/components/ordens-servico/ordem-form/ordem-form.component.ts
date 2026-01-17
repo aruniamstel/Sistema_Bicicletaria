@@ -46,7 +46,13 @@ export class OrdemFormComponent implements OnInit {
   ) {
     this.ordemForm = this.fb.group({
       cliente: ['', Validators.required],
-      bicicleta: ['', Validators.required],
+      bicicleta: [''], // Bicicleta opcional - permite peças avulsas
+      // Campos para novo cliente (opcionais)
+      clienteExistente: [''],
+      nomeNovoCliente: [''],
+      telefoneNovoCliente: [''],
+      enderecoNovoCliente: [''],
+      instagramNovoCliente: [''],
       dataPrevisaoSaida: [''], // Novo campo opcional
       observacoes: [''], 
       exibirAvisoTrintaDias: [true], // Conforme requisito [cite: 1, 19]
@@ -68,6 +74,26 @@ export class OrdemFormComponent implements OnInit {
   // Getters ajustados para o seu HTML [cite: 4]
   get servicos() { return this.ordemForm.get('servicosSelecionados') as FormArray; }
   get pecas() { return this.ordemForm.get('pecasSelecionadas') as FormArray; }
+
+  // Formatação de telefone - mesmo padrão do ClienteFormComponent
+  formatarTelefone(event: any): void {
+    let value = event.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+    if (value.length > 11) value = value.substring(0, 11); // Limita a 11 dígitos
+
+    if (value.length > 2) {
+      // Formata conforme a quantidade de dígitos (celular vs fixo)
+      if (value.length <= 10) {
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+      } else {
+        value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+      }
+    } else if (value.length > 0) {
+      value = value.replace(/^(\d{0,2})/, '($1');
+    }
+
+    // Atualiza o valor no controle do formulário para o Angular reconhecer
+    this.ordemForm.get('telefoneNovoCliente')?.setValue(value, { emitEvent: false });
+  }
 
   // Novo método baseado no OrdemDetailsComponent 
   private carregarServicosEPecas(): void {
@@ -120,6 +146,9 @@ export class OrdemFormComponent implements OnInit {
         next: (data) => {
           this.bicicletas = data;
           this.loading = false;
+          // Limpa bicicleta selecionada ao mudar cliente
+          this.ordemForm.patchValue({ bicicleta: '' });
+          this.bicicletaSelecionada = undefined;
           // Seleção automática se houver apenas uma 
           if (this.bicicletas.length === 1) {
             this.ordemForm.patchValue({ bicicleta: this.bicicletas[0].id });
@@ -131,6 +160,11 @@ export class OrdemFormComponent implements OnInit {
           this.loading = false;
         }
       });
+    } else {
+      // Limpa bicicletas quando cliente não selecionado
+      this.bicicletas = [];
+      this.bicicletaSelecionada = undefined;
+      this.clienteSelecionado = undefined;
     }
   }
 
@@ -171,51 +205,60 @@ export class OrdemFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-  if (this.ordemForm.valid && this.clienteSelecionado && this.bicicletaSelecionada) {
-    this.loading = true;
-    const formValue = this.ordemForm.value;
+    if (this.ordemForm.valid && this.clienteSelecionado) {
+      this.loading = true;
+      const formValue = this.ordemForm.value;
 
-    // ✅ REPLICAÇÃO DA LÓGICA DO DETAILS: 
-    // Mapeia os IDs selecionados para os objetos completos com preço
-    const servicosFormatados = formValue.servicosSelecionados.map((s: any) => {
-      const servicoInfo = this.listaServicosDisponiveis.find(item => item.id == s.id);
-      return {
-        servico: servicoInfo,
-        quantidade: 1 // No form de criação, geralmente é 1 por padrão
-      };
-    }).filter((s: any) => s.servico); // Remove se o find falhar
-
-    const pecasFormatadas = formValue.pecasSelecionadas.map((p: any) => {
-      const pecaInfo = this.listaPecasDisponiveis.find(item => item.id == p.id);
-      return {
-        peca: pecaInfo,
-        quantidade: p.quantidade || 1
-      };
-    }).filter((p: any) => p.peca);
-
-    const novaOS = {
-      ...formValue,
-      dataEntrada: new Date().toISOString(),
-      status: 'ABERTA' as const,
-      cliente: this.clienteSelecionado,
-      bicicleta: this.bicicletaSelecionada,
-      servicos: servicosFormatados, // Agora com objetos completos
-      pecas: pecasFormatadas,       // Agora com objetos completos
-      exibirAviso30Dias: formValue.exibirAvisoTrintaDias
-    };
-
-    this.ordemService.create(novaOS).subscribe({
-      next: (ordem) => {
-        console.log('✅ OS Criada com valor:', ordem.valorTotal);
-        this.router.navigate(['/ordens-servico']);
-      },
-      error: (err) => {
-        this.error = 'Erro ao salvar OS';
+      // Validação: deve ter pelo menos um serviço ou peça
+      if (formValue.servicosSelecionados.length === 0 && formValue.pecasSelecionadas.length === 0) {
+        this.error = 'Adicione pelo menos um serviço ou uma peça';
         this.loading = false;
+        return;
       }
-    });
+
+      // ✅ REPLICAÇÃO DA LÓGICA DO DETAILS: 
+      // Mapeia os IDs selecionados para os objetos completos com preço
+      const servicosFormatados = formValue.servicosSelecionados.map((s: any) => {
+        const servicoInfo = this.listaServicosDisponiveis.find(item => item.id == s.id);
+        return {
+          servico: servicoInfo,
+          quantidade: 1 // No form de criação, geralmente é 1 por padrão
+        };
+      }).filter((s: any) => s.servico); // Remove se o find falhar
+
+      const pecasFormatadas = formValue.pecasSelecionadas.map((p: any) => {
+        const pecaInfo = this.listaPecasDisponiveis.find(item => item.id == p.id);
+        return {
+          peca: pecaInfo,
+          quantidade: p.quantidade || 1
+        };
+      }).filter((p: any) => p.peca);
+
+      const novaOS = {
+        ...formValue,
+        dataEntrada: new Date().toISOString(),
+        status: 'ABERTA' as const,
+        cliente: this.clienteSelecionado,
+        bicicleta: this.bicicletaSelecionada || null, // Bicicleta pode ser null
+        servicos: servicosFormatados, // Agora com objetos completos
+        pecas: pecasFormatadas,       // Agora com objetos completos
+        exibirAviso30Dias: formValue.exibirAvisoTrintaDias
+      };
+
+      this.ordemService.create(novaOS).subscribe({
+        next: (ordem) => {
+          console.log('✅ OS Criada com valor:', ordem.valorTotal);
+          this.router.navigate(['/ordens-servico']);
+        },
+        error: (err) => {
+          this.error = 'Erro ao salvar OS';
+          this.loading = false;
+        }
+      });
+    } else {
+      this.error = 'Por favor, preencha todos os campos obrigatórios';
+    }
   }
-}
 
   cancel(): void { this.router.navigate(['/ordens-servico']); }
 }

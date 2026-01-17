@@ -61,14 +61,10 @@ export class BicicletaManagerComponent implements OnInit {
     });
 
     this.filtrosForm = this.fb.group({
-      cliente: [''],
-      dataEntradaInicio: [''],
-      dataEntradaFim: [''],
-      dataPrevisaoInicio: [''],
-      dataPrevisaoFim: [''],
       marca: [''],
       cor: [''],
-      status: ['']
+      modelo: [''],
+      tamanhoAro: ['']
     });
   }
 
@@ -83,12 +79,6 @@ export class BicicletaManagerComponent implements OnInit {
     this.bicicletas = bks ? JSON.parse(bks) : [];
     this.clientes = cls ? JSON.parse(cls) : [];
     this.ordensServico = ordens ? JSON.parse(ordens) : [];
-
-    // Filtrar apenas bicicletas com OS ativa
-    this.bicicletasEmServico = this.bicicletas.filter(bike => {
-      const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
-      return osDaBike && (osDaBike.status === 'EM_ANDAMENTO' || osDaBike.status === 'CONCLUIDA');
-    });
 
     this.aplicarFiltros();
   }
@@ -172,6 +162,17 @@ export class BicicletaManagerComponent implements OnInit {
       clienteTelefone: '',
       clienteEndereco: ''
     });
+    // Scroll suave até o formulário
+    this.scrollToForm();
+  }
+
+  private scrollToForm(): void {
+    setTimeout(() => {
+      const formElement = document.querySelector('.form-section');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 
   excluirBicicleta(id: number): void {
@@ -188,17 +189,17 @@ export class BicicletaManagerComponent implements OnInit {
 
   aplicarFiltros(): void {
     const filtros = this.filtrosForm.value;
-    let filtradas = [...this.bicicletasEmServico];
-
-    if (filtros.cliente) {
-      filtradas = filtradas.filter(bike =>
-        bike.cliente.nome.toLowerCase().includes(filtros.cliente.toLowerCase())
-      );
-    }
+    let filtradas = [...this.bicicletas];
 
     if (filtros.marca) {
       filtradas = filtradas.filter(bike =>
         bike.marca.toLowerCase().includes(filtros.marca.toLowerCase())
+      );
+    }
+
+    if (filtros.modelo) {
+      filtradas = filtradas.filter(bike =>
+        bike.modelo.toLowerCase().includes(filtros.modelo.toLowerCase())
       );
     }
 
@@ -208,37 +209,13 @@ export class BicicletaManagerComponent implements OnInit {
       );
     }
 
-    if (filtros.status) {
-      filtradas = filtradas.filter(bike => {
-        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
-        return osDaBike && osDaBike.status === filtros.status;
-      });
+    if (filtros.tamanhoAro) {
+      filtradas = filtradas.filter(bike =>
+        bike.tamanhoAro.toString().includes(filtros.tamanhoAro.toString())
+      );
     }
 
-    // Filtros de data
-    if (filtros.dataEntradaInicio || filtros.dataEntradaFim) {
-      filtradas = filtradas.filter(bike => {
-        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
-        if (!osDaBike || !osDaBike.dataEntrada) return false;
-        const dataEntrada = new Date(osDaBike.dataEntrada);
-        if (filtros.dataEntradaInicio && dataEntrada < new Date(filtros.dataEntradaInicio)) return false;
-        if (filtros.dataEntradaFim && dataEntrada > new Date(filtros.dataEntradaFim)) return false;
-        return true;
-      });
-    }
-
-    if (filtros.dataPrevisaoInicio || filtros.dataPrevisaoFim) {
-      filtradas = filtradas.filter(bike => {
-        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
-        if (!osDaBike || !osDaBike.dataPrevisaoSaida) return false;
-        const dataPrevisao = new Date(osDaBike.dataPrevisaoSaida);
-        if (filtros.dataPrevisaoInicio && dataPrevisao < new Date(filtros.dataPrevisaoInicio)) return false;
-        if (filtros.dataPrevisaoFim && dataPrevisao > new Date(filtros.dataPrevisaoFim)) return false;
-        return true;
-      });
-    }
-
-    this.bicicletasEmServico = filtradas;
+    this.bicicletas = filtradas;
   }
 
   filtrar(): void {
