@@ -57,12 +57,29 @@ export class AgendaComponent implements OnInit {
 
   mapearParaCalendarEvent(os: OrdemServico): CalendarEvent {
     // Lógica para definir a data de entrega (previsão ou entrada + 3 dias)
-    let dataEntrega = os.dataPrevisaoSaida ? new Date(os.dataPrevisaoSaida) : new Date(os.dataEntrada);
-    if (!os.dataPrevisaoSaida) {
+    let dataEntrega: Date;
+    
+    // Se tem dataPrevisaoSaida e ela é uma string válida
+    if (os.dataPrevisaoSaida && os.dataPrevisaoSaida.trim()) {
+      dataEntrega = new Date(os.dataPrevisaoSaida);
+      // Valida se a data é válida
+      if (isNaN(dataEntrega.getTime())) {
+        // Se a data for inválida, usa a dataEntrada + 3 dias
+        dataEntrega = new Date(os.dataEntrada);
+        dataEntrega.setDate(dataEntrega.getDate() + 3);
+      }
+    } else {
+      // Se não tem dataPrevisaoSaida, usa dataEntrada + 3 dias
+      dataEntrega = new Date(os.dataEntrada);
       dataEntrega.setDate(dataEntrega.getDate() + 3);
     }
 
-    const titulo = `${os.bicicleta.marca} ${os.bicicleta.modelo} - Cliente: ${os.cliente.nome}`;
+    const bicicletaInfo = os.bicicleta 
+      ? `${os.bicicleta.marca} ${os.bicicleta.modelo}` 
+      : 'Serviço Avulso';
+    
+    const clienteNome = os.cliente?.nome || 'Cliente';
+    const titulo = `${bicicletaInfo} - Cliente: ${clienteNome}`;
 
     return {
       id: os.id,

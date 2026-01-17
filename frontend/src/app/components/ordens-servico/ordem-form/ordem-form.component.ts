@@ -234,9 +234,15 @@ export class OrdemFormComponent implements OnInit {
         };
       }).filter((p: any) => p.peca);
 
+      const dataEntrada = new Date().toISOString();
+      const dataPrevisao = formValue.dataPrevisaoSaida && formValue.dataPrevisaoSaida.trim() 
+        ? formValue.dataPrevisaoSaida 
+        : undefined;
+
       const novaOS = {
         ...formValue,
-        dataEntrada: new Date().toISOString(),
+        dataEntrada: dataEntrada,
+        dataPrevisaoSaida: dataPrevisao, // Garante que é string válida ou undefined
         status: 'ABERTA' as const,
         cliente: this.clienteSelecionado,
         bicicleta: this.bicicletaSelecionada || null, // Bicicleta pode ser null
