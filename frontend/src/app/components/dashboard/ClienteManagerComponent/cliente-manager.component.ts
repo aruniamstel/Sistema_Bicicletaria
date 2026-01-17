@@ -131,6 +131,7 @@ export class ClienteManagerComponent implements OnInit {
       endereco: cliente.endereco,
       instagram: cliente.instagram || ''
     });
+    this.scrollToForm();
   }
 
   excluirCliente(id: number): void {
@@ -175,6 +176,15 @@ export class ClienteManagerComponent implements OnInit {
   limparFiltros(): void {
     this.filtrosForm.reset();
     this.clientesFiltrados = [...this.clientes];
+  }
+
+   private scrollToForm(): void {
+    setTimeout(() => {
+      const formElement = document.querySelector('.form-section');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 
   formatarTelefone(event: any): void {

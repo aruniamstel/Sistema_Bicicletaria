@@ -45,7 +45,7 @@ export class OrdemFormComponent implements OnInit {
     private router: Router
   ) {
     this.ordemForm = this.fb.group({
-      cliente: ['', Validators.required],
+      cliente: [''],
       bicicleta: [''], // Bicicleta opcional - permite peças avulsas
       // Campos para novo cliente (opcionais)
       clienteExistente: [''],

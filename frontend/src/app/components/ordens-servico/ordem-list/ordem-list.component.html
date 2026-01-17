@@ -30,7 +30,6 @@
         <th>Data Entrada</th>
         <th>Previsão</th>
         <th>Saída Real</th>
-        <th>Problema</th>
         <th>Status</th>
         <th>Valor Total</th>
         <th>Ações</th>
@@ -44,7 +43,6 @@
     <td>{{ ordem.dataEntrada | date:'dd/MM/yyyy' }}</td>
     <td>{{ ordem.dataPrevisaoSaida | date:'dd/MM/yyyy' }}</td>
     <td>{{ ordem.dataSaidaReal | date:'dd/MM/yyyy' }}</td>
-    <td>{{ ordem.problemaRelatado }}</td>
     <td>
       <span [class]="'status-badge ' + getStatusClass(ordem.status)">
         {{ formatStatus(ordem.status) }}
