@@ -102,85 +102,73 @@
     <form [formGroup]="filtrosForm" class="filters-form">
       <div class="filter-row">
         <div class="filter-field">
-          <label>Cliente</label>
-          <input type="text" formControlName="cliente" placeholder="Nome do cliente">
+          <label>Marca</label>
+          <input type="text" formControlName="marca" placeholder="Buscar por marca...">
         </div>
         <div class="filter-field">
-          <label>Marca</label>
-          <input type="text" formControlName="marca" placeholder="Marca da bicicleta">
+          <label>Modelo</label>
+          <input type="text" formControlName="modelo" placeholder="Buscar por modelo...">
         </div>
         <div class="filter-field">
           <label>Cor</label>
-          <input type="text" formControlName="cor" placeholder="Cor da bicicleta">
+          <input type="text" formControlName="cor" placeholder="Buscar por cor...">
         </div>
         <div class="filter-field">
-          <label>Status</label>
-          <select formControlName="status">
-            <option value="">Todos</option>
-            <option value="EM_ANDAMENTO">Em Andamento</option>
-            <option value="CONCLUIDA">Concluída</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="filter-row">
-        <div class="filter-field">
-          <label>Data Entrada (Início)</label>
-          <input type="date" formControlName="dataEntradaInicio">
-        </div>
-        <div class="filter-field">
-          <label>Data Entrada (Fim)</label>
-          <input type="date" formControlName="dataEntradaFim">
-        </div>
-        <div class="filter-field">
-          <label>Previsão Saída (Início)</label>
-          <input type="date" formControlName="dataPrevisaoInicio">
-        </div>
-        <div class="filter-field">
-          <label>Previsão Saída (Fim)</label>
-          <input type="date" formControlName="dataPrevisaoFim">
+          <label>Tamanho do Aro</label>
+          <input type="text" formControlName="tamanhoAro" placeholder="Buscar por aro...">
         </div>
       </div>
 
       <div class="filter-actions">
         <button type="button" class="btn-secondary" (click)="limparFiltros()">🧹 Limpar Filtros</button>
-        <button type="button" class="btn-primary" (click)="filtrar()">🔍 Filtrar</button>
       </div>
     </form>
   </div>
 
-  <div *ngIf="bicicletasEmServico.length === 0" class="empty-state">
-    <p>Nenhuma bicicleta em serviço encontrada.</p>
+  <div *ngIf="bicicletas.length === 0" class="empty-state">
+    <p>📭 Nenhuma bicicleta encontrada.</p>
   </div>
 
-  <div class="grid-cards" *ngIf="bicicletasEmServico.length > 0">
-    <div *ngFor="let bicicleta of bicicletasEmServico" class="card">
-      <div class="card-header">
-        <h4>{{ bicicleta.marca }} {{ bicicleta.modelo }}</h4>
-        <div class="card-actions">
-          <button class="btn-icon history" (click)="abrirHistorico(bicicleta)" title="Ver Histórico">
-            📋
-          </button>
-          <button class="btn-icon edit" (click)="editarBicicleta(bicicleta)" title="Editar">
-            ✏️
-          </button>
-          <button class="btn-icon delete" (click)="excluirBicicleta(bicicleta.id!)" title="Excluir">
-            🗑️
-          </button>
-        </div>
-      </div>
-      <div class="card-body">
-        <p><strong>Aro:</strong> {{ bicicleta.tamanhoAro }}"</p>
-        <p><strong>Cor:</strong> {{ bicicleta.cor }}</p>
-        <p><strong>Cliente:</strong> {{ bicicleta.cliente.nome }}</p>
-        <p><strong>Telefone:</strong> {{ bicicleta.cliente.telefone }}</p>
-        <p><strong>Status OS:</strong>
-          <span [class]="'status-badge ' + getStatusClass(getStatusOS(bicicleta.id!))">
-            {{ formatStatus(getStatusOS(bicicleta.id!)) }}
-          </span>
-        </p>
-      </div>
-    </div>
+  <div class="table-container" *ngIf="bicicletas.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Cor</th>
+          <th>Aro</th>
+          <th>Dono (Cliente)</th>
+          <th>Telefone</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bicicleta of bicicletas" class="table-row">
+          <td class="col-marca"><strong>{{ bicicleta.marca }}</strong></td>
+          <td class="col-modelo">{{ bicicleta.modelo }}</td>
+          <td class="col-cor">{{ bicicleta.cor }}</td>
+          <td class="col-aro">{{ bicicleta.tamanhoAro }}"</td>
+          <td class="col-dono">{{ bicicleta.cliente.nome }}</td>
+          <td class="col-telefone">{{ bicicleta.cliente.telefone }}</td>
+          <td class="col-actions">
+            <button 
+              type="button" 
+              (click)="editarBicicleta(bicicleta)" 
+              class="btn-action btn-edit"
+              title="Editar bicicleta">
+              ✏️
+            </button>
+            <button 
+              type="button" 
+              (click)="excluirBicicleta(bicicleta.id!)" 
+              class="btn-action btn-delete"
+              title="Excluir bicicleta">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
