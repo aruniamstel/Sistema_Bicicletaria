@@ -153,6 +153,72 @@
   font-size: 1.3rem;
 }
 
+/* Filtros - Padrão ClienteManager */
+.filters-section {
+  margin-bottom: 1.5rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.filters-section h4 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.filters-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-field label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.filter-field input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.filter-field input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+  width: 100%;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;
@@ -165,6 +231,10 @@
 /* Tables */
 .table-container {
   overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
 }
 
 .data-table {
@@ -176,52 +246,113 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+.data-table thead {
+  background: linear-gradient(135deg, #34495e, #2c3e50);
+  color: white;
+}
+
 .data-table th {
-  background: #f8f9fa;
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-  color: #2c3e50;
-  border-bottom: 2px solid #e9ecef;
+  font-size: 0.95rem;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid #ecf0f1;
+  transition: all 0.3s ease;
+}
+
+.data-table tbody tr:hover {
+  background: #f8f9fa;
 }
 
 .data-table td {
   padding: 1rem;
-  border-bottom: 1px solid #e9ecef;
-  color: #555;
+  color: #2c3e50;
 }
 
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tr:hover {
+.table-row:nth-child(even) {
   background: #f8f9fa;
 }
 
-/* Action Buttons */
-.action-buttons {
+.table-row:nth-child(even):hover {
+  background: #ecf0f1;
+}
+
+/* Table Columns */
+.col-descricao {
+  font-weight: 600;
+}
+
+.col-valor {
+  font-weight: 600;
+  color: #27ae60;
+}
+
+.col-actions {
+  text-align: center;
   display: flex;
   gap: 0.5rem;
   justify-content: center;
 }
 
-.btn-icon {
-  background: none;
+/* Action Buttons */
+.btn-action {
+  padding: 0.5rem 0.75rem;
   border: none;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 6px;
   font-size: 1.1rem;
-  transition: background-color 0.2s;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  border: 2px solid #e9ecef;
 }
 
-.btn-icon.edit:hover {
-  background: #e3f2fd;
-  color: #1976d2;
+.btn-action:hover {
+  transform: scale(1.1);
 }
 
-.btn-icon.delete:hover {
-  background: #ffebee;
-  color: #d32f2f;
+.btn-edit {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.btn-edit:hover {
+  background: #3498db;
+  color: white;
+}
+
+.btn-delete {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.btn-delete:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .data-table {
+    font-size: 0.85rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .col-actions {
+    flex-direction: column;
+  }
+
+  .btn-action {
+    width: 100%;
+  }
 }

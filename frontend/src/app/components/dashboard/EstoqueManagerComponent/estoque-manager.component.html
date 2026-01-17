@@ -97,27 +97,29 @@
           <th>Descrição</th>
           <th>Código</th>
           <th>Categoria</th>
+          <th>Subcategoria</th>
           <th>Valor</th>
           <th>Estoque</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let peca of pecasFiltradas" [class.low-stock]="peca.quantidade < 5">
-          <td>{{ peca.descricao }}</td>
-          <td>{{ peca.codigoInterno || '-' }}</td>
-          <td>{{ peca.categoria || '-' }}</td>
-          <td>R$ {{ peca.valor | number:'1.2-2' }}</td>
-          <td>
+        <tr *ngFor="let peca of pecasFiltradas" [class.low-stock]="peca.quantidade < 5" class="table-row">
+          <td class="col-descricao">{{ peca.descricao }}</td>
+          <td class="col-codigo">{{ peca.codigoInterno || '-' }}</td>
+          <td class="col-categoria">{{ peca.categoria || '-' }}</td>
+          <td class="col-subcategoria">{{ peca.subcategoria || '-' }}</td>
+          <td class="col-valor">R$ {{ peca.valor | number:'1.2-2' }}</td>
+          <td class="col-estoque">
             <span [class]="peca.quantidade < 5 ? 'stock-low' : 'stock-ok'">
               {{ peca.quantidade }} unidades
             </span>
           </td>
-          <td class="action-buttons">
-            <button class="btn-icon edit" (click)="editarPeca(peca)" title="Editar">
+          <td class="col-actions">
+            <button class="btn-action btn-edit" (click)="editarPeca(peca)" title="Editar">
               ✏️
             </button>
-            <button class="btn-icon delete" (click)="excluirPeca(peca.id!)" title="Excluir">
+            <button class="btn-action btn-delete" (click)="excluirPeca(peca.id!)" title="Excluir">
               🗑️
             </button>
           </td>

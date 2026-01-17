@@ -149,6 +149,7 @@ export class BicicletasEmServicoComponent implements OnInit {
     if (this.modal) {
       this.modal.nativeElement.showModal();
     }
+    this.scrollToBottom();
   }
 
   fecharModal(): void {
@@ -182,5 +183,11 @@ export class BicicletasEmServicoComponent implements OnInit {
       case 'ENTREGUE': return 'Entregue';
       default: return status;
     }
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
   }
 }

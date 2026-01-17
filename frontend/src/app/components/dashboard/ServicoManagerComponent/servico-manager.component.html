@@ -36,15 +36,31 @@
   </form>
 </div>
 
+<!-- Filtros de Pesquisa -->
+<div class="filters-section">
+  <h4>🔍 Filtro de Pesquisa</h4>
+  <form [formGroup]="filtrosForm" class="filters-form">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>Buscar por Nome</label>
+        <input type="text" formControlName="nomeBusca" placeholder="Buscar serviço...">
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button type="button" class="btn-secondary" (click)="limparFiltros()">🧹 Limpar Filtros</button>
+    </div>
+  </form>
+</div>
+
 <!-- Lista de Serviços -->
 <div class="list-section">
-  <h3>Serviços Disponíveis ({{ servicos.length }})</h3>
+  <h3>Serviços Disponíveis ({{ servicosFiltrados.length }})</h3>
 
-  <div *ngIf="servicos.length === 0" class="empty-state">
-    <p>Nenhum serviço cadastrado.</p>
+  <div *ngIf="servicosFiltrados.length === 0" class="empty-state">
+    <p>Nenhum serviço encontrado com os filtros aplicados.</p>
   </div>
 
-  <div class="table-container" *ngIf="servicos.length > 0">
+  <div class="table-container" *ngIf="servicosFiltrados.length > 0">
     <table class="data-table">
       <thead>
         <tr>
@@ -54,14 +70,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let servico of servicos">
-          <td>{{ servico.descricao }}</td>
-          <td>R$ {{ servico.valor | number:'1.2-2' }}</td>
-          <td class="action-buttons">
-            <button class="btn-icon edit" (click)="editarServico(servico)" title="Editar">
+        <tr *ngFor="let servico of servicosFiltrados" class="table-row">
+          <td class="col-descricao">{{ servico.descricao }}</td>
+          <td class="col-valor">R$ {{ servico.valor | number:'1.2-2' }}</td>
+          <td class="col-actions">
+            <button class="btn-action btn-edit" (click)="editarServico(servico)" title="Editar">
               ✏️
             </button>
-            <button class="btn-icon delete" (click)="excluirServico(servico.id!)" title="Excluir">
+            <button class="btn-action btn-delete" (click)="excluirServico(servico.id!)" title="Excluir">
               🗑️
             </button>
           </td>

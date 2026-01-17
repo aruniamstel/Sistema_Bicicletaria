@@ -19,9 +19,11 @@ export interface Servico {
 export class ServicoManagerComponent implements OnInit {
   // Dados
   servicos: Servico[] = [];
+  servicosFiltrados: Servico[] = [];
 
   // Form
   servicoForm: FormGroup;
+  filtrosForm: FormGroup;
 
   // Estados
   loading = false;
@@ -31,6 +33,15 @@ export class ServicoManagerComponent implements OnInit {
     this.servicoForm = this.fb.group({
       descricao: ['', Validators.required],
       valor: ['', [Validators.required, Validators.min(0)]]
+    });
+
+    this.filtrosForm = this.fb.group({
+      nomeBusca: ['']
+    });
+
+    // Filtragem reativa
+    this.filtrosForm.valueChanges.subscribe(() => {
+      this.aplicarFiltros();
     });
   }
 
@@ -44,6 +55,7 @@ export class ServicoManagerComponent implements OnInit {
     const servicosData = localStorage.getItem('servicos');
     this.servicos = servicosData ? JSON.parse(servicosData) : this.criarServicosPadrao();
 
+    this.aplicarFiltros();
     this.loading = false;
   }
 
@@ -67,6 +79,7 @@ export class ServicoManagerComponent implements OnInit {
       }
 
       this.salvarNoLocalStorage('servicos', this.servicos);
+      this.aplicarFiltros();
       this.servicoForm.reset();
       this.editingServico = null;
     }
@@ -78,18 +91,47 @@ export class ServicoManagerComponent implements OnInit {
       descricao: servico.descricao,
       valor: servico.valor
     });
+    this.scrollToForm();
   }
 
   excluirServico(id: number): void {
     if (confirm('Tem certeza que deseja excluir este serviço?')) {
       this.servicos = this.servicos.filter(s => s.id !== id);
       this.salvarNoLocalStorage('servicos', this.servicos);
+      this.aplicarFiltros();
     }
   }
 
   cancelarEdicaoServico(): void {
     this.servicoForm.reset();
     this.editingServico = null;
+  }
+
+  aplicarFiltros(): void {
+    const filtros = this.filtrosForm.value;
+    let filtrados = [...this.servicos];
+
+    if (filtros.nomeBusca) {
+      filtrados = filtrados.filter(servico =>
+        servico.descricao.toLowerCase().includes(filtros.nomeBusca.toLowerCase())
+      );
+    }
+
+    this.servicosFiltrados = filtrados;
+  }
+
+  limparFiltros(): void {
+    this.filtrosForm.reset();
+    this.servicosFiltrados = [...this.servicos];
+  }
+
+  private scrollToForm(): void {
+    setTimeout(() => {
+      const formElement = document.querySelector('.form-section');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 
   private salvarNoLocalStorage(key: string, data: any): void {

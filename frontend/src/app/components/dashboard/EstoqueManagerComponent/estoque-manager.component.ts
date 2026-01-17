@@ -110,6 +110,7 @@ export class EstoqueManagerComponent implements OnInit {
       categoria: peca.categoria || '',
       subcategoria: peca.subcategoria || ''
     });
+    this.scrollToForm();
   }
 
   excluirPeca(id: number): void {
@@ -158,6 +159,15 @@ export class EstoqueManagerComponent implements OnInit {
   limparFiltros(): void {
     this.filtrosForm.reset();
     this.pecasFiltradas = [...this.pecas];
+  }
+
+  private scrollToForm(): void {
+    setTimeout(() => {
+      const formElement = document.querySelector('.form-section');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 
   private salvarNoLocalStorage(key: string, data: any): void {
