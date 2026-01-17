@@ -32,8 +32,8 @@ export class ClienteManagerComponent implements OnInit {
   ) {
     this.clienteForm = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(3)]],
-      telefone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)]],
-      endereco: ['', Validators.required],
+      telefone: [''],
+      endereco: [''],
       instagram: ['']
     });
 
