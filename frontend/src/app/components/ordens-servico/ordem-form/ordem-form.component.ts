@@ -69,6 +69,35 @@ export class OrdemFormComponent implements OnInit {
     this.ordemForm.valueChanges.subscribe(values => {
       console.log('📝 Mudança no formulário:', values);
     });
+
+    // Validação customizada: permite cliente vazio se nome e telefone estiverem preenchidos
+    this.ordemForm.get('cliente')?.valueChanges.subscribe(() => {
+      this.updateClienteValidation();
+    });
+    this.ordemForm.get('nomeNovoCliente')?.valueChanges.subscribe(() => {
+      this.updateClienteValidation();
+    });
+    this.ordemForm.get('telefoneNovoCliente')?.valueChanges.subscribe(() => {
+      this.updateClienteValidation();
+    });
+  }
+
+  private updateClienteValidation(): void {
+    const clienteControl = this.ordemForm.get('cliente');
+    const nomeControl = this.ordemForm.get('nomeNovoCliente');
+    const telefoneControl = this.ordemForm.get('telefoneNovoCliente');
+
+    // Se há dados de novo cliente (nome ou telefone preenchidos), cliente não é obrigatório
+    if ((nomeControl?.value && nomeControl.value.trim()) || (telefoneControl?.value && telefoneControl.value.trim())) {
+      clienteControl?.clearValidators();
+      clienteControl?.setErrors(null);
+    } else {
+      // Caso contrário, cliente é obrigatório
+      if (!clienteControl?.value) {
+        clienteControl?.setErrors({ required: true });
+      }
+    }
+    clienteControl?.updateValueAndValidity({ emitEvent: false });
   }
 
   // Getters ajustados para o seu HTML [cite: 4]
@@ -205,7 +234,7 @@ export class OrdemFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.ordemForm.valid && this.clienteSelecionado) {
+    if (this.ordemForm.valid && (this.clienteSelecionado || this.temDadosNovoCliente())) {
       this.loading = true;
       const formValue = this.ordemForm.value;
 
@@ -214,6 +243,26 @@ export class OrdemFormComponent implements OnInit {
         this.error = 'Adicione pelo menos um serviço ou uma peça';
         this.loading = false;
         return;
+      }
+
+      // Se há dados de novo cliente, criar cliente primeiro
+      if (!this.clienteSelecionado && this.temDadosNovoCliente()) {
+        const novoCliente: any = {
+          nome: formValue.nomeNovoCliente || 'Cliente s/nome',
+          telefone: formValue.telefoneNovoCliente || '',
+          endereco: formValue.enderecoNovoCliente || 'Endereço não informado',
+          instagram: formValue.instagramNovoCliente || ''
+        };
+
+        // Salvar novo cliente no localStorage
+        const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+        const newId = clientes.length > 0 ? Math.max(...clientes.map((c: any) => c.id || 0)) + 1 : 1;
+        novoCliente.id = newId;
+        clientes.push(novoCliente);
+        localStorage.setItem('clientes', JSON.stringify(clientes));
+
+        // Atualizar clienteSelecionado com o novo cliente
+        this.clienteSelecionado = novoCliente;
       }
 
       // ✅ REPLICAÇÃO DA LÓGICA DO DETAILS: 
@@ -262,8 +311,14 @@ export class OrdemFormComponent implements OnInit {
         }
       });
     } else {
-      this.error = 'Por favor, preencha todos os campos obrigatórios';
+      this.error = 'Por favor, selecione um cliente ou preencha os dados do novo cliente (nome + telefone)';
     }
+  }
+
+  private temDadosNovoCliente(): boolean {
+    const nomeControl = this.ordemForm.get('nomeNovoCliente');
+    const telefoneControl = this.ordemForm.get('telefoneNovoCliente');
+    return (nomeControl?.value && nomeControl.value.trim()) || (telefoneControl?.value && telefoneControl.value.trim());
   }
 
   cancel(): void { this.router.navigate(['/ordens-servico']); }

@@ -7,30 +7,16 @@
     <div class="form-section">
       <label class="section-label">👤 Proprietário</label>
       
-      <div class="form-field" *ngIf="!clienteId">
-        <label>Escolher Cliente Cadastrado</label>
+      <div class="form-field">
+        <label>Selecionar Cliente *</label>
         <select formControlName="clienteExistente">
-          <option value="">-- Criar um novo cliente abaixo --</option>
+          <option value="">-- Selecione um cliente --</option>
           <option *ngFor="let cliente of clientes" [value]="cliente.id">
             {{ cliente.nome }} - {{ cliente.telefone }}
           </option>
         </select>
-      </div>
-
-      <div class="novo-cliente-container" *ngIf="!bicicletaForm.get('clienteExistente')?.value">
-        <p class="hint-text">Ou preencha para cadastrar um novo cliente agora:</p>
-        <div class="form-row">
-          <div class="form-field">
-            <input formControlName="nomeNovoCliente" placeholder="Nome do Cliente" />
-          </div>
-          <div class="form-field">
-            <input 
-              formControlName="telefoneNovoCliente" 
-              (input)="formatarTelefone($event)" 
-              placeholder="Telefone (WhatsApp)" 
-              maxlength="15"
-            />
-          </div>
+        <div class="error" *ngIf="bicicletaForm.get('clienteExistente')?.errors?.['required'] && bicicletaForm.get('clienteExistente')?.touched">
+          Cliente é obrigatório
         </div>
       </div>
     </div>

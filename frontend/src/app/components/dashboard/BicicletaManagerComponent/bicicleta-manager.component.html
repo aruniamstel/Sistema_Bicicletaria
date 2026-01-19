@@ -42,41 +42,20 @@
     </div>
 
     <div class="form-section-divider">
-      <h4>👤 Selecionar ou Criar Cliente</h4>
+      <h4>👤 Selecionar Cliente</h4>
     </div>
 
     <div class="form-row">
       <div class="form-field full-width">
-        <label>Cliente Existente (opcional)</label>
+        <label>Cliente *</label>
         <select formControlName="selectedClienteId" class="form-select">
-          <option value="">Selecione um cliente existente ou deixe em branco para criar novo</option>
+          <option value="">-- Selecione um cliente --</option>
           <option *ngFor="let cliente of clientes" [value]="cliente.id">
             {{ cliente.nome }} - {{ cliente.telefone }}
           </option>
         </select>
-      </div>
-    </div>
-
-    <div *ngIf="!bicicletaForm.get('selectedClienteId')?.value" class="novo-cliente-section">
-      <div class="form-section-divider">
-        <h4>📝 Dados do Novo Cliente</h4>
-      </div>
-
-      <div class="form-row">
-        <div class="form-field">
-          <label>Nome do Cliente</label>
-          <input type="text" formControlName="clienteNome" placeholder="Nome completo">
-        </div>
-        <div class="form-field">
-          <label>Telefone</label>
-          <input type="text" formControlName="clienteTelefone" placeholder="(11) 99999-9999" (input)="formatarTelefone($event)">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-field full-width">
-          <label>Endereço</label>
-          <input type="text" formControlName="clienteEndereco" placeholder="Endereço completo">
+        <div class="error" *ngIf="bicicletaForm.get('selectedClienteId')?.errors?.['required'] && bicicletaForm.get('selectedClienteId')?.touched">
+          Cliente é obrigatório
         </div>
       </div>
     </div>

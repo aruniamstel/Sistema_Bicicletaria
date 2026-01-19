@@ -50,10 +50,7 @@ export class BicicletaManagerComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {
     this.bicicletaForm = this.fb.group({
-      selectedClienteId: [''], // ID do cliente existente
-      clienteNome: [''],       // Campos para novo cliente
-      clienteTelefone: [''],
-      clienteEndereco: [''],
+      selectedClienteId: ['', Validators.required], // Cliente obrigatório
       marca: ['', Validators.required],
       modelo: ['', Validators.required],
       tamanhoAro: ['', [Validators.required, Validators.min(12), Validators.max(29)]],
@@ -86,34 +83,17 @@ export class BicicletaManagerComponent implements OnInit {
   salvarBicicleta(): void {
     if (this.bicicletaForm.valid) {
       const formValue = this.bicicletaForm.value;
-      let clienteFinal: any = null;
+      const idSelecionado = Number(formValue.selectedClienteId);
 
-      // 1. Lógica para Cliente Existente
-      if (formValue.selectedClienteId) {
-        // ✅ CORREÇÃO AQUI: Converter para Number para garantir a comparação correta
-        const idProcurado = Number(formValue.selectedClienteId);
-        clienteFinal = this.clientes.find(c => c.id === idProcurado);
-
-        if (!clienteFinal) {
-          this.error = 'O cliente selecionado não foi encontrado na base de dados.';
-          return;
-        }
-      } 
-      // 2. Lógica para Novo Cliente
-      else if (formValue.clienteNome && formValue.clienteTelefone) {
-        clienteFinal = {
-          id: Date.now(),
-          nome: formValue.clienteNome,
-          telefone: formValue.clienteTelefone,
-          endereco: formValue.clienteEndereco || 'Endereço não informado'
-        };
-        // Salva o novo cliente no LocalStorage
-        this.clientes.push(clienteFinal);
-        localStorage.setItem('clientes', JSON.stringify(this.clientes));
+      if (!idSelecionado) {
+        this.error = 'Por favor, selecione um cliente.';
+        return;
       }
 
+      const clienteFinal = this.clientes.find(c => c.id === idSelecionado);
+
       if (!clienteFinal) {
-        this.error = 'Por favor, selecione um cliente ou preencha os dados de um novo.';
+        this.error = 'O cliente selecionado não foi encontrado na base de dados.';
         return;
       }
 
@@ -157,10 +137,7 @@ export class BicicletaManagerComponent implements OnInit {
       modelo: bicicleta.modelo,
       tamanhoAro: bicicleta.tamanhoAro,
       cor: bicicleta.cor,
-      selectedClienteId: bicicleta.cliente.id,
-      clienteNome: '',
-      clienteTelefone: '',
-      clienteEndereco: ''
+      selectedClienteId: bicicleta.cliente.id
     });
     // Scroll suave até o formulário
     this.scrollToForm();

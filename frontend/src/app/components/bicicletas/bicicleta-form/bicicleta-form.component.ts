@@ -30,11 +30,8 @@ export class BicicletaFormComponent implements OnInit {
     private route: ActivatedRoute
   ) {
     this.bicicletaForm = this.fb.group({
-      // Campo do dropdown (ID do cliente existente)
-      clienteExistente: [''],
-      // Campos para novo cliente (opcionais no validador, validados na lógica de envio)
-      nomeNovoCliente: [''],
-      telefoneNovoCliente: [''],
+      // Cliente obrigatório - apenas seleção de cliente existente
+      clienteExistente: ['', Validators.required],
       // Campos da bicicleta (obrigatórios)
       marca: ['', Validators.required],
       modelo: ['', Validators.required],
@@ -68,59 +65,18 @@ export class BicicletaFormComponent implements OnInit {
     });
   }
 
-  // Máscara de telefone aplicada também aqui para consistência
-  formatarTelefone(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    if (value.length > 11) value = value.substring(0, 11);
-
-    if (value.length > 2) {
-      if (value.length <= 10) {
-        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-      } else {
-        value = value.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
-      }
-    } else if (value.length > 0) {
-      value = value.replace(/^(\d{0,2})/, '($1');
-    }
-    this.bicicletaForm.get('telefoneNovoCliente')?.setValue(value, { emitEvent: false });
-  }
-
   onSubmit(): void {
     if (this.bicicletaForm.valid) {
       const formValue = this.bicicletaForm.value;
-      const idSelecionado = formValue.clienteExistente;
-      const temDadosNovoCliente = formValue.nomeNovoCliente.trim() !== '' || formValue.telefoneNovoCliente.trim() !== '';
+      const idSelecionado = Number(formValue.clienteExistente);
 
-      // Validação manual: ou seleciona um, ou preenche dados do novo
-      if (!idSelecionado && !temDadosNovoCliente) {
-        this.error = 'Por favor, selecione um cliente ou preencha os dados do novo cliente.';
+      if (!idSelecionado) {
+        this.error = 'Por favor, selecione um cliente.';
         return;
       }
 
       this.loading = true;
-
-      if (!idSelecionado && temDadosNovoCliente) {
-        // Fluxo: Criar Cliente -> Depois Criar Bicicleta
-        const novoCliente: Cliente = {
-          nome: formValue.nomeNovoCliente || 'Cliente s/ nome',
-          telefone: formValue.telefoneNovoCliente || '',
-          endereco: 'Não informado',
-          instagram: ''
-        };
-
-        this.clienteService.create(novoCliente).subscribe({
-          next: (clienteCriado) => {
-            this.salvarBicicleta(clienteCriado.id!, formValue);
-          },
-          error: (err) => {
-            this.error = 'Erro ao criar novo cliente.';
-            this.loading = false;
-          }
-        });
-      } else {
-        // Fluxo: Usar cliente já existente
-        this.salvarBicicleta(Number(idSelecionado), formValue);
-      }
+      this.salvarBicicleta(idSelecionado, formValue);
     }
   }
 

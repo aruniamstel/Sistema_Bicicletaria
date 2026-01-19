@@ -70,12 +70,25 @@ export class BicicletasEmServicoComponent implements OnInit {
     this.bicicletas = bks ? JSON.parse(bks) : [];
     this.ordensServico = ordens ? JSON.parse(ordens) : [];
 
-    // Filtrar apenas bicicletas com OS ativa
+    console.log('📊 Bicicletas carregadas:', this.bicicletas.length);
+    console.log('📊 Ordens carregadas:', this.ordensServico.length);
+
+    // Filtrar bicicletas que têm uma OS com status ativo (não Entregue)
     this.bicicletasEmServico = this.bicicletas.filter(bike => {
-      const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
-      return osDaBike && (osDaBike.status === 'EM_ANDAMENTO' || osDaBike.status === 'CONCLUIDA');
+      const osDaBike = this.ordensServico.find(os => {
+        // Valida se bicicleta existe (pode ser null para serviços avulsos)
+        if (!os.bicicleta || !os.bicicleta.id) return false;
+        return os.bicicleta.id === bike.id;
+      });
+      // Considera em serviço: qualquer status exceto ENTREGUE
+      const temOsAtiva = osDaBike && osDaBike.status !== 'ENTREGUE';
+      if (temOsAtiva) {
+        console.log(`✅ ${bike.marca} ${bike.modelo} - Status: ${osDaBike?.status}`);
+      }
+      return temOsAtiva;
     });
 
+    console.log('📊 Bicicletas em serviço:', this.bicicletasEmServico.length);
     this.aplicarFiltros();
   }
 
