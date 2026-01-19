@@ -389,3 +389,41 @@
   height: 18px;
   cursor: pointer;
 }
+
+/* Seção de Novo Cliente - Padronizada com Dashboard */
+.novo-cliente-container {
+  background: linear-gradient(135deg, #f8fafc, #ecf0f1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  margin: 1.5rem 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.novo-cliente-container .hint-text {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.novo-cliente-container .hint-text::before {
+  content: "💡";
+  font-size: 1.1rem;
+}
+
+.novo-cliente-container .form-row {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.novo-cliente-container .form-row .form-field {
+  flex: 1;
+  min-width: 200px;
+}
