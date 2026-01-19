@@ -131,7 +131,7 @@
     <!-- Botões de Ação -->
     <div class="form-buttons">
       <button type="button" class="cancel-button" (click)="cancel()">❌ Cancelar</button>
-      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading || !clienteSelecionado">
+      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading">
         ✅ Criar Ordem de Serviço
       </button>
     </div>

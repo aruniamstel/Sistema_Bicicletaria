@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Cliente } from '../../../shared/models/cliente.model';
@@ -12,6 +12,22 @@ import { OrdemServicoService } from '../../../services/ordem-servico.service';
 import { ServicoService } from '../../../services/servico.service';
 import { PecaService } from '../../../services/peca.service';
 import { HeaderComponent } from "../../header/header.component";
+
+// Validador customizado: exige cliente OU (nome + telefone de novo cliente)
+function clienteOuNovoClienteValidator(control: AbstractControl): ValidationErrors | null {
+  const cliente = control.get('cliente')?.value;
+  const nomeNovoCliente = control.get('nomeNovoCliente')?.value;
+  const telefoneNovoCliente = control.get('telefoneNovoCliente')?.value;
+
+  const temCliente = cliente && cliente.toString().trim();
+  const temNovoCliente = (nomeNovoCliente && nomeNovoCliente.toString().trim()) || 
+                         (telefoneNovoCliente && telefoneNovoCliente.toString().trim());
+
+  if (!temCliente && !temNovoCliente) {
+    return { clienteRequired: true };
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-ordem-form',
@@ -58,46 +74,22 @@ export class OrdemFormComponent implements OnInit {
       exibirAvisoTrintaDias: [true], // Conforme requisito [cite: 1, 19]
       servicosSelecionados: this.fb.array([]), 
       pecasSelecionadas: this.fb.array([])      
-    });
+    }, { validators: clienteOuNovoClienteValidator }); // ✅ Aplicar validador customizado
   }
 
   ngOnInit(): void {
     this.loadClientes();
     this.carregarServicosEPecas();
 
-    // ✅ Debug: Observa mudanças no formulário (Restaurado do original) 
+    // ✅ Debug: Observa mudanças no formulário
     this.ordemForm.valueChanges.subscribe(values => {
       console.log('📝 Mudança no formulário:', values);
-    });
-
-    // Validação customizada: permite cliente vazio se nome e telefone estiverem preenchidos
-    this.ordemForm.get('cliente')?.valueChanges.subscribe(() => {
-      this.updateClienteValidation();
-    });
-    this.ordemForm.get('nomeNovoCliente')?.valueChanges.subscribe(() => {
-      this.updateClienteValidation();
-    });
-    this.ordemForm.get('telefoneNovoCliente')?.valueChanges.subscribe(() => {
-      this.updateClienteValidation();
+      console.log('✅ Formulário válido:', this.ordemForm.valid);
     });
   }
 
   private updateClienteValidation(): void {
-    const clienteControl = this.ordemForm.get('cliente');
-    const nomeControl = this.ordemForm.get('nomeNovoCliente');
-    const telefoneControl = this.ordemForm.get('telefoneNovoCliente');
-
-    // Se há dados de novo cliente (nome ou telefone preenchidos), cliente não é obrigatório
-    if ((nomeControl?.value && nomeControl.value.trim()) || (telefoneControl?.value && telefoneControl.value.trim())) {
-      clienteControl?.clearValidators();
-      clienteControl?.setErrors(null);
-    } else {
-      // Caso contrário, cliente é obrigatório
-      if (!clienteControl?.value) {
-        clienteControl?.setErrors({ required: true });
-      }
-    }
-    clienteControl?.updateValueAndValidity({ emitEvent: false });
+    // Este método agora não é mais necessário - o validador customizado cuida disso
   }
 
   // Getters ajustados para o seu HTML [cite: 4]
@@ -234,7 +226,7 @@ export class OrdemFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.ordemForm.valid && (this.clienteSelecionado || this.temDadosNovoCliente())) {
+    if (this.ordemForm.valid) {
       this.loading = true;
       const formValue = this.ordemForm.value;
 
@@ -245,74 +237,83 @@ export class OrdemFormComponent implements OnInit {
         return;
       }
 
-      // Se há dados de novo cliente, criar cliente primeiro
+      // Se há dados de novo cliente, criar cliente primeiro usando o serviço
       if (!this.clienteSelecionado && this.temDadosNovoCliente()) {
-        const novoCliente: any = {
+        const novoCliente: Cliente = {
           nome: formValue.nomeNovoCliente || 'Cliente s/nome',
           telefone: formValue.telefoneNovoCliente || '',
           endereco: formValue.enderecoNovoCliente || 'Endereço não informado',
           instagram: formValue.instagramNovoCliente || ''
         };
 
-        // Salvar novo cliente no localStorage
-        const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-        const newId = clientes.length > 0 ? Math.max(...clientes.map((c: any) => c.id || 0)) + 1 : 1;
-        novoCliente.id = newId;
-        clientes.push(novoCliente);
-        localStorage.setItem('clientes', JSON.stringify(clientes));
-
-        // Atualizar clienteSelecionado com o novo cliente
-        this.clienteSelecionado = novoCliente;
+        // Usar ClienteService para criar o cliente (salva no localStorage via serviço)
+        this.clienteService.create(novoCliente).subscribe({
+          next: (clienteCriado) => {
+            console.log('✅ Cliente criado:', clienteCriado);
+            this.clienteSelecionado = clienteCriado;
+            // Agora criar a ordem de serviço
+            this.criarOrdemServico(formValue);
+          },
+          error: (err) => {
+            this.error = 'Erro ao criar novo cliente: ' + err.message;
+            this.loading = false;
+          }
+        });
+      } else {
+        // Cliente já selecionado, criar ordem diretamente
+        this.criarOrdemServico(formValue);
       }
-
-      // ✅ REPLICAÇÃO DA LÓGICA DO DETAILS: 
-      // Mapeia os IDs selecionados para os objetos completos com preço
-      const servicosFormatados = formValue.servicosSelecionados.map((s: any) => {
-        const servicoInfo = this.listaServicosDisponiveis.find(item => item.id == s.id);
-        return {
-          servico: servicoInfo,
-          quantidade: 1 // No form de criação, geralmente é 1 por padrão
-        };
-      }).filter((s: any) => s.servico); // Remove se o find falhar
-
-      const pecasFormatadas = formValue.pecasSelecionadas.map((p: any) => {
-        const pecaInfo = this.listaPecasDisponiveis.find(item => item.id == p.id);
-        return {
-          peca: pecaInfo,
-          quantidade: p.quantidade || 1
-        };
-      }).filter((p: any) => p.peca);
-
-      const dataEntrada = new Date().toISOString();
-      const dataPrevisao = formValue.dataPrevisaoSaida && formValue.dataPrevisaoSaida.trim() 
-        ? formValue.dataPrevisaoSaida 
-        : undefined;
-
-      const novaOS = {
-        ...formValue,
-        dataEntrada: dataEntrada,
-        dataPrevisaoSaida: dataPrevisao, // Garante que é string válida ou undefined
-        status: 'ABERTA' as const,
-        cliente: this.clienteSelecionado,
-        bicicleta: this.bicicletaSelecionada || null, // Bicicleta pode ser null
-        servicos: servicosFormatados, // Agora com objetos completos
-        pecas: pecasFormatadas,       // Agora com objetos completos
-        exibirAviso30Dias: formValue.exibirAvisoTrintaDias
-      };
-
-      this.ordemService.create(novaOS).subscribe({
-        next: (ordem) => {
-          console.log('✅ OS Criada com valor:', ordem.valorTotal);
-          this.router.navigate(['/ordens-servico']);
-        },
-        error: (err) => {
-          this.error = 'Erro ao salvar OS';
-          this.loading = false;
-        }
-      });
     } else {
-      this.error = 'Por favor, selecione um cliente ou preencha os dados do novo cliente (nome + telefone)';
+      this.error = 'Por favor, selecione um cliente ou preencha nome e telefone do novo cliente';
     }
+  }
+
+  private criarOrdemServico(formValue: any): void {
+    // ✅ REPLICAÇÃO DA LÓGICA DO DETAILS: 
+    // Mapeia os IDs selecionados para os objetos completos com preço
+    const servicosFormatados = formValue.servicosSelecionados.map((s: any) => {
+      const servicoInfo = this.listaServicosDisponiveis.find(item => item.id == s.id);
+      return {
+        servico: servicoInfo,
+        quantidade: 1 // No form de criação, geralmente é 1 por padrão
+      };
+    }).filter((s: any) => s.servico); // Remove se o find falhar
+
+    const pecasFormatadas = formValue.pecasSelecionadas.map((p: any) => {
+      const pecaInfo = this.listaPecasDisponiveis.find(item => item.id == p.id);
+      return {
+        peca: pecaInfo,
+        quantidade: p.quantidade || 1
+      };
+    }).filter((p: any) => p.peca);
+
+    const dataEntrada = new Date().toISOString();
+    const dataPrevisao = formValue.dataPrevisaoSaida && formValue.dataPrevisaoSaida.trim() 
+      ? formValue.dataPrevisaoSaida 
+      : undefined;
+
+    const novaOS = {
+      ...formValue,
+      dataEntrada: dataEntrada,
+      dataPrevisaoSaida: dataPrevisao, // Garante que é string válida ou undefined
+      status: 'ABERTA' as const,
+      cliente: this.clienteSelecionado,
+      bicicleta: this.bicicletaSelecionada || null, // Bicicleta pode ser null
+      servicos: servicosFormatados, // Agora com objetos completos
+      pecas: pecasFormatadas,       // Agora com objetos completos
+      exibirAviso30Dias: formValue.exibirAvisoTrintaDias
+    };
+
+    this.ordemService.create(novaOS).subscribe({
+      next: (ordem) => {
+        console.log('✅ OS Criada com valor:', ordem.valorTotal);
+        this.router.navigate(['/ordens-servico']);
+      },
+      error: (err) => {
+        this.error = 'Erro ao salvar OS';
+        this.loading = false;
+      }
+    });
   }
 
   private temDadosNovoCliente(): boolean {
