@@ -37,9 +37,9 @@
     </thead>
     <tbody>
   <tr *ngFor="let ordem of filteredOrdens">
-    <!-- ✅ Adicione verificações de segurança -->
-    <td>{{ ordem.bicicleta?.cliente?.nome || 'Cliente não encontrado' }}</td>
-    <td>{{ ordem.bicicleta?.marca || 'Marca não informada' }} - {{ ordem.bicicleta?.modelo || 'Modelo não informado' }}</td>
+    <!-- ✅ Agora busca no cliente direto da ordem -->
+    <td>{{ ordem.cliente?.nome || 'Cliente não encontrado' }}</td>
+    <td>{{ ordem.bicicleta?.marca || 'Avulso' }} - {{ ordem.bicicleta?.modelo || '' }}</td>
     <td>{{ ordem.dataEntrada | date:'dd/MM/yyyy' }}</td>
     <td>{{ ordem.dataPrevisaoSaida | date:'dd/MM/yyyy' }}</td>
     <td>{{ ordem.dataSaidaReal | date:'dd/MM/yyyy' }}</td>

@@ -71,11 +71,18 @@ export class OrdemListComponent implements OnInit {
     // Apply search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(ordem => 
-        ordem.bicicleta.cliente.nome.toLowerCase().includes(term) ||
-        ordem.bicicleta.marca.toLowerCase().includes(term) ||
-        ordem.bicicleta.modelo.toLowerCase().includes(term)
-      );
+      filtered = filtered.filter(ordem => {
+        // Buscar no cliente (sempre existe)
+        const matchCliente = ordem.cliente?.nome?.toLowerCase().includes(term) || false;
+        
+        // Buscar na bicicleta se ela existir
+        const matchBicicleta = ordem.bicicleta 
+          ? (ordem.bicicleta.marca?.toLowerCase().includes(term) ||
+             ordem.bicicleta.modelo?.toLowerCase().includes(term))
+          : false;
+        
+        return matchCliente || matchBicicleta;
+      });
       console.log('🔎 Após filtro de busca:', filtered.length);
     }
 
