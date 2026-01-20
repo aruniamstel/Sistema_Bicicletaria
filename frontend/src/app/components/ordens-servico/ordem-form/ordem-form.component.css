@@ -418,12 +418,39 @@
 
 .novo-cliente-container .form-row {
   margin-bottom: 1rem;
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
-.novo-cliente-container .form-row .form-field {
-  flex: 1;
-  min-width: 200px;
+.novo-cliente-container .form-row:last-child {
+  margin-bottom: 0;
+}
+
+.novo-cliente-container .form-field {
+  margin-bottom: 0;
+}
+
+/* Inputs dentro do novo-cliente-container com mesmo estilo dos selects */
+.novo-cliente-container .form-field input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+.novo-cliente-container .form-field input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background-color: #f8fafc;
+}
+
+.novo-cliente-container .form-field input:hover {
+  border-color: #bdc3c7;
 }
