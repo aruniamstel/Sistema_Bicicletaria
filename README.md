@@ -11,6 +11,12 @@ O Sistema de Gestão para Bicicletaria está sendo desenvolvido para atender as 
 - **Arquitetura do Sistema**: Controllers, Models, Repository, Services e Banco de Dados
 - **Front-end**: Interface do Sistema
 
+## 🔧 Tecnologias  
+
+- **Angular 17**
+- **Java Spring Boot**
+- **Postgres SQL**
+
 ## 🎯 Habilidades Desenvolvidas
 
 Este projeto, está sendo fundamental para construir:
