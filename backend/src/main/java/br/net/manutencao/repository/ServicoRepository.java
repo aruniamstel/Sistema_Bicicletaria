@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import br.net.manutencao.model.Servico;
 
 public interface ServicoRepository extends JpaRepository<Servico, Long> {
-    List<Servico> findByCategoria(String categoria);
+    List<Servico> findByDescricao(String descricao);
 }
