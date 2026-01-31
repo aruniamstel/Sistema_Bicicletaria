@@ -1,11 +1,13 @@
 package br.net.manutencao.controller;
 
 import br.net.manutencao.DTO.OrdemServicoCreateDTO;
+import br.net.manutencao.DTO.OrdemServicoDTO;
+import br.net.manutencao.DTO.OrdemServicoMapper;
 import br.net.manutencao.DTO.AdicionarServicoPecaDTO;
 import br.net.manutencao.model.OrdemServico;
 import br.net.manutencao.model.StatusOrdem;
 import br.net.manutencao.service.OrdemServicoService;
-import jakarta.persistence.EntityNotFoundException;
+import br.net.manutencao.exception.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,44 +26,47 @@ public class OrdemServicoController {
     @Autowired
     private OrdemServicoService ordemServicoService;
 
+    @Autowired
+    private OrdemServicoMapper mapper;
+
     // Endpoint para listar todas as ordens de serviço
     @GetMapping
-    public ResponseEntity<List<OrdemServico>> listarTodasOrdens() {
+    public ResponseEntity<List<OrdemServicoDTO>> listarTodasOrdens() {
         List<OrdemServico> ordens = ordemServicoService.listarTodasOrdens();
         if (ordens.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(ordens);
+        return ResponseEntity.ok(mapper.toDTOList(ordens));
     }
 
     // Endpoint para listar ordens por cliente
     @GetMapping("/cliente/{clienteId}")
-    public ResponseEntity<List<OrdemServico>> listarOrdensPorCliente(@PathVariable Long clienteId) {
+    public ResponseEntity<List<OrdemServicoDTO>> listarOrdensPorCliente(@PathVariable Long clienteId) {
         List<OrdemServico> ordens = ordemServicoService.listarOrdensPorCliente(clienteId);
         if (ordens.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(ordens);
+        return ResponseEntity.ok(mapper.toDTOList(ordens));
     }
 
     // Endpoint para listar ordens por bicicleta
     @GetMapping("/bicicleta/{bicicletaId}")
-    public ResponseEntity<List<OrdemServico>> listarOrdensPorBicicleta(@PathVariable Long bicicletaId) {
+    public ResponseEntity<List<OrdemServicoDTO>> listarOrdensPorBicicleta(@PathVariable Long bicicletaId) {
         List<OrdemServico> ordens = ordemServicoService.listarOrdensPorBicicleta(bicicletaId);
         if (ordens.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(ordens);
+        return ResponseEntity.ok(mapper.toDTOList(ordens));
     }
 
     // Endpoint para listar ordens por status
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<OrdemServico>> listarOrdensPorStatus(@PathVariable StatusOrdem status) {
+    public ResponseEntity<List<OrdemServicoDTO>> listarOrdensPorStatus(@PathVariable StatusOrdem status) {
         List<OrdemServico> ordens = ordemServicoService.listarOrdensPorStatus(status);
         if (ordens.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(ordens);
+        return ResponseEntity.ok(mapper.toDTOList(ordens));
     }
 
     // Endpoint para buscar ordem específica
@@ -69,8 +74,8 @@ public class OrdemServicoController {
     public ResponseEntity<?> getOrdemServico(@PathVariable Long id) {
         try {
             OrdemServico ordemServico = ordemServicoService.getOrdemServicoById(id);
-            return ResponseEntity.ok(ordemServico);
-        } catch (EntityNotFoundException e) {
+            return ResponseEntity.ok(mapper.toDTO(ordemServico));
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(404).body("Ordem de serviço não encontrada.");
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,15 +87,17 @@ public class OrdemServicoController {
     @PostMapping
     public ResponseEntity<?> criarOrdemServico(@RequestBody OrdemServicoCreateDTO novaOrdem) {
         System.out.println("=== DEBUG ORDEM SERVICO ===");
+        System.out.println("Cliente ID: " + novaOrdem.getClienteId());
         System.out.println("Bicicleta ID: " + novaOrdem.getBicicletaId());
-        System.out.println("Problema: " + novaOrdem.getProblemaRelatado());
+        System.out.println("Data Previsão Saída: " + novaOrdem.getDataPrevisaoSaida());
         System.out.println("Observações: " + novaOrdem.getObservacoes());
 
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         try {
             OrdemServico ordemCriada = ordemServicoService.criarOrdemServico(novaOrdem);
             response.put("message", "Ordem de serviço criada com sucesso!");
             response.put("id", ordemCriada.getId().toString());
+            response.put("ordem", mapper.toDTO(ordemCriada));
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();

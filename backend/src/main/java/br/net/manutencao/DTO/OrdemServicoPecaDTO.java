@@ -1,0 +1,17 @@
+package br.net.manutencao.DTO;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class OrdemServicoPecaDTO {
+    private Long id;
+    private PecaDTO peca;
+    private Integer quantidade;
+    private BigDecimal valor;
+}

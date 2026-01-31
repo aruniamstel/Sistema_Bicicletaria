@@ -2,7 +2,7 @@ package br.net.manutencao.service;
 
 import br.net.manutencao.model.Bicicleta;
 import br.net.manutencao.repository.BicicletaRepository;
-import jakarta.persistence.EntityNotFoundException;
+import br.net.manutencao.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,7 @@ public class BicicletaService {
     @Transactional(readOnly = true)
     public Bicicleta buscarPorId(Long id) {
         return bicicletaRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Bicicleta não encontrada com ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + id));
     }
 
     @Transactional

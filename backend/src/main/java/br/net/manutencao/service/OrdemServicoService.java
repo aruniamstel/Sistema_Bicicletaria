@@ -3,7 +3,7 @@ package br.net.manutencao.service;
 import br.net.manutencao.DTO.OrdemServicoCreateDTO;
 import br.net.manutencao.model.*;
 import br.net.manutencao.repository.*;
-import jakarta.persistence.EntityNotFoundException;
+import br.net.manutencao.exception.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +23,9 @@ public class OrdemServicoService {
 
     @Autowired
     private OrdemServicoRepository ordemServicoRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @Autowired
     private BicicletaRepository bicicletaRepository;
@@ -97,28 +100,34 @@ public class OrdemServicoService {
         return ordemServicoRepository.findOrdensAtrasadas(dataLimite);
     }
 
-    // Método para buscar ordem por ID
-    @Transactional(readOnly = true)
     public OrdemServico getOrdemServicoById(Long id) {
         return ordemServicoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Ordem de serviço não encontrada com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Ordem de serviço não encontrada com o ID: " + id));
     }
 
     // Método principal para criar nova ordem de serviço
     @Transactional
     public OrdemServico criarOrdemServico(OrdemServicoCreateDTO ordemDTO) {
         OrdemServico novaOrdem = new OrdemServico();
-        
-        // Buscar a bicicleta
+
+        // Buscar cliente
+        Cliente cliente = clienteRepository.findById(ordemDTO.getClienteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + ordemDTO.getClienteId()));
+
+        // Buscar bicicleta
         Bicicleta bicicleta = bicicletaRepository.findById(ordemDTO.getBicicletaId())
-                .orElseThrow(() -> new EntityNotFoundException("Bicicleta não encontrada com ID: " + ordemDTO.getBicicletaId()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + ordemDTO.getBicicletaId()));
+
+        novaOrdem.setCliente(cliente);
         novaOrdem.setBicicleta(bicicleta);
-        novaOrdem.setProblemaRelatado(ordemDTO.getProblemaRelatado());
         novaOrdem.setObservacoes(ordemDTO.getObservacoes());
         novaOrdem.setDataEntrada(LocalDateTime.now());
+        novaOrdem.setDataPrevisaoSaida(ordemDTO.getDataPrevisaoSaida() != null ?
+            ordemDTO.getDataPrevisaoSaida() : LocalDateTime.now().plusDays(3));
         novaOrdem.setStatus(StatusOrdem.ABERTA);
-        
+        novaOrdem.setValorTotal(BigDecimal.ZERO);
+        novaOrdem.setExibirAviso30Dias(false);
+
         return ordemServicoRepository.save(novaOrdem);
     }
 
@@ -127,7 +136,7 @@ public class OrdemServicoService {
     public OrdemServico adicionarServico(Long ordemId, Long servicoId, Integer quantidade) {
         OrdemServico ordem = getOrdemServicoById(ordemId);
         Servico servico = servicoRepository.findById(servicoId)
-                .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado com ID: " + servicoId));
+                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + servicoId));
         
         // Verificar se o serviço já foi adicionado à ordem
         Optional<OrdemServicoServico> existing = ordem.getServicos().stream()
@@ -145,7 +154,7 @@ public class OrdemServicoService {
             ordemServicoServico.setOrdemServico(ordem);
             ordemServicoServico.setServico(servico);
             ordemServicoServico.setQuantidade(quantidade);
-            ordemServicoServico.setValorUnitario(servico.getValorPadrao());
+            ordemServicoServico.setValor(servico.getValor());
             
             ordemServicoServicoRepository.save(ordemServicoServico);
             ordem.getServicos().add(ordemServicoServico);
@@ -159,12 +168,12 @@ public class OrdemServicoService {
     public OrdemServico adicionarPeca(Long ordemId, Long pecaId, Integer quantidade) {
         OrdemServico ordem = getOrdemServicoById(ordemId);
         Peca peca = pecaRepository.findById(pecaId)
-                .orElseThrow(() -> new EntityNotFoundException("Peça não encontrada com ID: " + pecaId));
+                .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada com ID: " + pecaId));
         
         // Verificar estoque
-        if (peca.getEstoque() < quantidade) {
-            throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getNome() + 
-                    ". Disponível: " + peca.getEstoque() + ", Solicitado: " + quantidade);
+        if (peca.getQuantidade() < quantidade) {
+            throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getDescricao() + 
+                    ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
         }
         
         // Verificar se a peça já foi adicionada à ordem
@@ -183,14 +192,14 @@ public class OrdemServicoService {
             ordemServicoPeca.setOrdemServico(ordem);
             ordemServicoPeca.setPeca(peca);
             ordemServicoPeca.setQuantidade(quantidade);
-            ordemServicoPeca.setValorUnitario(peca.getValorUnitario());
+            ordemServicoPeca.setValor(peca.getValor());
             
             ordemServicoPecaRepository.save(ordemServicoPeca);
             ordem.getPecas().add(ordemServicoPeca);
         }
         
         // Atualizar estoque
-        peca.setEstoque(peca.getEstoque() - quantidade);
+        peca.setQuantidade(peca.getQuantidade() - quantidade);
         pecaRepository.save(peca);
         
         return ordemServicoRepository.save(ordem);
@@ -200,18 +209,18 @@ public class OrdemServicoService {
     @Transactional
     public OrdemServico alterarStatus(Long ordemId, StatusOrdem novoStatus) {
         OrdemServico ordem = getOrdemServicoById(ordemId);
-        
+
         // Lógica para datas automáticas
         if (novoStatus == StatusOrdem.CONCLUIDA && ordem.getStatus() != StatusOrdem.CONCLUIDA) {
             // Se está sendo concluída pela primeira vez, seta data atual
-            ordem.setDataSaida(LocalDateTime.now());
+            ordem.setDataSaidaReal(LocalDateTime.now());
         } else if (novoStatus == StatusOrdem.ENTREGUE && ordem.getStatus() != StatusOrdem.ENTREGUE) {
             // Se está sendo entregue, confirma data de saída
-            if (ordem.getDataSaida() == null) {
-                ordem.setDataSaida(LocalDateTime.now());
+            if (ordem.getDataSaidaReal() == null) {
+                ordem.setDataSaidaReal(LocalDateTime.now());
             }
         }
-        
+
         ordem.setStatus(novoStatus);
         return ordemServicoRepository.save(ordem);
     }
@@ -245,7 +254,7 @@ public class OrdemServicoService {
             ordemServicoServicoRepository.delete(servicoToRemove.get());
             return ordemServicoRepository.save(ordem);
         } else {
-            throw new EntityNotFoundException("Serviço não encontrado na ordem de serviço");
+            throw new ResourceNotFoundException("Serviço não encontrado na ordem de serviço");
         }
     }
 
@@ -263,7 +272,7 @@ public class OrdemServicoService {
             Peca peca = osp.getPeca();
             
             // Devolver ao estoque
-            peca.setEstoque(peca.getEstoque() + osp.getQuantidade());
+            peca.setQuantidade(peca.getQuantidade() + osp.getQuantidade());
             pecaRepository.save(peca);
             
             // Remover da ordem
@@ -272,7 +281,7 @@ public class OrdemServicoService {
             
             return ordemServicoRepository.save(ordem);
         } else {
-            throw new EntityNotFoundException("Peça não encontrada na ordem de serviço");
+            throw new ResourceNotFoundException("Peça não encontrada na ordem de serviço");
         }
     }
 

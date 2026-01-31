@@ -29,30 +29,30 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
     List<OrdemServico> findByStatusIn(@Param("statuses") List<StatusOrdem> statuses);
 
     // Relatório: Faturamento por data (ordens ENTREGUES) - CORRIGIDO
-    @Query("SELECT FUNCTION('DATE', os.dataSaida) AS data, SUM(os.valorTotal) AS valorTotal " +
-           "FROM OrdemServico os WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE AND os.dataSaida IS NOT NULL " +
-           "GROUP BY FUNCTION('DATE', os.dataSaida) " +
-           "ORDER BY FUNCTION('DATE', os.dataSaida)")
+    @Query("SELECT FUNCTION('DATE', os.dataSaidaReal) AS data, SUM(os.valorTotal) AS valorTotal " +
+           "FROM OrdemServico os WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE AND os.dataSaidaReal IS NOT NULL " +
+           "GROUP BY FUNCTION('DATE', os.dataSaidaReal) " +
+           "ORDER BY FUNCTION('DATE', os.dataSaidaReal)")
     List<Object[]> findOrdensEntreguesPorData();
 
     // Relatório: Faturamento por serviço - CORRIGIDO
-    @Query("SELECT s.descricao AS servico, SUM(oss.valorUnitario * oss.quantidade) AS valorTotal " +
+    @Query("SELECT s.descricao AS servico, SUM(oss.valor * oss.quantidade) AS valorTotal " +
            "FROM OrdemServicoServico oss " +
            "JOIN oss.servico s " +
            "JOIN oss.ordemServico os " +
            "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
            "GROUP BY s.descricao " +
-           "ORDER BY SUM(oss.valorUnitario * oss.quantidade) DESC")
+           "ORDER BY SUM(oss.valor * oss.quantidade) DESC")
     List<Object[]> findFaturamentoPorServico();
 
     // Relatório: Faturamento por peça - CORRIGIDO
-    @Query("SELECT p.nome AS peca, SUM(osp.valorUnitario * osp.quantidade) AS valorTotal " +
+    @Query("SELECT p.descricao AS peca, SUM(osp.valor * osp.quantidade) AS valorTotal " +
            "FROM OrdemServicoPeca osp " +
            "JOIN osp.peca p " +
            "JOIN osp.ordemServico os " +
            "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
-           "GROUP BY p.nome " +
-           "ORDER BY SUM(osp.valorUnitario * osp.quantidade) DESC")
+           "GROUP BY p.descricao " +
+           "ORDER BY SUM(osp.valor * osp.quantidade) DESC")
     List<Object[]> findFaturamentoPorPeca();
 
     // Buscar ordens por período

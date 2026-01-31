@@ -14,54 +14,35 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "bicicleta")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Bicicleta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @NotBlank
     private String marca;
+
+    @NotBlank
     private String modelo;
-    private Integer tamanhoAro; // ou String se for "29", "26", etc
+
+    @Column(name = "tamanho_aro")
+    private Integer tamanhoAro;
+
+    @NotBlank
     private String cor;
-    
-    @ManyToOne
+
+    @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
-    
-    @OneToMany(mappedBy = "bicicleta")
+
+    @OneToMany(mappedBy = "bicicleta", fetch = jakarta.persistence.FetchType.LAZY)
     private List<OrdemServico> ordensServico = new ArrayList<>();
-    
-    // constructors, getters, setters
-
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public String getCor() {
-        return cor;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getMarca() {
-        return marca;
-    }
-
-    public String getModelo() {
-        return modelo;
-    }
-
-    public List<OrdemServico> getOrdensServico() {
-        return ordensServico;
-    }
-
-    public Integer getTamanhoAro() {
-        return tamanhoAro;
-    }
 }

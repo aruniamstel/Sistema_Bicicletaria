@@ -2,7 +2,7 @@ package br.net.manutencao.service;
 
 import br.net.manutencao.model.Cliente;
 import br.net.manutencao.repository.ClienteRepository;
-import jakarta.persistence.EntityNotFoundException;
+import br.net.manutencao.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,14 +26,14 @@ public class ClienteService {
     @Transactional(readOnly = true)
     public Cliente buscarClientePorId(Long id) {
         return clienteRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + id));
     }
 
     // Buscar cliente com bicicletas
     @Transactional(readOnly = true)
     public Cliente buscarClienteComBicicletas(Long id) {
         return clienteRepository.findByIdWithBicicletas(id)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + id));
     }
 
     // Buscar por telefone

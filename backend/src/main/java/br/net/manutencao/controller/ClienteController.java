@@ -1,8 +1,9 @@
 package br.net.manutencao.controller;
 
+import br.net.manutencao.DTO.ClienteDTO;
 import br.net.manutencao.model.Cliente;
 import br.net.manutencao.service.ClienteService;
-import jakarta.persistence.EntityNotFoundException;
+import br.net.manutencao.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/clientes")
@@ -22,12 +24,15 @@ public class ClienteController {
 
     // Listar todos os clientes
     @GetMapping
-    public ResponseEntity<List<Cliente>> listarTodos() {
+    public ResponseEntity<List<ClienteDTO>> listarTodos() {
         List<Cliente> clientes = clienteService.listarTodosClientes();
         if (clientes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(clientes);
+        List<ClienteDTO> dtos = clientes.stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     // Buscar cliente por ID
@@ -35,8 +40,8 @@ public class ClienteController {
     public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
         try {
             Cliente cliente = clienteService.buscarClientePorId(id);
-            return ResponseEntity.ok(cliente);
-        } catch (EntityNotFoundException e) {
+            return ResponseEntity.ok(toDTO(cliente));
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }
@@ -47,11 +52,16 @@ public class ClienteController {
     public ResponseEntity<?> buscarComBicicletas(@PathVariable Long id) {
         try {
             Cliente cliente = clienteService.buscarClienteComBicicletas(id);
-            return ResponseEntity.ok(cliente);
-        } catch (EntityNotFoundException e) {
+            return ResponseEntity.ok(toDTO(cliente));
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    private ClienteDTO toDTO(Cliente cliente) {
+        return new ClienteDTO(cliente.getId(), cliente.getNome(), cliente.getTelefone(),
+                            cliente.getEndereco(), cliente.getInstagram());
     }
 
     // Buscar por telefone
@@ -59,7 +69,7 @@ public class ClienteController {
     public ResponseEntity<?> buscarPorTelefone(@PathVariable String telefone) {
         Optional<Cliente> cliente = clienteService.buscarPorTelefone(telefone);
         if (cliente.isPresent()) {
-            return ResponseEntity.ok(cliente.get());
+            return ResponseEntity.ok(toDTO(cliente.get()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", "Cliente não encontrado com o telefone: " + telefone));
@@ -68,12 +78,15 @@ public class ClienteController {
 
     // Buscar por nome
     @GetMapping("/buscar")
-    public ResponseEntity<List<Cliente>> buscarPorNome(@RequestParam String nome) {
+    public ResponseEntity<List<ClienteDTO>> buscarPorNome(@RequestParam String nome) {
         List<Cliente> clientes = clienteService.buscarPorNome(nome);
         if (clientes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(clientes);
+        List<ClienteDTO> dtos = clientes.stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     // Criar novo cliente
@@ -84,7 +97,8 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
                         "message", "Cliente criado com sucesso!",
-                        "id", clienteSalvo.getId()
+                        "id", clienteSalvo.getId(),
+                        "cliente", toDTO(clienteSalvo)
                     ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -102,9 +116,9 @@ public class ClienteController {
             Cliente clienteAtualizado = clienteService.atualizarCliente(id, cliente);
             return ResponseEntity.ok(Map.of(
                 "message", "Cliente atualizado com sucesso!",
-                "cliente", clienteAtualizado
+                "cliente", toDTO(clienteAtualizado)
             ));
-        } catch (EntityNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
@@ -122,7 +136,7 @@ public class ClienteController {
         try {
             clienteService.deletarCliente(id);
             return ResponseEntity.ok(Map.of("message", "Cliente deletado com sucesso!"));
-        } catch (EntityNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         } catch (IllegalStateException e) {
