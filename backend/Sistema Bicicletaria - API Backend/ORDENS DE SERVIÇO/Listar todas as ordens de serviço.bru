@@ -1,0 +1,15 @@
+meta {
+  name: Listar todas as ordens de serviço
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8081/ordens-servico
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

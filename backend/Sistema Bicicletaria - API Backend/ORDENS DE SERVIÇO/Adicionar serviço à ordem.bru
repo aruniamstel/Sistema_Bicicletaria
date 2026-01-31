@@ -1,0 +1,26 @@
+meta {
+  name: Adicionar serviço à ordem
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:8081/ordens-servico/1/servicos
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "itemId": 1,
+    "quantidade": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Adicionar peça à ordem
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://localhost:8081/ordens-servico/1/pecas
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "itemId": 1,
+    "quantidade": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}

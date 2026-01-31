@@ -1,0 +1,27 @@
+meta {
+  name: Criar nova ordem de serviço
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8081/ordens-servico
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "clienteId": 1,
+    "bicicletaId": 1,
+    "observacoes": "Verificar freios e ajustar corrente"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

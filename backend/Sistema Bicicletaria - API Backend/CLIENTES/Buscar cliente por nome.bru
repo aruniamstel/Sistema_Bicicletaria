@@ -1,0 +1,19 @@
+meta {
+  name: Buscar cliente por nome
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8081/clientes/buscar?nome=João
+  body: none
+  auth: inherit
+}
+
+params:query {
+  nome: João
+}
+
+settings {
+  encodeUrl: true
+}

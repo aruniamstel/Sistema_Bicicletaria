@@ -1,0 +1,15 @@
+meta {
+  name: Listar ordens por status
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8081/ordens-servico/status/ABERTA
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

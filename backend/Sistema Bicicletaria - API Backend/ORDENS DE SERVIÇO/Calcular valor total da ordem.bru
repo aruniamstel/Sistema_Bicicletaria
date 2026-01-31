@@ -1,0 +1,15 @@
+meta {
+  name: Calcular valor total da ordem
+  type: http
+  seq: 11
+}
+
+get {
+  url: http://localhost:8081/ordens-servico/1/valor-total
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Alterar status da ordem
+  type: http
+  seq: 9
+}
+
+put {
+  url: http://localhost:8081/ordens-servico/1/status?novoStatus=EM_ANDAMENTO
+  body: none
+  auth: inherit
+}
+
+params:query {
+  novoStatus: EM_ANDAMENTO
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Sistema Bicicletaria - API Backend",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

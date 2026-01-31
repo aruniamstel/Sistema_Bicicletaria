@@ -1,0 +1,19 @@
+meta {
+  name: Atualizar observações da ordem
+  type: http
+  seq: 10
+}
+
+put {
+  url: http://localhost:8081/ordens-servico/1/observacoes?observacoes=Ordem%20em%20progresso%20-%20Ajuste%20dos%20freios%20realizado
+  body: none
+  auth: inherit
+}
+
+params:query {
+  observacoes: Ordem em progresso - Ajuste dos freios realizado
+}
+
+settings {
+  encodeUrl: true
+}

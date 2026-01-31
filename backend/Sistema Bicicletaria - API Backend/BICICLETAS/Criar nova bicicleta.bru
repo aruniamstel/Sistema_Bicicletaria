@@ -1,0 +1,31 @@
+meta {
+  name: Criar nova bicicleta
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8081/bicicletas
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "marca": "Specialized",
+    "modelo": "Rockhopper",
+    "tamanhoAro": 27,
+    "cor": "Azul",
+    "cliente": {
+      "id": 1
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Criar novo cliente
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8081/clientes
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nome": "Pedro Costa",
+    "telefone": "(11) 97777-7777",
+    "endereco": "Avenida Paulista, 1000",
+    "instagram": "@pedrobikes"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

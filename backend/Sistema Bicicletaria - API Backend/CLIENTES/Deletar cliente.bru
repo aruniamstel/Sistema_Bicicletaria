@@ -1,0 +1,15 @@
+meta {
+  name: Deletar cliente
+  type: http
+  seq: 8
+}
+
+delete {
+  url: http://localhost:8081/clientes/3
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

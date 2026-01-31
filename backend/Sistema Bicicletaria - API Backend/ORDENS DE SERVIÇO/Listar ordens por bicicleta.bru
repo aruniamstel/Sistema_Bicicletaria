@@ -1,0 +1,15 @@
+meta {
+  name: Listar ordens por bicicleta
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8081/ordens-servico/bicicleta/1
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

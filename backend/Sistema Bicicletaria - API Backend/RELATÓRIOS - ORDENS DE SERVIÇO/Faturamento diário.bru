@@ -1,0 +1,15 @@
+meta {
+  name: Faturamento diário
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8081/ordens-servico/relatorios/faturamento-diario
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
