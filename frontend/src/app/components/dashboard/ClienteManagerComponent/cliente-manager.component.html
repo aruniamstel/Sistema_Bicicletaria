@@ -10,14 +10,14 @@
 </div>
 
 <!-- Error -->
-<div *ngIf="error" class="error-state">
+<div *ngIf="errorMessage" class="error-state">
   <div class="error-icon">⚠️</div>
-  <p>{{ error }}</p>
+  <p>{{ errorMessage }}</p>
   <button (click)="retry()" class="btn-retry">🔄 Tentar Novamente</button>
 </div>
 
 <!-- Formulário de Cliente -->
-<div *ngIf="!error" class="form-section">
+<div *ngIf="!errorMessage" class="form-section">
   <h3>{{ editingCliente ? 'Editar' : 'Novo' }} Cliente</h3>
   <form [formGroup]="clienteForm" (ngSubmit)="salvarCliente()" class="crud-form">
     <div class="form-row">
@@ -79,7 +79,7 @@
 </div>
 
 <!-- Lista de Clientes -->
-<div *ngIf="!error" class="list-section">
+<div *ngIf="!errorMessage" class="list-section">
   <h3>Clientes ({{ clientesFiltrados.length }})</h3>
 
   <!-- Barra de Filtros -->

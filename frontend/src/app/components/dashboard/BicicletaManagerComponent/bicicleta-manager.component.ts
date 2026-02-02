@@ -1,30 +1,15 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { OrdemServico } from '../../../shared/models/ordem-servico.model';
+import { Bicicleta } from '../../../shared/models/bicicleta.model';
+import { Cliente } from '../../../shared/models/cliente.model';
+import { BicicletaService } from '../../../services/bicicleta.service';
+import { ClienteService } from '../../../services/cliente.service';
+import { OrdemServicoService } from '../../../services/ordem-servico.service';
 import { HistoricoBicicletaComponent } from '../HistoricoBicicletaComponent/historico-bicicleta.component';
-
-export interface Cliente {
-  id?: number;
-  nome: string;
-  telefone: string;
-  endereco: string;
-  instagram?: string;
-}
-
-export interface Bicicleta {
-  id?: number;
-  marca: string;
-  modelo: string;
-  tamanhoAro: number;
-  cor: string;
-  cliente: {
-    id: number;
-    nome: string;
-    telefone: string;
-    endereco: string;
-  };
-}
 
 @Component({
   selector: 'app-bicicleta-manager',
@@ -33,24 +18,39 @@ export interface Bicicleta {
   templateUrl: './bicicleta-manager.component.html',
   styleUrls: ['./bicicleta-manager.component.css']
 })
-export class BicicletaManagerComponent implements OnInit {
+export class BicicletaManagerComponent implements OnInit, OnDestroy {
   bicicletas: Bicicleta[] = [];
   bicicletasEmServico: Bicicleta[] = [];
   clientes: Cliente[] = [];
   ordensServico: OrdemServico[] = [];
   bicicletaForm: FormGroup;
   filtrosForm: FormGroup;
+
+  // Controle de estado
   loading = false;
-  error = '';
+  loadingClientes = false;
+  loadingOrdens = false;
+  errorMessage = '';
+  successMessage = '';
+
+  // Edição
   editingBicicleta: Bicicleta | null = null;
   showModal = false;
   selectedBicicletaId: number | null = null;
 
+  // Cleanup
+  private destroy$ = new Subject<void>();
+
   @ViewChild('modalHistorico') modal!: ElementRef<HTMLDialogElement>;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private bicicletaService: BicicletaService,
+    private clienteService: ClienteService,
+    private ordemServicoService: OrdemServicoService
+  ) {
     this.bicicletaForm = this.fb.group({
-      selectedClienteId: ['', Validators.required], // Cliente obrigatório
+      selectedClienteId: ['', Validators.required],
       marca: ['', Validators.required],
       modelo: ['', Validators.required],
       tamanhoAro: ['', [Validators.required, Validators.min(12), Validators.max(29)]],
@@ -69,67 +69,152 @@ export class BicicletaManagerComponent implements OnInit {
     this.carregarDados();
   }
 
-  carregarDados(): void {
-    const bks = localStorage.getItem('bicicletas');
-    const cls = localStorage.getItem('clientes');
-    const ordens = localStorage.getItem('ordens-servico');
-    this.bicicletas = bks ? JSON.parse(bks) : [];
-    this.clientes = cls ? JSON.parse(cls) : [];
-    this.ordensServico = ordens ? JSON.parse(ordens) : [];
-
-    this.aplicarFiltros();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  salvarBicicleta(): void {
-    if (this.bicicletaForm.valid) {
-      const formValue = this.bicicletaForm.value;
-      const idSelecionado = Number(formValue.selectedClienteId);
+  /**
+   * Carrega bicicletas, clientes e ordens de serviço do backend
+   */
+  carregarDados(): void {
+    this.loading = true;
+    this.errorMessage = '';
 
-      if (!idSelecionado) {
-        this.error = 'Por favor, selecione um cliente.';
-        return;
-      }
-
-      const clienteFinal = this.clientes.find(c => c.id === idSelecionado);
-
-      if (!clienteFinal) {
-        this.error = 'O cliente selecionado não foi encontrado na base de dados.';
-        return;
-      }
-
-      const novaBicicleta: Bicicleta = {
-        id: this.editingBicicleta ? this.editingBicicleta.id : Date.now(),
-        marca: formValue.marca,
-        modelo: formValue.modelo,
-        tamanhoAro: formValue.tamanhoAro,
-        cor: formValue.cor,
-        cliente: {
-          id: clienteFinal.id,
-          nome: clienteFinal.nome,
-          telefone: clienteFinal.telefone,
-          endereco: clienteFinal.endereco
+    // Carregar bicicletas
+    this.bicicletaService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (bks) => {
+          this.bicicletas = bks;
+          console.log('✅ Bicicletas carregadas:', bks);
+          this.aplicarFiltros();
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar bicicletas:', error);
+          this.errorMessage = 'Erro ao carregar bicicletas. Tente novamente.';
+          this.loading = false;
         }
-      };
+      });
 
-      if (this.editingBicicleta) {
-        const index = this.bicicletas.findIndex(b => b.id === this.editingBicicleta?.id);
-        this.bicicletas[index] = novaBicicleta;
-      } else {
-        this.bicicletas.push(novaBicicleta);
-      }
+    // Carregar clientes
+    this.loadingClientes = true;
+    this.clienteService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cls) => {
+          this.clientes = cls;
+          console.log('✅ Clientes carregados:', cls);
+          this.loadingClientes = false;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar clientes:', error);
+          this.errorMessage = 'Erro ao carregar clientes. Tente novamente.';
+          this.loadingClientes = false;
+          this.loading = false;
+        }
+      });
 
-      this.salvarNoLocalStorage('bicicletas', this.bicicletas);
-      this.bicicletaForm.reset();
-      this.editingBicicleta = null;
-      this.error = '';
-      alert('Bicicleta salva com sucesso!');
+    // Carregar ordens de serviço
+    this.loadingOrdens = true;
+    this.ordemServicoService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ordens) => {
+          this.ordensServico = ordens;
+          console.log('✅ Ordens de serviço carregadas:', ordens);
+          this.loadingOrdens = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar ordens:', error);
+          this.loadingOrdens = false;
+        }
+      });
+  }
+
+  /**
+   * Salva uma bicicleta (criar ou atualizar)
+   */
+  salvarBicicleta(): void {
+    if (this.bicicletaForm.invalid) {
+      this.errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const formValue = this.bicicletaForm.value;
+    const clienteId = Number(formValue.selectedClienteId);
+
+    if (!clienteId) {
+      this.errorMessage = 'Por favor, selecione um cliente.';
+      this.loading = false;
+      return;
+    }
+
+    const clienteSelecionado = this.clientes.find(c => c.id === clienteId);
+
+    if (!clienteSelecionado) {
+      this.errorMessage = 'O cliente selecionado não foi encontrado.';
+      this.loading = false;
+      return;
+    }
+
+    const bicicletaData: Bicicleta = {
+      marca: formValue.marca,
+      modelo: formValue.modelo,
+      tamanhoAro: formValue.tamanhoAro,
+      cor: formValue.cor,
+      cliente: clienteSelecionado
+    };
+
+    if (this.editingBicicleta && this.editingBicicleta.id) {
+      // Atualizar bicicleta existente
+      this.bicicletaService.update(this.editingBicicleta.id, bicicletaData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('✅ Bicicleta atualizada:', response);
+            this.successMessage = 'Bicicleta atualizada com sucesso!';
+            this.bicicletaForm.reset();
+            this.editingBicicleta = null;
+            this.carregarDados();
+            this.loading = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao atualizar bicicleta:', error);
+            this.errorMessage = 'Erro ao atualizar bicicleta. Tente novamente.';
+            this.loading = false;
+          }
+        });
+    } else {
+      // Criar nova bicicleta
+      this.bicicletaService.create(bicicletaData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('✅ Bicicleta criada:', response);
+            this.successMessage = 'Bicicleta criada com sucesso!';
+            this.bicicletaForm.reset();
+            this.editingBicicleta = null;
+            this.carregarDados();
+            this.loading = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao criar bicicleta:', error);
+            this.errorMessage = 'Erro ao criar bicicleta. Tente novamente.';
+            this.loading = false;
+          }
+        });
     }
   }
 
-  private salvarNoLocalStorage(key: string, data: any): void {
-    localStorage.setItem(key, JSON.stringify(data));
-  }
-
+  /**
+   * Edita uma bicicleta
+   */
   editarBicicleta(bicicleta: Bicicleta): void {
     this.editingBicicleta = bicicleta;
     this.bicicletaForm.patchValue({
@@ -137,33 +222,59 @@ export class BicicletaManagerComponent implements OnInit {
       modelo: bicicleta.modelo,
       tamanhoAro: bicicleta.tamanhoAro,
       cor: bicicleta.cor,
-      selectedClienteId: bicicleta.cliente.id
+      selectedClienteId: bicicleta.cliente?.id || ''
     });
-    // Scroll suave até o formulário
     this.scrollToForm();
   }
 
-  private scrollToForm(): void {
-    setTimeout(() => {
-      const formElement = document.querySelector('.form-section');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  }
+  /**
+   * Exclui uma bicicleta
+   */
+  excluirBicicleta(id?: number): void {
+    const bicicletaId = id || this.editingBicicleta?.id;
 
-  excluirBicicleta(id: number): void {
+    if (!bicicletaId) {
+      this.errorMessage = 'Bicicleta não identificada.';
+      return;
+    }
+
     if (confirm('Tem certeza que deseja excluir esta bicicleta?')) {
-      this.bicicletas = this.bicicletas.filter(b => b.id !== id);
-      this.salvarNoLocalStorage('bicicletas', this.bicicletas);
+      this.loading = true;
+      this.errorMessage = '';
+
+      this.bicicletaService.delete(bicicletaId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('✅ Bicicleta excluída:', response);
+            this.successMessage = 'Bicicleta excluída com sucesso!';
+            this.bicicletaForm.reset();
+            this.editingBicicleta = null;
+            this.carregarDados();
+            this.loading = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao excluir bicicleta:', error);
+            this.errorMessage = 'Erro ao excluir bicicleta. Tente novamente.';
+            this.loading = false;
+          }
+        });
     }
   }
 
+  /**
+   * Cancela a edição de uma bicicleta
+   */
   cancelarEdicaoBicicleta(): void {
     this.bicicletaForm.reset();
     this.editingBicicleta = null;
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 
+  /**
+   * Aplica filtros à lista de bicicletas
+   */
   aplicarFiltros(): void {
     const filtros = this.filtrosForm.value;
     let filtradas = [...this.bicicletas];
@@ -195,15 +306,24 @@ export class BicicletaManagerComponent implements OnInit {
     this.bicicletas = filtradas;
   }
 
+  /**
+   * Aplica os filtros
+   */
   filtrar(): void {
     this.carregarDados();
   }
 
+  /**
+   * Limpa os filtros
+   */
   limparFiltros(): void {
     this.filtrosForm.reset();
     this.carregarDados();
   }
 
+  /**
+   * Abre o modal de histórico
+   */
   abrirHistorico(bicicleta: Bicicleta): void {
     this.selectedBicicletaId = bicicleta.id!;
     this.showModal = true;
@@ -212,6 +332,9 @@ export class BicicletaManagerComponent implements OnInit {
     }
   }
 
+  /**
+   * Fecha o modal de histórico
+   */
   fecharModal(): void {
     this.showModal = false;
     this.selectedBicicletaId = null;
@@ -220,11 +343,18 @@ export class BicicletaManagerComponent implements OnInit {
     }
   }
 
-  getStatusOS(bicicletaId: number): string {
-    const os = this.ordensServico.find(os => os.bicicleta.id === bicicletaId);
+  /**
+   * Obtém o status da ordem de serviço para uma bicicleta
+   */
+  getStatusOS(bicicletaId?: number): string {
+    const id = bicicletaId || this.selectedBicicletaId;
+    const os = this.ordensServico.find(o => o.bicicleta?.id === id);
     return os ? os.status : '';
   }
 
+  /**
+   * Retorna a classe CSS para o status
+   */
   getStatusClass(status: string): string {
     switch (status) {
       case 'ABERTA': return 'aberta';
@@ -235,6 +365,9 @@ export class BicicletaManagerComponent implements OnInit {
     }
   }
 
+  /**
+   * Formata o status para exibição
+   */
   formatStatus(status: string): string {
     switch (status) {
       case 'ABERTA': return 'Aberta';
@@ -245,4 +378,15 @@ export class BicicletaManagerComponent implements OnInit {
     }
   }
 
+  /**
+   * Scroll suave até o formulário
+   */
+  private scrollToForm(): void {
+    setTimeout(() => {
+      const formElement = document.querySelector('.form-section');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }
 }

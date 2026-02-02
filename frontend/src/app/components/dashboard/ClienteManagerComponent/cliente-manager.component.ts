@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../../../services/cliente.service';
 
@@ -11,7 +13,7 @@ import { ClienteService } from '../../../services/cliente.service';
   templateUrl: './cliente-manager.component.html',
   styleUrls: ['./cliente-manager.component.css']
 })
-export class ClienteManagerComponent implements OnInit {
+export class ClienteManagerComponent implements OnInit, OnDestroy {
   // Dados
   clientes: Cliente[] = [];
   clientesFiltrados: Cliente[] = [];
@@ -22,9 +24,14 @@ export class ClienteManagerComponent implements OnInit {
 
   // Estados
   loading = false;
-  error = '';
+  loadingOperation = false;
+  errorMessage = '';
+  successMessage = '';
   editingCliente: Cliente | null = null;
   searchTerm: string = '';
+
+  // Cleanup
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -43,86 +50,122 @@ export class ClienteManagerComponent implements OnInit {
     });
 
     // Filtragem reativa
-    this.filtrosForm.valueChanges.subscribe(() => {
-      this.aplicarFiltros();
-    });
+    this.filtrosForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.aplicarFiltros();
+      });
   }
 
   ngOnInit(): void {
     this.carregarClientes();
   }
 
-  carregarClientes(): void {
-    this.loading = true;
-    this.error = '';
-
-    this.clienteService.getAll().subscribe({
-      next: (data) => {
-        this.clientes = data;
-        this.aplicarFiltros();
-        this.loading = false;
-        console.log('Clientes carregados com sucesso:', data);
-      },
-      error: (error) => {
-        console.error('Erro ao carregar clientes:', error);
-
-        if (error.status === 0) {
-          this.error = 'Erro de conexão: Verifique se o backend está rodando na porta 8081';
-        } else if (error.status === 404) {
-          this.error = 'Endpoint não encontrado: Verifique a URL da API';
-        } else {
-          this.error = `Erro ${error.status}: ${error.statusText || 'Erro ao carregar clientes'}`;
-        }
-
-        this.loading = false;
-        this.clientes = [];
-        this.clientesFiltrados = [];
-      }
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  salvarCliente(): void {
-    if (this.clienteForm.valid) {
-      const formValue = this.clienteForm.value;
-      const novoCliente: Cliente = {
-        nome: formValue.nome,
-        telefone: formValue.telefone,
-        endereco: formValue.endereco,
-        instagram: formValue.instagram || undefined
-      };
+  /**
+   * Carrega a lista de clientes do backend
+   */
+  carregarClientes(): void {
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-      if (this.editingCliente && this.editingCliente.id) {
-        // Editar cliente existente
-        this.clienteService.update(this.editingCliente.id, novoCliente).subscribe({
-          next: () => {
+    this.clienteService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          console.log('✅ Clientes carregados:', data);
+          this.clientes = data;
+          this.aplicarFiltros();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar clientes:', error);
+          
+          if (error.status === 0) {
+            this.errorMessage = 'Erro de conexão: Verifique se o backend está rodando em http://localhost:8080';
+          } else if (error.status === 404) {
+            this.errorMessage = 'Endpoint não encontrado: Verifique a URL da API';
+          } else {
+            this.errorMessage = `Erro ${error.status}: ${error.statusText || 'Erro ao carregar clientes'}`;
+          }
+          
+          this.loading = false;
+          this.clientes = [];
+          this.clientesFiltrados = [];
+        }
+      });
+  }
+
+  /**
+   * Salva um cliente (criar ou atualizar)
+   */
+  salvarCliente(): void {
+    if (this.clienteForm.invalid) {
+      this.errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      return;
+    }
+
+    this.loadingOperation = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const formValue = this.clienteForm.value;
+    const novoCliente: Cliente = {
+      nome: formValue.nome,
+      telefone: formValue.telefone,
+      endereco: formValue.endereco,
+      instagram: formValue.instagram || undefined
+    };
+
+    if (this.editingCliente && this.editingCliente.id) {
+      // Atualizar cliente existente
+      this.clienteService.update(this.editingCliente.id, novoCliente)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('✅ Cliente atualizado:', response);
+            this.successMessage = 'Cliente atualizado com sucesso!';
             this.carregarClientes();
             this.clienteForm.reset();
             this.editingCliente = null;
-            console.log('Cliente atualizado com sucesso');
+            this.loadingOperation = false;
           },
           error: (error) => {
-            console.error('Erro ao atualizar cliente:', error);
-            this.error = `Erro ao atualizar cliente: ${error.status || 'Erro desconhecido'}`;
+            console.error('❌ Erro ao atualizar cliente:', error);
+            this.errorMessage = 'Erro ao atualizar cliente. Tente novamente.';
+            this.loadingOperation = false;
           }
         });
-      } else {
-        // Criar novo cliente
-        this.clienteService.create(novoCliente).subscribe({
-          next: () => {
+    } else {
+      // Criar novo cliente
+      this.clienteService.create(novoCliente)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('✅ Cliente criado:', response);
+            this.successMessage = 'Cliente criado com sucesso!';
             this.carregarClientes();
             this.clienteForm.reset();
             this.editingCliente = null;
-            console.log('Cliente criado com sucesso');
+            this.loadingOperation = false;
           },
           error: (error) => {
-            console.error('Erro ao criar cliente:', error);
-            this.error = `Erro ao criar cliente: ${error.status || 'Erro desconhecido'}`;
+            console.error('❌ Erro ao criar cliente:', error);
+            this.errorMessage = 'Erro ao criar cliente. Tente novamente.';
+            this.loadingOperation = false;
           }
         });
-      }
     }
   }
 
+  /**
+   * Edita um cliente
+   */
   editarCliente(cliente: Cliente): void {
     this.editingCliente = cliente;
     this.clienteForm.patchValue({
@@ -131,29 +174,59 @@ export class ClienteManagerComponent implements OnInit {
       endereco: cliente.endereco,
       instagram: cliente.instagram || ''
     });
+    this.errorMessage = '';
+    this.successMessage = '';
     this.scrollToForm();
   }
 
-  excluirCliente(id: number): void {
+  /**
+   * Exclui um cliente
+   */
+  excluirCliente(id?: number): void {
+    const clienteId = id || this.editingCliente?.id;
+
+    if (!clienteId) {
+      this.errorMessage = 'Cliente não identificado.';
+      return;
+    }
+
     if (confirm('Tem certeza que deseja excluir este cliente?')) {
-      this.clienteService.delete(id).subscribe({
-        next: () => {
-          this.carregarClientes();
-          console.log('Cliente excluído com sucesso');
-        },
-        error: (error) => {
-          console.error('Erro ao excluir cliente:', error);
-          this.error = `Erro ao excluir cliente: ${error.status || 'Erro desconhecido'}`;
-        }
-      });
+      this.loadingOperation = true;
+      this.errorMessage = '';
+
+      this.clienteService.delete(clienteId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            console.log('✅ Cliente excluído:', response);
+            this.successMessage = 'Cliente excluído com sucesso!';
+            this.carregarClientes();
+            this.clienteForm.reset();
+            this.editingCliente = null;
+            this.loadingOperation = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao excluir cliente:', error);
+            this.errorMessage = 'Erro ao excluir cliente. Tente novamente.';
+            this.loadingOperation = false;
+          }
+        });
     }
   }
 
+  /**
+   * Cancela a edição de um cliente
+   */
   cancelarEdicaoCliente(): void {
     this.clienteForm.reset();
     this.editingCliente = null;
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 
+  /**
+   * Aplica filtros à lista de clientes
+   */
   aplicarFiltros(): void {
     const filtros = this.filtrosForm.value;
     let filtrados = [...this.clientes];
@@ -173,20 +246,17 @@ export class ClienteManagerComponent implements OnInit {
     this.clientesFiltrados = filtrados;
   }
 
+  /**
+   * Limpa os filtros
+   */
   limparFiltros(): void {
     this.filtrosForm.reset();
     this.clientesFiltrados = [...this.clientes];
   }
 
-   private scrollToForm(): void {
-    setTimeout(() => {
-      const formElement = document.querySelector('.form-section');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  }
-
+  /**
+   * Formata o telefone enquanto o usuário digita
+   */
   formatarTelefone(event: any): void {
     let value = event.target.value.replace(/\D/g, '');
 
@@ -203,7 +273,22 @@ export class ClienteManagerComponent implements OnInit {
     event.target.value = value;
   }
 
+  /**
+   * Tenta carregar novamente em caso de erro
+   */
   retry(): void {
     this.carregarClientes();
+  }
+
+  /**
+   * Scroll suave até o formulário
+   */
+  private scrollToForm(): void {
+    setTimeout(() => {
+      const formElement = document.querySelector('.form-section');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 }

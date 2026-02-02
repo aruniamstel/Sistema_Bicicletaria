@@ -1,75 +1,91 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
 import { Bicicleta } from '../shared/models/bicicleta.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BicicletaService {
-  private storageKey = 'bicicletas';
+  private apiUrl = `${environment.apiUrl}${environment.endpoints.bicicletas}`;
 
-  private getAllFromStorage(): Bicicleta[] {
-    const data = localStorage.getItem(this.storageKey);
-    return data ? JSON.parse(data) : [];
-  }
+  constructor(private http: HttpClient) {}
 
-  private saveAllToStorage(bicicletas: Bicicleta[]): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(bicicletas));
-  }
-
+  /**
+   * Busca todas as bicicletas
+   */
   getAll(): Observable<Bicicleta[]> {
-    return of(this.getAllFromStorage());
+    return this.http.get<Bicicleta[]>(this.apiUrl)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
+  /**
+   * Busca uma bicicleta por ID
+   */
   getById(id: number): Observable<Bicicleta> {
-    const bicicleta = this.getAllFromStorage().find(b => b.id === id);
-    return of(bicicleta!);
+    return this.http.get<Bicicleta>(`${this.apiUrl}/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
+  /**
+   * Busca bicicletas de um cliente específico
+   */
   getByCliente(clienteId: number): Observable<Bicicleta[]> {
-    console.log('🔍 Buscando bicicletas para cliente ID:', clienteId, '(tipo:', typeof clienteId, ')');
-    
-    const bicicletas = this.getAllFromStorage();
-    console.log('🚲 Todas as bicicletas:', bicicletas);
-    
-    // ✅ CORREÇÃO: Converte ambos para number antes de comparar
-    const bicicletasFiltradas = bicicletas.filter(b => {
-      if (!b.cliente) return false;
-      
-      const clienteIdBicicleta = Number(b.cliente.id); // Converte para number
-      const clienteIdBuscado = Number(clienteId); // Garante que é number
-      
-      console.log(`📊 Comparação: ${clienteIdBicicleta} (${typeof clienteIdBicicleta}) === ${clienteIdBuscado} (${typeof clienteIdBuscado}) → ${clienteIdBicicleta === clienteIdBuscado}`);
-      
-      return clienteIdBicicleta === clienteIdBuscado;
-    });
-    
-    console.log('✅ Bicicletas encontradas:', bicicletasFiltradas);
-    return of(bicicletasFiltradas);
+    return this.http.get<Bicicleta[]>(`${this.apiUrl}/cliente/${clienteId}`)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
-  create(bicicleta: Bicicleta): Observable<Bicicleta> {
-    const bicicletas = this.getAllFromStorage();
-    const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-    let cliente = bicicleta.cliente;
+  /**
+   * Cria uma nova bicicleta
+   */
+  create(bicicleta: Bicicleta): Observable<any> {
+    return this.http.post<any>(this.apiUrl, bicicleta)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Atualiza uma bicicleta existente
+   */
+  update(id: number, bicicleta: Bicicleta): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, bicicleta)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Deleta uma bicicleta
+   */
+  delete(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Tratamento de erros HTTP
+   */
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'Erro ao processar requisição de bicicleta';
     
-    // ✅ CORREÇÃO: Garante que o ID do cliente é number
-    if (cliente && cliente.id) {
-      cliente = clientes.find((c: any) => Number(c.id) === Number(cliente.id)) || cliente;
+    if (error.error instanceof ErrorEvent) {
+      // Erro do cliente
+      errorMessage = `Erro: ${error.error.message}`;
+    } else {
+      // Erro do servidor
+      errorMessage = error.error?.error || error.error?.message || `Código: ${error.status}`;
     }
     
-    const newId = bicicletas.length > 0 ? Math.max(...bicicletas.map(b => b.id || 0)) + 1 : 1;
-    const newBicicleta = { 
-      ...bicicleta, 
-      id: newId, 
-      cliente: {
-        ...cliente,
-        id: Number(cliente.id) // ✅ Garante que é number
-      }
-    };
-    
-    bicicletas.push(newBicicleta);
-    this.saveAllToStorage(bicicletas);
-    
-    console.log('✅ Bicicleta criada:', newBicicleta);
-    return of(newBicicleta);
+    console.error('❌ Erro HTTP:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }
