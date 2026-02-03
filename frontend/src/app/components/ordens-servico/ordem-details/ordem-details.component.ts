@@ -1,8 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { OrdemServico } from '../../../shared/models/ordem-servico.model';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
+import { ServicoService } from '../../../services/servico.service';
+import { PecaService } from '../../../services/peca.service';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from "../../header/header.component";
 import { Cliente } from '../../../shared/models/cliente.model';
@@ -15,35 +19,37 @@ import { Bicicleta } from '../../../shared/models/bicicleta.model';
   templateUrl: './ordem-details.component.html',
   styleUrls: ['./ordem-details.component.css'],
 })
-export class OrdemDetailsComponent implements OnInit {
-  // Exemplo de correção no ordem-details.component.ts
-//ordem?: OrdemServico; // Mudar para opcional e carregar no ngOnInit
-// OU se precisar de um valor inicial:
-ordem: OrdemServico = {
-  id: 0,
-  status: "ABERTA",
-  observacoes: '',
-  dataEntrada: new Date().toISOString(),
-  exibirAviso30Dias: true, // Adicionado
-  cliente: {} as Cliente,   // Adicionado
-  bicicleta: {} as Bicicleta,
-  servicos: [],
-  pecas: [],
-  valorTotal: 0
-};
+export class OrdemDetailsComponent implements OnInit, OnDestroy {
+  ordem: OrdemServico = {
+    id: 0,
+    status: "ABERTA",
+    observacoes: '',
+    dataEntrada: new Date().toISOString(),
+    exibirAviso30Dias: true,
+    cliente: {} as Cliente,
+    bicicleta: {} as Bicicleta,
+    servicos: [],
+    pecas: [],
+    valorTotal: 0
+  };
 
   servicoForm: FormGroup;
   pecaForm: FormGroup;
   servicos: any[] = [];
   pecas: any[] = [];
   loading: boolean = false;
-  error: string = '';
+  errorMessage: string = '';
+  successMessage: string = '';
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
-    private ordemService: OrdemServicoService
+    private ordemService: OrdemServicoService,
+    private servicoService: ServicoService,
+    private pecaService: PecaService
   ) {
     this.servicoForm = this.fb.group({
       servicoId: ['', Validators.required],
@@ -59,95 +65,119 @@ ordem: OrdemServico = {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.loadOrdem(+id);
-    }
+      const orderId = Number(id);
+      this.loading = true;
       this.carregarServicosEPecas();
+      this.loadOrdem(orderId);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private carregarServicosEPecas(): void {
-    try {
-      // Carrega serviços
-      const servicosData = localStorage.getItem('servicos');
-      this.servicos = servicosData ? JSON.parse(servicosData) : [];
-      console.log('🔧 Serviços carregados:', this.servicos);
+    // Carregar serviços
+    this.servicoService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.servicos = data || [];
+          console.log('🔧 Serviços carregados:', this.servicos);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar serviços:', error);
+          this.servicos = [];
+        }
+      });
 
-      // Carrega peças
-      const pecasData = localStorage.getItem('pecas');
-      this.pecas = pecasData ? JSON.parse(pecasData) : [];
-      console.log('⚙️ Peças carregadas:', this.pecas);
-    } catch (error) {
-      console.error('❌ Erro ao carregar serviços/peças:', error);
-      this.servicos = [];
-      this.pecas = [];
-    }
+    // Carregar peças
+    this.pecaService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.pecas = data || [];
+          console.log('📦 Peças carregadas:', this.pecas);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar peças:', error);
+          this.pecas = [];
+        }
+      });
   }
 
-  loadOrdem(id: number): void {
-    this.loading = true;
-    this.ordemService.getById(id).subscribe({
-      next: (data) => {
-        this.ordem = data;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = 'Erro ao carregar ordem de serviço: ' + error.message;
-        this.loading = false;
-      }
-    });
+  private loadOrdem(id: number): void {
+    this.errorMessage = '';
+
+    this.ordemService.getById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.ordem = data;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar ordem:', error);
+          this.errorMessage = 'Erro ao carregar ordem de serviço: ' + error.message;
+          this.loading = false;
+        }
+      });
   }
 
   addServico(): void {
-    if (this.servicoForm.valid && this.ordem) {
-      const { servicoId, quantidade } = this.servicoForm.value;
-      this.loading = true;
+    if (this.servicoForm.invalid || !this.ordem?.id) {
+      this.errorMessage = 'Selecione um serviço válido';
+      return;
+    }
 
-      this.ordemService.addServico(this.ordem.id!, servicoId, quantidade).subscribe({
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const { servicoId, quantidade } = this.servicoForm.value;
+
+    this.ordemService.addServico(this.ordem.id, servicoId, quantidade)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: (ordem) => {
           this.ordem = ordem;
+          this.successMessage = '✅ Serviço adicionado com sucesso!';
           this.servicoForm.reset({ quantidade: 1 });
           this.loading = false;
         },
         error: (error) => {
-          this.error = 'Erro ao adicionar serviço: ' + error.message;
+          console.error('❌ Erro ao adicionar serviço:', error);
+          this.errorMessage = 'Erro ao adicionar serviço: ' + error.message;
           this.loading = false;
         }
       });
-    }
-  }
-
-  addPeca(): void {
-    if (this.pecaForm.valid && this.ordem) {
-      const { pecaId, quantidade } = this.pecaForm.value;
-      this.loading = true;
-
-      this.ordemService.addPeca(this.ordem.id!, pecaId, quantidade).subscribe({
-        next: (ordem) => {
-          this.ordem = ordem;
-          this.pecaForm.reset({ quantidade: 1 });
-          this.loading = false;
-        },
-        error: (error) => {
-          this.error = 'Erro ao adicionar peça: ' + error.message;
-          this.loading = false;
-        }
-      });
-    }
   }
 
   updateStatus(status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE'): void {
-    if (this.ordem) {
-      this.loading = true;
-      this.ordemService.updateStatus(this.ordem.id!, status).subscribe({
+    if (!this.ordem?.id) {
+      this.errorMessage = 'Ordem não encontrada';
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.ordemService.updateStatus(this.ordem.id, status)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: (ordem) => {
           this.ordem = ordem;
+          this.successMessage = '✅ Status atualizado com sucesso!';
           this.loading = false;
         },
         error: (error) => {
-          this.error = 'Erro ao atualizar status: ' + error.message;
+          console.error('❌ Erro ao atualizar status:', error);
+          this.errorMessage = 'Erro ao atualizar status: ' + error.message;
           this.loading = false;
         }
       });
-    }
   }
 
   formatStatus(status: string): string {

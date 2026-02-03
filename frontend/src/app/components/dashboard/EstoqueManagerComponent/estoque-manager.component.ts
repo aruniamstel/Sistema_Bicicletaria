@@ -1,17 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-
-// Interface
-export interface Peca {
-  id?: number;
-  descricao: string;
-  valor: number;
-  quantidade: number;
-  codigoInterno?: string;
-  categoria?: string;
-  subcategoria?: string;
-}
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Peca } from '../../../shared/models/peca.model';
+import { PecaService } from '../../../services/peca.service';
 
 @Component({
   selector: 'app-estoque-manager',
@@ -20,7 +13,7 @@ export interface Peca {
   templateUrl: './estoque-manager.component.html',
   styleUrls: ['./estoque-manager.component.css']
 })
-export class EstoqueManagerComponent implements OnInit {
+export class EstoqueManagerComponent implements OnInit, OnDestroy {
   // Dados
   pecas: Peca[] = [];
   pecasFiltradas: Peca[] = [];
@@ -31,13 +24,22 @@ export class EstoqueManagerComponent implements OnInit {
 
   // Estados
   loading = false;
+  loadingOperation = false;
+  errorMessage = '';
+  successMessage = '';
   editingPeca: Peca | null = null;
 
-  constructor(private fb: FormBuilder) {
+  // Cleanup
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private fb: FormBuilder,
+    private pecaService: PecaService
+  ) {
     this.pecaForm = this.fb.group({
-      descricao: ['', Validators.required],
-      valor: ['', [Validators.required, Validators.min(0)]],
-      quantidade: ['', [Validators.min(0)]],
+      nome: ['', Validators.required],
+      valorVenda: ['', [Validators.required, Validators.min(0)]],
+      quantidadeEstoque: ['', [Validators.min(0)]],
       codigoInterno: [''],
       categoria: [''],
       subcategoria: ['']
@@ -60,52 +62,95 @@ export class EstoqueManagerComponent implements OnInit {
     this.carregarDados();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   carregarDados(): void {
     this.loading = true;
+    this.errorMessage = '';
 
-    const pecasData = localStorage.getItem('pecas');
-    this.pecas = pecasData ? JSON.parse(pecasData) : this.criarPecasPadrao();
-
-    this.aplicarFiltros();
-    this.loading = false;
+    this.pecaService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.pecas = data || [];
+          this.aplicarFiltros();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar peças:', error);
+          this.errorMessage = 'Erro ao carregar peças. Tente novamente.';
+          this.loading = false;
+        }
+      });
   }
 
   salvarPeca(): void {
-    if (this.pecaForm.valid) {
-      const formValue = this.pecaForm.value;
-      const novaPeca: Peca = {
-        descricao: formValue.descricao,
-        valor: formValue.valor,
-        quantidade: formValue.quantidade ?? 0,
-        codigoInterno: formValue.codigoInterno || undefined,
-        categoria: formValue.categoria || undefined,
-        subcategoria: formValue.subcategoria || undefined
-      };
+    if (this.pecaForm.invalid) {
+      this.errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      return;
+    }
 
-      if (this.editingPeca) {
-        const index = this.pecas.findIndex(p => p.id === this.editingPeca!.id);
-        if (index !== -1) {
-          this.pecas[index] = { ...novaPeca, id: this.editingPeca.id };
-        }
-      } else {
-        const newId = this.pecas.length > 0 ? Math.max(...this.pecas.map(p => p.id || 0)) + 1 : 1;
-        novaPeca.id = newId;
-        this.pecas.push(novaPeca);
-      }
+    this.loadingOperation = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-      this.salvarNoLocalStorage('pecas', this.pecas);
-      this.aplicarFiltros();
-      this.pecaForm.reset();
-      this.editingPeca = null;
+    const formValue = this.pecaForm.value;
+    const pecaData: Peca = {
+      nome: formValue.nome,
+      valorVenda: formValue.valorVenda,
+      quantidadeEstoque: formValue.quantidadeEstoque ?? 0,
+      codigoInterno: formValue.codigoInterno || undefined,
+      categoria: formValue.categoria || undefined,
+      subcategoria: formValue.subcategoria || undefined
+    };
+
+    if (this.editingPeca && this.editingPeca.id) {
+      // Atualizar
+      this.pecaService.update(this.editingPeca.id, pecaData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.successMessage = '✅ Peça atualizada com sucesso!';
+            this.carregarDados();
+            this.pecaForm.reset();
+            this.editingPeca = null;
+            this.loadingOperation = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao atualizar peça:', error);
+            this.errorMessage = 'Erro ao atualizar peça. Tente novamente.';
+            this.loadingOperation = false;
+          }
+        });
+    } else {
+      // Criar
+      this.pecaService.create(pecaData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.successMessage = '✅ Peça criada com sucesso!';
+            this.carregarDados();
+            this.pecaForm.reset();
+            this.loadingOperation = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao criar peça:', error);
+            this.errorMessage = 'Erro ao criar peça. Tente novamente.';
+            this.loadingOperation = false;
+          }
+        });
     }
   }
 
   editarPeca(peca: Peca): void {
     this.editingPeca = peca;
     this.pecaForm.patchValue({
-      descricao: peca.descricao,
-      valor: peca.valor,
-      quantidade: peca.quantidade,
+      nome: peca.nome,
+      valorVenda: peca.valorVenda,
+      quantidadeEstoque: peca.quantidadeEstoque,
       codigoInterno: peca.codigoInterno || '',
       categoria: peca.categoria || '',
       subcategoria: peca.subcategoria || ''
@@ -115,8 +160,24 @@ export class EstoqueManagerComponent implements OnInit {
 
   excluirPeca(id: number): void {
     if (confirm('Tem certeza que deseja excluir esta peça?')) {
-      this.pecas = this.pecas.filter(p => p.id !== id);
-      this.salvarNoLocalStorage('pecas', this.pecas);
+      this.loadingOperation = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      this.pecaService.delete(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.successMessage = '✅ Peça excluída com sucesso!';
+            this.carregarDados();
+            this.loadingOperation = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao excluir peça:', error);
+            this.errorMessage = 'Erro ao excluir peça. Tente novamente.';
+            this.loadingOperation = false;
+          }
+        });
     }
   }
 
@@ -131,7 +192,7 @@ export class EstoqueManagerComponent implements OnInit {
 
     if (filtros.termoBusca) {
       filtradas = filtradas.filter(peca =>
-        peca.descricao.toLowerCase().includes(filtros.termoBusca.toLowerCase())
+        peca.nome.toLowerCase().includes(filtros.termoBusca.toLowerCase())
       );
     }
 
@@ -156,12 +217,7 @@ export class EstoqueManagerComponent implements OnInit {
     this.pecasFiltradas = filtradas;
   }
 
-  limparFiltros(): void {
-    this.filtrosForm.reset();
-    this.pecasFiltradas = [...this.pecas];
-  }
-
-  private scrollToForm(): void {
+  scrollToForm(): void {
     setTimeout(() => {
       const formElement = document.querySelector('.form-section');
       if (formElement) {
@@ -170,20 +226,8 @@ export class EstoqueManagerComponent implements OnInit {
     }, 100);
   }
 
-  private salvarNoLocalStorage(key: string, data: any): void {
-    localStorage.setItem(key, JSON.stringify(data));
-  }
-
-  private criarPecasPadrao(): Peca[] {
-    const pecasPadrao = [
-      { id: 1, descricao: 'Pneu 26"', valor: 45, quantidade: 10 },
-      { id: 2, descricao: 'Câmara de ar 26"', valor: 15, quantidade: 20 },
-      { id: 3, descricao: 'Corrente', valor: 25, quantidade: 8 },
-      { id: 4, descricao: 'Pedal', valor: 35, quantidade: 6 },
-      { id: 5, descricao: 'Freio a disco', valor: 60, quantidade: 4 },
-      { id: 6, descricao: 'Manete de freio', valor: 20, quantidade: 12 }
-    ];
-    this.salvarNoLocalStorage('pecas', pecasPadrao);
-    return pecasPadrao;
+  limparFiltros(): void {
+    this.filtrosForm.reset();
+    this.aplicarFiltros();
   }
 }
