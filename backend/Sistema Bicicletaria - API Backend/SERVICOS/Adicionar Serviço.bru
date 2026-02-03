@@ -1,0 +1,23 @@
+meta {
+  name: Adicionar Serviço
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8081/servicos
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "descricao": "Ajuste de Câmbio",
+    "valor": 45.00
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,119 @@
+package br.net.manutencao.service;
+
+import br.net.manutencao.model.Peca;
+import br.net.manutencao.repository.PecaRepository;
+import br.net.manutencao.exception.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class PecaService {
+
+    @Autowired
+    private PecaRepository pecaRepository;
+
+    /**
+     * Listar todas as peças
+     */
+    @Transactional(readOnly = true)
+    public List<Peca> listarTodas() {
+        return pecaRepository.findAll();
+    }
+
+    /**
+     * Buscar peça por ID
+     */
+    @Transactional(readOnly = true)
+    public Peca buscarPorId(Long id) {
+        return pecaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada com ID: " + id));
+    }
+
+    /**
+     * Criar nova peça
+     */
+    @Transactional
+    public Peca criar(Peca peca) {
+        // Validações básicas
+        if (peca.getDescricao() == null || peca.getDescricao().trim().isEmpty()) {
+            throw new IllegalArgumentException("Descrição da peça é obrigatória");
+        }
+        
+        if (peca.getValor() == null || peca.getValor().doubleValue() <= 0) {
+            throw new IllegalArgumentException("Valor da peça deve ser maior que zero");
+        }
+        
+        if (peca.getQuantidade() == null || peca.getQuantidade() < 0) {
+            peca.setQuantidade(0);
+        }
+        
+        return pecaRepository.save(peca);
+    }
+
+    /**
+     * Atualizar peça existente
+     */
+    @Transactional
+    public Peca atualizar(Long id, Peca pecaAtualizada) {
+        Peca pecaExistente = buscarPorId(id);
+        
+        // Validações
+        if (pecaAtualizada.getDescricao() != null && !pecaAtualizada.getDescricao().trim().isEmpty()) {
+            pecaExistente.setDescricao(pecaAtualizada.getDescricao());
+        }
+        
+        if (pecaAtualizada.getValor() != null && pecaAtualizada.getValor().doubleValue() > 0) {
+            pecaExistente.setValor(pecaAtualizada.getValor());
+        }
+        
+        if (pecaAtualizada.getQuantidade() != null) {
+            pecaExistente.setQuantidade(pecaAtualizada.getQuantidade());
+        }
+        
+        return pecaRepository.save(pecaExistente);
+    }
+
+    /**
+     * Deletar peça
+     */
+    @Transactional
+    public void deletar(Long id) {
+        Peca peca = buscarPorId(id);
+        
+        // Verificar se a peça está em uso em ordens de serviço
+        if (!peca.getOrdemServicoPecas().isEmpty()) {
+            throw new IllegalStateException(
+                "Não é possível excluir a peça pois ela está vinculada a ordens de serviço"
+            );
+        }
+        
+        pecaRepository.delete(peca);
+    }
+
+    /**
+     * Verificar se peça existe
+     */
+    @Transactional(readOnly = true)
+    public boolean existe(Long id) {
+        return pecaRepository.existsById(id);
+    }
+
+    /**
+     * Atualizar quantidade de peça (para controle de estoque)
+     */
+    @Transactional
+    public Peca atualizarQuantidade(Long id, Integer novaQuantidade) {
+        Peca peca = buscarPorId(id);
+        
+        if (novaQuantidade < 0) {
+            throw new IllegalArgumentException("Quantidade não pode ser negativa");
+        }
+        
+        peca.setQuantidade(novaQuantidade);
+        return pecaRepository.save(peca);
+    }
+}
