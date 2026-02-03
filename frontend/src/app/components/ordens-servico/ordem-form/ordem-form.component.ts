@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Bicicleta } from '../../../shared/models/bicicleta.model';
 import { Servico } from '../../../shared/models/servico.model';
@@ -36,20 +38,23 @@ function clienteOuNovoClienteValidator(control: AbstractControl): ValidationErro
   templateUrl: './ordem-form.component.html',
   styleUrls: ['./ordem-form.component.css']
 })
-export class OrdemFormComponent implements OnInit {
+export class OrdemFormComponent implements OnInit, OnDestroy {
   ordemForm: FormGroup;
   clientes: Cliente[] = [];
   bicicletas: Bicicleta[] = [];
   
-  // Nomes ajustados para bater com o HTML fornecido
   listaServicosDisponiveis: Servico[] = [];
   listaPecasDisponiveis: Peca[] = [];
   
   loading: boolean = false;
-  error: string = '';
+  loadingOperation: boolean = false;
+  errorMessage: string = '';
+  successMessage: string = '';
 
   clienteSelecionado?: Cliente;
   bicicletaSelecionada?: Bicicleta;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -78,14 +83,19 @@ export class OrdemFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadClientes();
     this.carregarServicosEPecas();
+    this.loadClientes();
+    this.ordemForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(values => {
+        console.log('📝 Mudança no formulário:', values);
+        console.log('✅ Formulário válido:', this.ordemForm.valid);
+      });
+  }
 
-    // ✅ Debug: Observa mudanças no formulário
-    this.ordemForm.valueChanges.subscribe(values => {
-      console.log('📝 Mudança no formulário:', values);
-      console.log('✅ Formulário válido:', this.ordemForm.valid);
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private updateClienteValidation(): void {
@@ -111,48 +121,56 @@ export class OrdemFormComponent implements OnInit {
     } else if (value.length > 0) {
       value = value.replace(/^(\d{0,2})/, '($1');
     }
-
-    // Atualiza o valor no controle do formulário para o Angular reconhecer
-    this.ordemForm.get('telefoneNovoCliente')?.setValue(value, { emitEvent: false });
+    event.target.value = value;
   }
 
-  // Novo método baseado no OrdemDetailsComponent 
   private carregarServicosEPecas(): void {
-    try {
-      // Carrega serviços conforme padrão do ordem-details
-      const servicosData = localStorage.getItem('servicos');
-      this.listaServicosDisponiveis = servicosData ? JSON.parse(servicosData) : [];
-      console.log('🛠️ Serviços carregados no Form:', this.listaServicosDisponiveis);
+    // Carregar serviços via HTTP
+    this.servicoService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.listaServicosDisponiveis = data || [];
+          console.log('🛠️ Serviços carregados no Form:', this.listaServicosDisponiveis);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar serviços:', error);
+          this.listaServicosDisponiveis = [];
+        }
+      });
 
-      // Carrega peças conforme padrão do ordem-details
-      const pecasData = localStorage.getItem('pecas');
-      this.listaPecasDisponiveis = pecasData ? JSON.parse(pecasData) : [];
-      console.log('⚙️ Peças carregadas no Form:', this.listaPecasDisponiveis);
-    } catch (error) {
-      console.error('❌ Erro ao carregar serviços/peças do LocalStorage:', error);
-      this.listaServicosDisponiveis = [];
-      this.listaPecasDisponiveis = [];
-    }
+    // Carregar peças via HTTP
+    this.pecaService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.listaPecasDisponiveis = data || [];
+          console.log('📦 Peças carregadas no Form:', this.listaPecasDisponiveis);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar peças:', error);
+          this.listaPecasDisponiveis = [];
+        }
+      });
   }
 
-  loadClientes(): void {
+  private loadClientes(): void {
     this.loading = true;
-    this.clienteService.getAll().subscribe({
-      next: (data) => {
-        this.clientes = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Erro ao carregar clientes: ' + err.message;
-        this.loading = false;
-      }
-    });
-  }
+    this.errorMessage = '';
 
-  // Função para carregar as listas dos dropdowns [cite: 4]
-  loadServicosEPecas(): void {
-    this.servicoService.getAll().subscribe(data => this.listaServicosDisponiveis = data);
-    this.pecaService.getAll().subscribe(data => this.listaPecasDisponiveis = data);
+    this.clienteService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.clientes = data || [];
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('❌ Erro ao carregar clientes:', err);
+          this.errorMessage = 'Erro ao carregar clientes: ' + err.message;
+          this.loading = false;
+        }
+      });
   }
 
   onClienteChange(clienteId: string): void {
@@ -163,24 +181,27 @@ export class OrdemFormComponent implements OnInit {
       this.loading = true;
       this.clienteSelecionado = this.clientes.find(c => c.id === id);
       
-      this.bicicletaService.getByCliente(id).subscribe({
-        next: (data) => {
-          this.bicicletas = data;
-          this.loading = false;
-          // Limpa bicicleta selecionada ao mudar cliente
-          this.ordemForm.patchValue({ bicicleta: '' });
-          this.bicicletaSelecionada = undefined;
-          // Seleção automática se houver apenas uma 
-          if (this.bicicletas.length === 1) {
-            this.ordemForm.patchValue({ bicicleta: this.bicicletas[0].id });
-            this.onBicicletaChange(this.bicicletas[0].id.toString());
+      this.bicicletaService.getByCliente(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            this.bicicletas = data;
+            this.loading = false;
+            // Limpa bicicleta selecionada ao mudar cliente
+            this.ordemForm.patchValue({ bicicleta: '' });
+            this.bicicletaSelecionada = undefined;
+            // Seleção automática se houver apenas uma 
+            if (this.bicicletas.length === 1) {
+              this.ordemForm.patchValue({ bicicleta: this.bicicletas[0].id });
+              this.onBicicletaChange(this.bicicletas[0].id.toString());
+            }
+          },
+          error: (err) => {
+            console.error('❌ Erro ao carregar bicicletas:', err);
+            this.errorMessage = 'Erro ao carregar bicicletas: ' + err.message;
+            this.loading = false;
           }
-        },
-        error: (err) => {
-          this.error = 'Erro ao carregar bicicletas: ' + err.message;
-          this.loading = false;
-        }
-      });
+        });
     } else {
       // Limpa bicicletas quando cliente não selecionado
       this.bicicletas = [];
@@ -193,7 +214,7 @@ export class OrdemFormComponent implements OnInit {
     const id = Number(bicicletaId);
     if (id) {
       this.bicicletaSelecionada = this.bicicletas.find(b => b.id === id);
-      this.updateDebugInfo(); // Chamada de debug restaurada 
+      this.updateDebugInfo();
     }
   }
 
@@ -226,58 +247,60 @@ export class OrdemFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.ordemForm.valid) {
-      this.loading = true;
-      const formValue = this.ordemForm.value;
+    if (this.ordemForm.invalid) {
+      this.errorMessage = 'Por favor, selecione um cliente ou preencha nome e telefone do novo cliente';
+      return;
+    }
 
-      // Validação: deve ter pelo menos um serviço ou peça
-      if (formValue.servicosSelecionados.length === 0 && formValue.pecasSelecionadas.length === 0) {
-        this.error = 'Adicione pelo menos um serviço ou uma peça';
-        this.loading = false;
-        return;
-      }
+    const formValue = this.ordemForm.value;
 
-      // Se há dados de novo cliente, criar cliente primeiro usando o serviço
-      if (!this.clienteSelecionado && this.temDadosNovoCliente()) {
-        const novoCliente: Cliente = {
-          nome: formValue.nomeNovoCliente || 'Cliente s/nome',
-          telefone: formValue.telefoneNovoCliente || '',
-          endereco: formValue.enderecoNovoCliente || 'Endereço não informado',
-          instagram: formValue.instagramNovoCliente || ''
-        };
+    // Validação: deve ter pelo menos um serviço ou peça
+    if (formValue.servicosSelecionados.length === 0 && formValue.pecasSelecionadas.length === 0) {
+      this.errorMessage = 'Adicione pelo menos um serviço ou uma peça';
+      return;
+    }
 
-        // Usar ClienteService para criar o cliente (salva no localStorage via serviço)
-        this.clienteService.create(novoCliente).subscribe({
+    this.loadingOperation = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    // Se há dados de novo cliente, criar cliente primeiro
+    if (!this.clienteSelecionado && this.temDadosNovoCliente()) {
+      const novoCliente: Cliente = {
+        nome: formValue.nomeNovoCliente || 'Cliente s/nome',
+        telefone: formValue.telefoneNovoCliente || '',
+        endereco: formValue.enderecoNovoCliente || 'Endereço não informado',
+        instagram: formValue.instagramNovoCliente || ''
+      };
+
+      this.clienteService.create(novoCliente)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
           next: (clienteCriado) => {
             console.log('✅ Cliente criado:', clienteCriado);
             this.clienteSelecionado = clienteCriado;
-            // Agora criar a ordem de serviço
             this.criarOrdemServico(formValue);
           },
           error: (err) => {
-            this.error = 'Erro ao criar novo cliente: ' + err.message;
-            this.loading = false;
+            console.error('❌ Erro ao criar cliente:', err);
+            this.errorMessage = 'Erro ao criar novo cliente: ' + err.message;
+            this.loadingOperation = false;
           }
         });
-      } else {
-        // Cliente já selecionado, criar ordem diretamente
-        this.criarOrdemServico(formValue);
-      }
     } else {
-      this.error = 'Por favor, selecione um cliente ou preencha nome e telefone do novo cliente';
+      // Cliente já selecionado, criar ordem diretamente
+      this.criarOrdemServico(formValue);
     }
   }
 
   private criarOrdemServico(formValue: any): void {
-    // ✅ REPLICAÇÃO DA LÓGICA DO DETAILS: 
-    // Mapeia os IDs selecionados para os objetos completos com preço
     const servicosFormatados = formValue.servicosSelecionados.map((s: any) => {
       const servicoInfo = this.listaServicosDisponiveis.find(item => item.id == s.id);
       return {
         servico: servicoInfo,
-        quantidade: 1 // No form de criação, geralmente é 1 por padrão
+        quantidade: 1
       };
-    }).filter((s: any) => s.servico); // Remove se o find falhar
+    }).filter((s: any) => s.servico);
 
     const pecasFormatadas = formValue.pecasSelecionadas.map((p: any) => {
       const pecaInfo = this.listaPecasDisponiveis.find(item => item.id == p.id);
@@ -293,27 +316,34 @@ export class OrdemFormComponent implements OnInit {
       : undefined;
 
     const novaOS = {
-      ...formValue,
       dataEntrada: dataEntrada,
-      dataPrevisaoSaida: dataPrevisao, // Garante que é string válida ou undefined
+      dataPrevisaoSaida: dataPrevisao,
       status: 'ABERTA' as const,
+      observacoes: formValue.observacoes || '',
+      exibirAviso30Dias: formValue.exibirAvisoTrintaDias || false,
       cliente: this.clienteSelecionado,
-      bicicleta: this.bicicletaSelecionada || null, // Bicicleta pode ser null
-      servicos: servicosFormatados, // Agora com objetos completos
-      pecas: pecasFormatadas,       // Agora com objetos completos
-      exibirAviso30Dias: formValue.exibirAvisoTrintaDias
+      bicicleta: this.bicicletaSelecionada || null,
+      servicos: servicosFormatados,
+      pecas: pecasFormatadas
     };
 
-    this.ordemService.create(novaOS).subscribe({
-      next: (ordem) => {
-        console.log('✅ OS Criada com valor:', ordem.valorTotal);
-        this.router.navigate(['/ordens-servico']);
-      },
-      error: (err) => {
-        this.error = 'Erro ao salvar OS';
-        this.loading = false;
-      }
-    });
+    this.ordemService.create(novaOS)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ordem) => {
+          console.log('✅ OS Criada:', ordem);
+          this.successMessage = '✅ Ordem de Serviço criada com sucesso!';
+          this.loadingOperation = false;
+          setTimeout(() => {
+            this.router.navigate(['/ordens-servico']);
+          }, 1000);
+        },
+        error: (err) => {
+          console.error('❌ Erro ao criar OS:', err);
+          this.errorMessage = 'Erro ao salvar Ordem de Serviço: ' + (err.message || 'Tente novamente');
+          this.loadingOperation = false;
+        }
+      });
   }
 
   private temDadosNovoCliente(): boolean {
@@ -322,5 +352,7 @@ export class OrdemFormComponent implements OnInit {
     return (nomeControl?.value && nomeControl.value.trim()) || (telefoneControl?.value && telefoneControl.value.trim());
   }
 
-  cancel(): void { this.router.navigate(['/ordens-servico']); }
+  cancel(): void {
+    this.router.navigate(['/ordens-servico']);
+  }
 }

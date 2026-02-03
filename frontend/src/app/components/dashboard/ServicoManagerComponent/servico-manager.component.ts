@@ -1,13 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-
-// Interface
-export interface Servico {
-  id?: number;
-  descricao: string;
-  valor: number;
-}
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Servico } from '../../../shared/models/servico.model';
+import { ServicoService } from '../../../services/servico.service';
 
 @Component({
   selector: 'app-servico-manager',
@@ -16,7 +13,7 @@ export interface Servico {
   templateUrl: './servico-manager.component.html',
   styleUrls: ['./servico-manager.component.css']
 })
-export class ServicoManagerComponent implements OnInit {
+export class ServicoManagerComponent implements OnInit, OnDestroy {
   // Dados
   servicos: Servico[] = [];
   servicosFiltrados: Servico[] = [];
@@ -27,9 +24,18 @@ export class ServicoManagerComponent implements OnInit {
 
   // Estados
   loading = false;
+  loadingOperation = false;
+  errorMessage = '';
+  successMessage = '';
   editingServico: Servico | null = null;
 
-  constructor(private fb: FormBuilder) {
+  // Cleanup
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private fb: FormBuilder,
+    private servicoService: ServicoService
+  ) {
     this.servicoForm = this.fb.group({
       descricao: ['', Validators.required],
       valor: ['', [Validators.required, Validators.min(0)]]
@@ -49,39 +55,82 @@ export class ServicoManagerComponent implements OnInit {
     this.carregarDados();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   carregarDados(): void {
     this.loading = true;
+    this.errorMessage = '';
 
-    const servicosData = localStorage.getItem('servicos');
-    this.servicos = servicosData ? JSON.parse(servicosData) : this.criarServicosPadrao();
-
-    this.aplicarFiltros();
-    this.loading = false;
+    this.servicoService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.servicos = data || [];
+          this.aplicarFiltros();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar serviços:', error);
+          this.errorMessage = 'Erro ao carregar serviços. Tente novamente.';
+          this.loading = false;
+        }
+      });
   }
 
   salvarServico(): void {
-    if (this.servicoForm.valid) {
-      const formValue = this.servicoForm.value;
-      const novoServico: Servico = {
-        descricao: formValue.descricao,
-        valor: formValue.valor
-      };
+    if (this.servicoForm.invalid) {
+      this.errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      return;
+    }
 
-      if (this.editingServico) {
-        const index = this.servicos.findIndex(s => s.id === this.editingServico!.id);
-        if (index !== -1) {
-          this.servicos[index] = { ...novoServico, id: this.editingServico.id };
-        }
-      } else {
-        const newId = this.servicos.length > 0 ? Math.max(...this.servicos.map(s => s.id || 0)) + 1 : 1;
-        novoServico.id = newId;
-        this.servicos.push(novoServico);
-      }
+    this.loadingOperation = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-      this.salvarNoLocalStorage('servicos', this.servicos);
-      this.aplicarFiltros();
-      this.servicoForm.reset();
-      this.editingServico = null;
+    const formValue = this.servicoForm.value;
+    const servicoData: Servico = {
+      descricao: formValue.descricao,
+      valor: formValue.valor
+    };
+
+    if (this.editingServico && this.editingServico.id) {
+      // Atualizar
+      this.servicoService.update(this.editingServico.id, servicoData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.successMessage = '✅ Serviço atualizado com sucesso!';
+            this.carregarDados();
+            this.servicoForm.reset();
+            this.editingServico = null;
+            this.loadingOperation = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao atualizar serviço:', error);
+            this.errorMessage = 'Erro ao atualizar serviço. Tente novamente.';
+            this.loadingOperation = false;
+          }
+        });
+    } else {
+      // Criar
+      this.servicoService.create(servicoData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.successMessage = '✅ Serviço criado com sucesso!';
+            this.carregarDados();
+            this.servicoForm.reset();
+            this.loadingOperation = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao criar serviço:', error);
+            this.errorMessage = 'Erro ao criar serviço. Tente novamente.';
+            this.loadingOperation = false;
+          }
+        });
     }
   }
 
@@ -96,9 +145,24 @@ export class ServicoManagerComponent implements OnInit {
 
   excluirServico(id: number): void {
     if (confirm('Tem certeza que deseja excluir este serviço?')) {
-      this.servicos = this.servicos.filter(s => s.id !== id);
-      this.salvarNoLocalStorage('servicos', this.servicos);
-      this.aplicarFiltros();
+      this.loadingOperation = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      this.servicoService.delete(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.successMessage = '✅ Serviço excluído com sucesso!';
+            this.carregarDados();
+            this.loadingOperation = false;
+          },
+          error: (error) => {
+            console.error('❌ Erro ao excluir serviço:', error);
+            this.errorMessage = 'Erro ao excluir serviço. Tente novamente.';
+            this.loadingOperation = false;
+          }
+        });
     }
   }
 
@@ -120,12 +184,7 @@ export class ServicoManagerComponent implements OnInit {
     this.servicosFiltrados = filtrados;
   }
 
-  limparFiltros(): void {
-    this.filtrosForm.reset();
-    this.servicosFiltrados = [...this.servicos];
-  }
-
-  private scrollToForm(): void {
+  scrollToForm(): void {
     setTimeout(() => {
       const formElement = document.querySelector('.form-section');
       if (formElement) {
@@ -134,20 +193,8 @@ export class ServicoManagerComponent implements OnInit {
     }, 100);
   }
 
-  private salvarNoLocalStorage(key: string, data: any): void {
-    localStorage.setItem(key, JSON.stringify(data));
-  }
-
-  private criarServicosPadrao(): Servico[] {
-    const servicosPadrao = [
-      { id: 1, descricao: 'Troca de pneu', valor: 50 },
-      { id: 2, descricao: 'Ajuste de freios', valor: 35 },
-      { id: 3, descricao: 'Troca de câmbio', valor: 80 },
-      { id: 4, descricao: 'Ajuste de marchas', valor: 40 },
-      { id: 5, descricao: 'Troca de corrente', valor: 45 },
-      { id: 6, descricao: 'Troca de pedais', valor: 50.50 }
-    ];
-    this.salvarNoLocalStorage('servicos', servicosPadrao);
-    return servicosPadrao;
+  limparFiltros(): void {
+    this.filtrosForm.reset();
+    this.aplicarFiltros();
   }
 }

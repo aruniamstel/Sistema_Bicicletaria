@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { CadastroComponent } from './components/cadastro/cadastro.component';
-import { OrcamentoclienteComponent } from './components/orcamentocliente/orcamentocliente.component';
 import { PagarservicoComponent } from './components/pagarservico/pagarservico.component';
 import { ListarFuncionarioComponent } from './components/listar-funcionario/listar-funcionario.component';
 import { InserirFuncionarioComponent } from './components/inserir-funcionario/inserir-funcionario.component';
@@ -27,14 +26,6 @@ export const routes: Routes = [
     { path: '', redirectTo: '/login', pathMatch: 'full' },
     { 'path': 'login', component: LoginComponent },
     { 'path': 'cadastro', component: CadastroComponent },
-    {
-        'path': 'orcamentocliente',
-        component: OrcamentoclienteComponent,
-        data: {
-            role: ['CLIENTE']
-        }
-
-    },
     {
         'path': 'pagarservico/:id',
         component: PagarservicoComponent,
@@ -93,15 +84,6 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: {
             role: [ 'FUNCIONARIO']
-        }
-    },
-
-    {
-        'path': 'orcamentocliente/:id',
-        component: OrcamentoclienteComponent,
-        canActivate: [authGuard],
-        data: {
-            role: [ 'CLIENTE']
         }
     },
     // Clientes (lista, cadastro rápido, detalhes, edição)
