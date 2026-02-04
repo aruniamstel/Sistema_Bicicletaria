@@ -9,6 +9,7 @@ import br.net.manutencao.model.OrdemServico;
 import br.net.manutencao.model.StatusOrdem;
 import br.net.manutencao.service.OrdemServicoService;
 import br.net.manutencao.exception.ResourceNotFoundException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,9 @@ public class OrdemServicoController {
 
     @Autowired
     private OrdemServicoMapper mapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     // Endpoint para listar todas as ordens de serviço
     @GetMapping
@@ -90,8 +94,6 @@ public class OrdemServicoController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            
             // Detectar qual formato baseado na presença de campos
             boolean isComplexFormat = payload.containsKey("cliente") && payload.get("cliente") instanceof Map;
             boolean isSimpleFormat = payload.containsKey("clienteId") && payload.get("clienteId") != null;
@@ -105,19 +107,19 @@ public class OrdemServicoController {
             try {
                 if (isComplexFormat) {
                     System.out.println("✅ Detectado formato complexo (cliente como objeto)");
-                    OrdemServicoCreateComplexDTO ordemDTO = mapper.convertValue(payload, OrdemServicoCreateComplexDTO.class);
+                    OrdemServicoCreateComplexDTO ordemDTO = objectMapper.convertValue(payload, OrdemServicoCreateComplexDTO.class);
                     OrdemServico ordemCriada = ordemServicoService.criarOrdemServicoCompleta(ordemDTO);
                     response.put("message", "Ordem de serviço criada com sucesso!");
                     response.put("id", ordemCriada.getId().toString());
-                    response.put("ordem", this.mapper.toDTO(ordemCriada));
+                    response.put("ordem", mapper.toDTO(ordemCriada));
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
                 } else {
                     System.out.println("✅ Detectado formato simples (clienteId como número)");
-                    OrdemServicoCreateDTO ordemDTO = mapper.convertValue(payload, OrdemServicoCreateDTO.class);
+                    OrdemServicoCreateDTO ordemDTO = objectMapper.convertValue(payload, OrdemServicoCreateDTO.class);
                     OrdemServico ordemCriada = ordemServicoService.criarOrdemServico(ordemDTO);
                     response.put("message", "Ordem de serviço criada com sucesso!");
                     response.put("id", ordemCriada.getId().toString());
-                    response.put("ordem", this.mapper.toDTO(ordemCriada));
+                    response.put("ordem", mapper.toDTO(ordemCriada));
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
                 }
             } catch (IllegalArgumentException e) {
