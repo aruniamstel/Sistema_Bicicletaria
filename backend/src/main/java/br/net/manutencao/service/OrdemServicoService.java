@@ -1,6 +1,7 @@
 package br.net.manutencao.service;
 
 import br.net.manutencao.DTO.OrdemServicoCreateDTO;
+import br.net.manutencao.DTO.OrdemServicoCreateComplexDTO;
 import br.net.manutencao.model.*;
 import br.net.manutencao.repository.*;
 import br.net.manutencao.exception.ResourceNotFoundException;
@@ -289,5 +290,110 @@ public class OrdemServicoService {
     @Transactional(readOnly = true)
     public List<OrdemServico> buscarOrdensPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
         return ordemServicoRepository.findByPeriodo(dataInicio, dataFim);
+    }
+
+    /**
+     * Método para criar ordem de serviço com payload completo do frontend
+     * Suporta objeto com cliente, bicicleta, serviços e peças aninhados
+     */
+    @Transactional
+    public OrdemServico criarOrdemServicoCompleta(OrdemServicoCreateComplexDTO ordemDTO) {
+        OrdemServico novaOrdem = new OrdemServico();
+
+        // 1. Buscar e validar cliente
+        if (ordemDTO.getCliente() == null || ordemDTO.getCliente().getId() == null) {
+            throw new IllegalArgumentException("Cliente é obrigatório");
+        }
+        Cliente cliente = clienteRepository.findById(ordemDTO.getCliente().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + ordemDTO.getCliente().getId()));
+
+        // 2. Buscar e validar bicicleta (opcional)
+        Bicicleta bicicleta = null;
+        if (ordemDTO.getBicicleta() != null && ordemDTO.getBicicleta().getId() != null) {
+            bicicleta = bicicletaRepository.findById(ordemDTO.getBicicleta().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + ordemDTO.getBicicleta().getId()));
+        }
+
+        // 3. Definir dados básicos
+        novaOrdem.setCliente(cliente);
+        novaOrdem.setBicicleta(bicicleta);
+        novaOrdem.setObservacoes(ordemDTO.getObservacoes() != null ? ordemDTO.getObservacoes() : "");
+        novaOrdem.setDataEntrada(LocalDateTime.now());
+        
+        // Parse da data de previsão
+        LocalDateTime dataPrevisao = LocalDateTime.now().plusDays(3); // Padrão: 3 dias
+        if (ordemDTO.getDataPrevisaoSaida() != null && !ordemDTO.getDataPrevisaoSaida().trim().isEmpty()) {
+            try {
+                // Tenta parsear como LocalDate (formato ISO: YYYY-MM-DD)
+                LocalDate dataParsed = LocalDate.parse(ordemDTO.getDataPrevisaoSaida());
+                dataPrevisao = dataParsed.atStartOfDay();
+            } catch (Exception e) {
+                // Se falhar, mantém o padrão
+                System.err.println("⚠️ Erro ao parsear data de previsão: " + e.getMessage());
+            }
+        }
+        novaOrdem.setDataPrevisaoSaida(dataPrevisao);
+        
+        novaOrdem.setStatus(StatusOrdem.ABERTA);
+        novaOrdem.setValorTotal(BigDecimal.ZERO);
+        novaOrdem.setExibirAviso30Dias(ordemDTO.getExibirAviso30Dias() != null ? ordemDTO.getExibirAviso30Dias() : false);
+
+        // Salvar ordem básica
+        OrdemServico ordemSalva = ordemServicoRepository.save(novaOrdem);
+
+        // 4. Adicionar serviços
+        if (ordemDTO.getServicos() != null && !ordemDTO.getServicos().isEmpty()) {
+            for (OrdemServicoCreateComplexDTO.ServicoSelecionado servicoSel : ordemDTO.getServicos()) {
+                if (servicoSel.getServico() != null && servicoSel.getServico().getId() != null) {
+                    Long servicoId = servicoSel.getServico().getId();
+                    Integer quantidade = servicoSel.getQuantidade() != null ? servicoSel.getQuantidade() : 1;
+                    
+                    Servico servico = servicoRepository.findById(servicoId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + servicoId));
+                    
+                    OrdemServicoServico ordemServicoServico = new OrdemServicoServico();
+                    ordemServicoServico.setOrdemServico(ordemSalva);
+                    ordemServicoServico.setServico(servico);
+                    ordemServicoServico.setQuantidade(quantidade);
+                    ordemServicoServico.setValor(servico.getValor());
+                    
+                    ordemServicoServicoRepository.save(ordemServicoServico);
+                    ordemSalva.getServicos().add(ordemServicoServico);
+                }
+            }
+        }
+
+        // 5. Adicionar peças
+        if (ordemDTO.getPecas() != null && !ordemDTO.getPecas().isEmpty()) {
+            for (OrdemServicoCreateComplexDTO.PecaSelecionada pecaSel : ordemDTO.getPecas()) {
+                if (pecaSel.getPeca() != null && pecaSel.getPeca().getId() != null) {
+                    Long pecaId = pecaSel.getPeca().getId();
+                    Integer quantidade = pecaSel.getQuantidade() != null ? pecaSel.getQuantidade() : 1;
+                    
+                    Peca peca = pecaRepository.findById(pecaId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada com ID: " + pecaId));
+                    
+                    // Validar estoque
+                    if (peca.getQuantidade() < quantidade) {
+                        throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getDescricao() + 
+                                ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
+                    }
+                    
+                    OrdemServicoPeca ordemServicoPeca = new OrdemServicoPeca();
+                    ordemServicoPeca.setOrdemServico(ordemSalva);
+                    ordemServicoPeca.setPeca(peca);
+                    ordemServicoPeca.setQuantidade(quantidade);
+                    ordemServicoPeca.setValor(peca.getValor());
+                    
+                    ordemServicoPecaRepository.save(ordemServicoPeca);
+                    ordemSalva.getPecas().add(ordemServicoPeca);
+                }
+            }
+        }
+
+        // 6. Calcular valor total
+        calcularValorTotal(ordemSalva.getId());
+
+        return ordemServicoRepository.save(ordemSalva);
     }
 }

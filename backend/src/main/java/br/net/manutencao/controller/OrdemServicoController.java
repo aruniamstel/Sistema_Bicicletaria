@@ -1,6 +1,7 @@
 package br.net.manutencao.controller;
 
 import br.net.manutencao.DTO.OrdemServicoCreateDTO;
+import br.net.manutencao.DTO.OrdemServicoCreateComplexDTO;
 import br.net.manutencao.DTO.OrdemServicoDTO;
 import br.net.manutencao.DTO.OrdemServicoMapper;
 import br.net.manutencao.DTO.AdicionarServicoPecaDTO;
@@ -85,28 +86,62 @@ public class OrdemServicoController {
 
     // Endpoint para criar nova ordem de serviço
     @PostMapping
-    public ResponseEntity<?> criarOrdemServico(@RequestBody OrdemServicoCreateDTO novaOrdem) {
-        System.out.println("=== DEBUG ORDEM SERVICO ===");
-        System.out.println("Cliente ID: " + novaOrdem.getClienteId());
-        System.out.println("Bicicleta ID: " + novaOrdem.getBicicletaId());
-        System.out.println("Data Previsão Saída: " + novaOrdem.getDataPrevisaoSaida());
-        System.out.println("Observações: " + novaOrdem.getObservacoes());
-
+    public ResponseEntity<?> criarOrdemServico(@RequestBody Map<String, Object> payload) {
         Map<String, Object> response = new HashMap<>();
+        
         try {
-            OrdemServico ordemCriada = ordemServicoService.criarOrdemServico(novaOrdem);
-            response.put("message", "Ordem de serviço criada com sucesso!");
-            response.put("id", ordemCriada.getId().toString());
-            response.put("ordem", mapper.toDTO(ordemCriada));
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            
+            // Detectar qual formato baseado na presença de campos
+            boolean isComplexFormat = payload.containsKey("cliente") && payload.get("cliente") instanceof Map;
+            boolean isSimpleFormat = payload.containsKey("clienteId") && payload.get("clienteId") != null;
+            
+            if (!isComplexFormat && !isSimpleFormat) {
+                response.put("error", "Payload inválido");
+                response.put("details", "Deve conter 'cliente' (objeto) ou 'clienteId' (número)");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            
+            try {
+                if (isComplexFormat) {
+                    System.out.println("✅ Detectado formato complexo (cliente como objeto)");
+                    OrdemServicoCreateComplexDTO ordemDTO = mapper.convertValue(payload, OrdemServicoCreateComplexDTO.class);
+                    OrdemServico ordemCriada = ordemServicoService.criarOrdemServicoCompleta(ordemDTO);
+                    response.put("message", "Ordem de serviço criada com sucesso!");
+                    response.put("id", ordemCriada.getId().toString());
+                    response.put("ordem", this.mapper.toDTO(ordemCriada));
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                } else {
+                    System.out.println("✅ Detectado formato simples (clienteId como número)");
+                    OrdemServicoCreateDTO ordemDTO = mapper.convertValue(payload, OrdemServicoCreateDTO.class);
+                    OrdemServico ordemCriada = ordemServicoService.criarOrdemServico(ordemDTO);
+                    response.put("message", "Ordem de serviço criada com sucesso!");
+                    response.put("id", ordemCriada.getId().toString());
+                    response.put("ordem", this.mapper.toDTO(ordemCriada));
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                }
+            } catch (IllegalArgumentException e) {
+                System.err.println("❌ Erro de validação: " + e.getMessage());
+                response.put("error", "Dados inválidos");
+                response.put("details", e.getMessage());
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            } catch (Exception e) {
+                System.err.println("❌ Erro ao desserializar: " + e.getMessage());
+                response.put("error", "Erro ao processar payload");
+                response.put("details", e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            
+        } catch (ResourceNotFoundException e) {
+            System.err.println("❌ Recurso não encontrado: " + e.getMessage());
             response.put("error", e.getMessage());
-            return ResponseEntity.status(409).body(response);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
+            System.err.println("❌ Erro no servidor: " + e.getMessage());
             e.printStackTrace();
             response.put("error", "Erro no servidor. Tente novamente mais tarde.");
-            return ResponseEntity.status(500).body(response);
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
