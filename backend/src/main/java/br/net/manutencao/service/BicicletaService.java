@@ -35,4 +35,57 @@ public class BicicletaService {
     public List<Bicicleta> listarPorCliente(Long clienteId) {
         return bicicletaRepository.findByClienteId(clienteId);
     }
+
+    @Transactional
+    public Bicicleta atualizar(Long id, Bicicleta bicicletaAtualizada) {
+        // Validar ID
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("ID inválido");
+        }
+
+        // Buscar bicicleta existente
+        Bicicleta bicicleta = bicicletaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + id));
+
+        // Atualizar apenas os campos fornecidos
+        if (bicicletaAtualizada.getMarca() != null && !bicicletaAtualizada.getMarca().trim().isEmpty()) {
+            bicicleta.setMarca(bicicletaAtualizada.getMarca());
+        }
+        if (bicicletaAtualizada.getModelo() != null && !bicicletaAtualizada.getModelo().trim().isEmpty()) {
+            bicicleta.setModelo(bicicletaAtualizada.getModelo());
+        }
+        if (bicicletaAtualizada.getTamanhoAro() != null) {
+            if (bicicletaAtualizada.getTamanhoAro() < 12 || bicicletaAtualizada.getTamanhoAro() > 29) {
+                throw new IllegalArgumentException("Tamanho do aro deve estar entre 12 e 29 polegadas");
+            }
+            bicicleta.setTamanhoAro(bicicletaAtualizada.getTamanhoAro());
+        }
+        if (bicicletaAtualizada.getCor() != null && !bicicletaAtualizada.getCor().trim().isEmpty()) {
+            bicicleta.setCor(bicicletaAtualizada.getCor());
+        }
+        if (bicicletaAtualizada.getCliente() != null) {
+            bicicleta.setCliente(bicicletaAtualizada.getCliente());
+        }
+
+        return bicicletaRepository.save(bicicleta);
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        // Validar ID
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("ID inválido");
+        }
+
+        // Buscar bicicleta existente
+        Bicicleta bicicleta = bicicletaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + id));
+
+        // Verificar se há ordens de serviço associadas
+        if (bicicleta.getOrdensServico() != null && !bicicleta.getOrdensServico().isEmpty()) {
+            throw new IllegalStateException("Não é possível deletar a bicicleta pois existem ordens de serviço associadas");
+        }
+
+        bicicletaRepository.delete(bicicleta);
+    }
 }

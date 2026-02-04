@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/pecas")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class PecaController {
 
     @Autowired
