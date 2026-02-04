@@ -93,4 +93,11 @@ public class ServicoService {
         return servicoRepository.existsById(id);
     }
 
+    /**
+     * Buscar serviços por descrição (parcial)
+     */
+    @Transactional(readOnly = true)
+    public List<Servico> buscarPorDescricao(String descricao) {
+        return servicoRepository.findByDescricao(descricao);
+    }
 }

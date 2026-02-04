@@ -103,6 +103,14 @@ public class PecaService {
     }
 
     /**
+     * Buscar peças por descrição (parcial)
+     */
+    @Transactional(readOnly = true)
+    public List<Peca> buscarPorDescricao(String descricao) {
+        return pecaRepository.findByDescricao(descricao);
+    }
+
+    /**
      * Atualizar quantidade de peça (para controle de estoque)
      */
     @Transactional
