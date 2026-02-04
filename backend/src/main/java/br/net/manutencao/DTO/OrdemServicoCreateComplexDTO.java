@@ -1,6 +1,7 @@
 package br.net.manutencao.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrdemServicoCreateComplexDTO {
     
     // Dados básicos da ordem
@@ -49,6 +51,7 @@ public class OrdemServicoCreateComplexDTO {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ClienteData {
         private Long id;
         private String nome;
@@ -61,6 +64,7 @@ public class OrdemServicoCreateComplexDTO {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class BicicletaData {
         private Long id;
         private String marca;
@@ -73,6 +77,7 @@ public class OrdemServicoCreateComplexDTO {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ServicoSelecionado {
         private ServicoData servico;
         private Integer quantidade;
@@ -80,6 +85,7 @@ public class OrdemServicoCreateComplexDTO {
         @Data
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class ServicoData {
             private Long id;
             private String descricao;
@@ -91,6 +97,7 @@ public class OrdemServicoCreateComplexDTO {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PecaSelecionada {
         private PecaData peca;
         private Integer quantidade;
@@ -98,6 +105,7 @@ public class OrdemServicoCreateComplexDTO {
         @Data
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class PecaData {
             private Long id;
             private String descricao;

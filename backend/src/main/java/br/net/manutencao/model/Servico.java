@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -26,5 +27,6 @@ public class Servico {
     private BigDecimal valor;
 
     @OneToMany(mappedBy = "servico", fetch = jakarta.persistence.FetchType.LAZY)
+    @JsonIgnore
     private List<OrdemServicoServico> ordemServicoServicos = new ArrayList<>();
 }

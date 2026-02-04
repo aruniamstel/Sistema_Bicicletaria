@@ -1,6 +1,7 @@
 package br.net.manutencao.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class OrdemServicoServico {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordem_servico_id")
+    @JsonIgnore
     private OrdemServico ordemServico;
 
     @ManyToOne(fetch = FetchType.LAZY)

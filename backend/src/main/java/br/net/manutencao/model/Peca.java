@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class Peca {
     private Integer quantidade;
 
     @OneToMany(mappedBy = "peca", fetch = jakarta.persistence.FetchType.LAZY)
+    @JsonIgnore
     private List<OrdemServicoPeca> ordemServicoPecas = new ArrayList<>();
 }
     
