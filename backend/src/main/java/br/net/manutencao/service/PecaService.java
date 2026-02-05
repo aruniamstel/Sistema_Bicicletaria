@@ -61,7 +61,7 @@ public class PecaService {
     public Peca atualizar(Long id, Peca pecaAtualizada) {
         Peca pecaExistente = buscarPorId(id);
         
-        // Validações
+        // Atualizar campos obrigatórios
         if (pecaAtualizada.getDescricao() != null && !pecaAtualizada.getDescricao().trim().isEmpty()) {
             pecaExistente.setDescricao(pecaAtualizada.getDescricao());
         }
@@ -70,8 +70,21 @@ public class PecaService {
             pecaExistente.setValor(pecaAtualizada.getValor());
         }
         
+        // Atualizar campos opcionais
         if (pecaAtualizada.getQuantidade() != null) {
             pecaExistente.setQuantidade(pecaAtualizada.getQuantidade());
+        }
+        
+        if (pecaAtualizada.getCodigoInterno() != null) {
+            pecaExistente.setCodigoInterno(pecaAtualizada.getCodigoInterno());
+        }
+        
+        if (pecaAtualizada.getCategoria() != null) {
+            pecaExistente.setCategoria(pecaAtualizada.getCategoria());
+        }
+        
+        if (pecaAtualizada.getSubcategoria() != null) {
+            pecaExistente.setSubcategoria(pecaAtualizada.getSubcategoria());
         }
         
         return pecaRepository.save(pecaExistente);
