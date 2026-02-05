@@ -150,59 +150,99 @@ public class OrdemServicoController {
     // Endpoint para adicionar serviço à ordem
     @PostMapping("/{id}/servicos")
     public ResponseEntity<?> adicionarServico(@PathVariable Long id, @RequestBody AdicionarServicoPecaDTO servicoDTO) {
+        Map<String, Object> response = new HashMap<>();
         try {
             OrdemServico ordem = ordemServicoService.adicionarServico(
                 id, 
                 servicoDTO.getItemId(), 
                 servicoDTO.getQuantidade()
             );
-            return ResponseEntity.ok(Map.of(
-                "message", "Serviço adicionado com sucesso!",
-                "valorTotal", ordem.getValorTotal()
-            ));
+            response.put("message", "Serviço adicionado com sucesso!");
+            response.put("ordem", mapper.toDTO(ordem));
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            response.put("error", "Recurso não encontrado");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (IllegalArgumentException e) {
+            response.put("error", "Dados inválidos");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                "error", "Erro ao adicionar serviço",
-                "details", e.getMessage()
-            ));
+            response.put("error", "Erro ao adicionar serviço");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     // Endpoint para adicionar peça à ordem
     @PostMapping("/{id}/pecas")
     public ResponseEntity<?> adicionarPeca(@PathVariable Long id, @RequestBody AdicionarServicoPecaDTO pecaDTO) {
+        Map<String, Object> response = new HashMap<>();
         try {
             OrdemServico ordem = ordemServicoService.adicionarPeca(
                 id, 
                 pecaDTO.getItemId(), 
                 pecaDTO.getQuantidade()
             );
-            return ResponseEntity.ok(Map.of(
-                "message", "Peça adicionada com sucesso!",
-                "valorTotal", ordem.getValorTotal()
-            ));
+            response.put("message", "Peça adicionada com sucesso!");
+            response.put("ordem", mapper.toDTO(ordem));
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            response.put("error", "Recurso não encontrado");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (IllegalArgumentException e) {
+            response.put("error", "Dados inválidos");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                "error", "Erro ao adicionar peça",
-                "details", e.getMessage()
-            ));
+            response.put("error", "Erro ao adicionar peça");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     // Endpoint para alterar status da ordem
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> alterarStatus(@PathVariable Long id, @RequestParam StatusOrdem novoStatus) {
+    public ResponseEntity<?> alterarStatus(@PathVariable Long id, 
+                                          @RequestParam(required = false) StatusOrdem novoStatus,
+                                          @RequestBody(required = false) Map<String, Object> body) {
+        Map<String, Object> response = new HashMap<>();
+        
         try {
-            OrdemServico ordem = ordemServicoService.alterarStatus(id, novoStatus);
-            return ResponseEntity.ok(Map.of(
-                "message", "Status alterado com sucesso!",
-                "novoStatus", ordem.getStatus()
-            ));
+            // Tentar extrair status do body se não fornecido como query parameter
+            StatusOrdem statusParaAlterar = novoStatus;
+            
+            if (statusParaAlterar == null && body != null && body.containsKey("status")) {
+                String statusStr = body.get("status").toString().toUpperCase();
+                statusParaAlterar = StatusOrdem.valueOf(statusStr);
+            }
+            
+            if (statusParaAlterar == null) {
+                response.put("error", "Status não fornecido");
+                response.put("details", "Envie 'novoStatus' como query parameter ou 'status' no body da requisição");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            
+            OrdemServico ordem = ordemServicoService.alterarStatus(id, statusParaAlterar);
+            response.put("message", "Status alterado com sucesso!");
+            response.put("novoStatus", ordem.getStatus().toString());
+            response.put("ordem", mapper.toDTO(ordem));
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            response.put("error", "Status inválido");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (ResourceNotFoundException e) {
+            response.put("error", "Ordem não encontrada");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Erro ao alterar status");
-            errorResponse.put("details", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            response.put("error", "Erro ao alterar status");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 

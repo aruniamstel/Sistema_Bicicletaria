@@ -140,8 +140,10 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
     this.ordemService.addServico(this.ordem.id, servicoId, quantidade)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (ordem) => {
-          this.ordem = ordem;
+        next: (response) => {
+          // Handle both old format and new format ({ message, ordem })
+          const updatedOrdem = response.ordem || response;
+          this.ordem = updatedOrdem;
           this.successMessage = '✅ Serviço adicionado com sucesso!';
           this.servicoForm.reset({ quantidade: 1 });
           this.loading = false;
@@ -167,8 +169,10 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
     this.ordemService.updateStatus(this.ordem.id, status)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (ordem) => {
-          this.ordem = ordem;
+        next: (response) => {
+          // Handle both old format and new format ({ message, ordem })
+          const updatedOrdem = response.ordem || response;
+          this.ordem = updatedOrdem;
           this.successMessage = '✅ Status atualizado com sucesso!';
           this.loading = false;
         },

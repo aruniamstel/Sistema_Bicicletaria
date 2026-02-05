@@ -126,7 +126,9 @@ export class OrdemListComponent implements OnInit {
 
   updateStatus(ordem: OrdemServico, newStatus: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE'): void {
     this.ordemService.updateStatus(ordem.id!, newStatus).subscribe({
-      next: (updatedOrdem) => {
+      next: (response) => {
+        // Handle both old format (direct order) and new format ({ message, ordem })
+        const updatedOrdem = response.ordem || response;
         const index = this.ordensServico.findIndex(o => o.id === ordem.id);
         if (index !== -1) {
           this.ordensServico[index] = updatedOrdem;
