@@ -26,6 +26,9 @@ public class Peca {
     private String descricao;
     private BigDecimal valor;
     private Integer quantidade;
+    private String codigoInterno;
+    private String categoria;
+    private String subcategoria;
 
     @OneToMany(mappedBy = "peca", fetch = jakarta.persistence.FetchType.LAZY)
     @JsonIgnore

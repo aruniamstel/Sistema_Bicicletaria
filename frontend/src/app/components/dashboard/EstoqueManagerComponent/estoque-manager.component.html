@@ -15,14 +15,20 @@
   <form [formGroup]="pecaForm" (ngSubmit)="salvarPeca()" class="crud-form">
     <div class="form-row">
       <div class="form-field full-width">
-        <label>Descrição da Peça</label>
+        <label>Descrição da Peça <span class="required">*</span></label>
         <input type="text" formControlName="descricao" placeholder="Ex: Pneu 26\, Corrente, Pedal...">
+        <small *ngIf="pecaForm.get('descricao')?.invalid && pecaForm.get('descricao')?.touched" class="error-text">
+          Descrição é obrigatória
+        </small>
       </div>
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label>Valor (R$)</label>
+        <label>Valor (R$) <span class="required">*</span></label>
         <input type="number" formControlName="valor" step="0.01" placeholder="0.00">
+        <small *ngIf="pecaForm.get('valor')?.invalid && pecaForm.get('valor')?.touched" class="error-text">
+          Valor é obrigatório e deve ser maior que 0
+        </small>
       </div>
       <div class="form-field">
         <label>Quantidade em Estoque</label>
@@ -47,8 +53,8 @@
       <button type="button" class="btn-secondary" (click)="cancelarEdicaoPeca()" *ngIf="editingPeca">
         ❌ Cancelar
       </button>
-      <button type="submit" class="btn-primary" [disabled]="pecaForm.invalid">
-        {{ editingPeca ? '💾 Atualizar' : '✅ Salvar' }} Peça
+      <button type="submit" class="btn-primary" [disabled]="pecaForm.invalid || loadingOperation">
+        {{ loadingOperation ? '⏳ Salvando...' : (editingPeca ? '💾 Atualizar' : '✅ Criar') }} Peça
       </button>
     </div>
   </form>
@@ -104,15 +110,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let peca of pecasFiltradas" [class.low-stock]="peca.quantidade < 5" class="table-row">
+        <tr *ngFor="let peca of pecasFiltradas" [class.low-stock]="(peca.quantidade ?? 0) < 5" class="table-row">
           <td class="col-descricao">{{ peca.descricao }}</td>
           <td class="col-codigo">{{ peca.codigoInterno || '-' }}</td>
           <td class="col-categoria">{{ peca.categoria || '-' }}</td>
           <td class="col-subcategoria">{{ peca.subcategoria || '-' }}</td>
           <td class="col-valor">R$ {{ peca.valor | number:'1.2-2' }}</td>
           <td class="col-estoque">
-            <span [class]="peca.quantidade < 5 ? 'stock-low' : 'stock-ok'">
-              {{ peca.quantidade }} unidades
+            <span [class]="(peca.quantidade ?? 0) < 5 ? 'stock-low' : 'stock-ok'">
+              {{ peca.quantidade ?? 0 }} unidades
             </span>
           </td>
           <td class="col-actions">

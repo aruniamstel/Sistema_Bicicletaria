@@ -37,9 +37,9 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
     private pecaService: PecaService
   ) {
     this.pecaForm = this.fb.group({
-      nome: ['', Validators.required],
-      valorVenda: ['', [Validators.required, Validators.min(0)]],
-      quantidadeEstoque: ['', [Validators.min(0)]],
+      descricao: ['', Validators.required],
+      valor: ['', [Validators.required, Validators.min(0.01)]],
+      quantidade: ['', [Validators.min(0)]],
       codigoInterno: [''],
       categoria: [''],
       subcategoria: ['']
@@ -51,15 +51,17 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
       categoria: [''],
       subcategoria: ['']
     });
-
-    // Filtragem reativa
-    this.filtrosForm.valueChanges.subscribe(() => {
-      this.aplicarFiltros();
-    });
   }
 
   ngOnInit(): void {
     this.carregarDados();
+    
+    // Aplicar filtros apenas quando o usuário muda os valores (skipInitial=true)
+    this.filtrosForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.aplicarFiltros();
+      });
   }
 
   ngOnDestroy(): void {
@@ -89,7 +91,7 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
 
   salvarPeca(): void {
     if (this.pecaForm.invalid) {
-      this.errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      this.errorMessage = 'Por favor, preencha todos os campos obrigatórios (descrição e valor).';
       return;
     }
 
@@ -99,9 +101,9 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
 
     const formValue = this.pecaForm.value;
     const pecaData: Peca = {
-      nome: formValue.nome,
-      valorVenda: formValue.valorVenda,
-      quantidadeEstoque: formValue.quantidadeEstoque ?? 0,
+      descricao: formValue.descricao,
+      valor: formValue.valor,
+      quantidade: formValue.quantidade ?? 0,
       codigoInterno: formValue.codigoInterno || undefined,
       categoria: formValue.categoria || undefined,
       subcategoria: formValue.subcategoria || undefined
@@ -121,7 +123,7 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('❌ Erro ao atualizar peça:', error);
-            this.errorMessage = 'Erro ao atualizar peça. Tente novamente.';
+            this.errorMessage = 'Erro ao atualizar peça: ' + error.message;
             this.loadingOperation = false;
           }
         });
@@ -138,7 +140,7 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('❌ Erro ao criar peça:', error);
-            this.errorMessage = 'Erro ao criar peça. Tente novamente.';
+            this.errorMessage = 'Erro ao criar peça: ' + error.message;
             this.loadingOperation = false;
           }
         });
@@ -148,9 +150,9 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
   editarPeca(peca: Peca): void {
     this.editingPeca = peca;
     this.pecaForm.patchValue({
-      nome: peca.nome,
-      valorVenda: peca.valorVenda,
-      quantidadeEstoque: peca.quantidadeEstoque,
+      descricao: peca.descricao,
+      valor: peca.valor,
+      quantidade: peca.quantidade || 0,
       codigoInterno: peca.codigoInterno || '',
       categoria: peca.categoria || '',
       subcategoria: peca.subcategoria || ''
@@ -192,7 +194,7 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
 
     if (filtros.termoBusca) {
       filtradas = filtradas.filter(peca =>
-        peca.nome.toLowerCase().includes(filtros.termoBusca.toLowerCase())
+        peca.descricao.toLowerCase().includes(filtros.termoBusca.toLowerCase())
       );
     }
 
