@@ -47,6 +47,20 @@ public class OrdemServico {
 
     private boolean exibirAviso30Dias;
 
+    // Auto-preencher dataEntrada ao criar uma nova ordem
+    @PrePersist
+    protected void onCreate() {
+        if (this.dataEntrada == null) {
+            this.dataEntrada = LocalDateTime.now();
+        }
+        if (this.status == null) {
+            this.status = StatusOrdem.ABERTA;
+        }
+        if (this.valorTotal == null) {
+            this.valorTotal = BigDecimal.ZERO;
+        }
+    }
+
     // Método para calcular valor total
     public BigDecimal calcularValorTotal() {
         BigDecimal totalServicos = servicos.stream()

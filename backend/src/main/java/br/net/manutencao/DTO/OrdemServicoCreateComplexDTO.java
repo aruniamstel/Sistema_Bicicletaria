@@ -2,6 +2,7 @@ package br.net.manutencao.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ public class OrdemServicoCreateComplexDTO {
     
     // Dados básicos da ordem
     @JsonProperty("dataEntrada")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataEntrada;
     
     @JsonProperty("dataPrevisaoSaida")

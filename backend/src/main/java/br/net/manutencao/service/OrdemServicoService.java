@@ -106,6 +106,25 @@ public class OrdemServicoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ordem de serviço não encontrada com o ID: " + id));
     }
 
+    // Método auxiliar para buscar ordem com todas as relações inicializadas
+    @Transactional(readOnly = true)
+    public OrdemServico getOrdemServicoCompletoById(Long id) {
+        OrdemServico ordem = ordemServicoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ordem de serviço não encontrada com o ID: " + id));
+        
+        // Forçar inicialização das relações lazy
+        if (ordem.getCliente() != null) {
+            ordem.getCliente().getNome(); // acessa propriedade para inicializar
+        }
+        if (ordem.getBicicleta() != null) {
+            ordem.getBicicleta().getMarca(); // acessa propriedade para inicializar
+        }
+        ordem.getServicos().size(); // inicializa lista
+        ordem.getPecas().size(); // inicializa lista
+        
+        return ordem;
+    }
+
     // Método principal para criar nova ordem de serviço
     @Transactional
     public OrdemServico criarOrdemServico(OrdemServicoCreateDTO ordemDTO) {
@@ -129,7 +148,10 @@ public class OrdemServicoService {
         novaOrdem.setValorTotal(BigDecimal.ZERO);
         novaOrdem.setExibirAviso30Dias(false);
 
-        return ordemServicoRepository.save(novaOrdem);
+        OrdemServico ordemSalva = ordemServicoRepository.save(novaOrdem);
+        
+        // Retornar ordem com relações inicializadas (evita LazyInitializationException)
+        return getOrdemServicoCompletoById(ordemSalva.getId());
     }
 
     // Método para adicionar serviço à ordem
@@ -161,7 +183,10 @@ public class OrdemServicoService {
             ordem.getServicos().add(ordemServicoServico);
         }
         
-        return ordemServicoRepository.save(ordem);
+        ordemServicoRepository.save(ordem);
+        
+        // Retornar ordem com relações inicializadas
+        return getOrdemServicoCompletoById(ordem.getId());
     }
 
     // Método para adicionar peça à ordem
@@ -203,7 +228,10 @@ public class OrdemServicoService {
         peca.setQuantidade(peca.getQuantidade() - quantidade);
         pecaRepository.save(peca);
         
-        return ordemServicoRepository.save(ordem);
+        ordemServicoRepository.save(ordem);
+        
+        // Retornar ordem com relações inicializadas
+        return getOrdemServicoCompletoById(ordem.getId());
     }
 
     // Método para alterar status da ordem
@@ -223,7 +251,10 @@ public class OrdemServicoService {
         }
 
         ordem.setStatus(novoStatus);
-        return ordemServicoRepository.save(ordem);
+        ordemServicoRepository.save(ordem);
+        
+        // Retornar ordem com relações inicializadas
+        return getOrdemServicoCompletoById(ordem.getId());
     }
 
     // Método para calcular valor total
@@ -394,6 +425,9 @@ public class OrdemServicoService {
         // 6. Calcular valor total
         calcularValorTotal(ordemSalva.getId());
 
-        return ordemServicoRepository.save(ordemSalva);
+        ordemServicoRepository.save(ordemSalva);
+        
+        // Retornar ordem com relações inicializadas (evita LazyInitializationException)
+        return getOrdemServicoCompletoById(ordemSalva.getId());
     }
 }

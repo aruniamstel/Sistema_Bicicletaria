@@ -13,42 +13,41 @@
       
       <div class="info-row">
         <span class="info-label">Cliente:</span>
-  <span class="info-value">{{ ordem?.bicicleta?.cliente?.nome }}</span>
+        <span class="info-value">{{ ordem?.cliente?.nome || 'AVULSA' }}</span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Telefone:</span>
-  <span class="info-value">{{ ordem?.bicicleta?.cliente?.telefone }}</span>
+        <span class="info-value">{{ ordem?.cliente?.telefone || '-' }}</span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Bicicleta:</span>
-        <span class="info-value">
-          {{ ordem?.bicicleta?.marca }} - {{ ordem?.bicicleta?.modelo }}
-          ({{ ordem?.bicicleta?.cor }})
+        <span class="info-value" *ngIf="ordem?.bicicleta">
+          {{ ordem.bicicleta.marca }} - {{ ordem.bicicleta.modelo }}
+          ({{ ordem.bicicleta.cor }})
         </span>
+        <span class="info-value" *ngIf="!ordem?.bicicleta">AVULSA</span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Data de Entrada:</span>
-  <span class="info-value">{{ ordem?.dataEntrada | date:'dd/MM/yyyy' }}</span>
+        <span class="info-value">{{ ordem?.dataEntrada ? (ordem.dataEntrada | date:'dd/MM/yyyy HH:mm') : '-' }}</span>
+      </div>
+      
+      <div class="info-row">
+        <span class="info-label">Previsão de Saída:</span>
+        <span class="info-value">{{ ordem?.dataPrevisaoSaida ? (ordem.dataPrevisaoSaida | date:'dd/MM/yyyy') : 'Não definida' }}</span>
       </div>
       
       <div class="info-row">
         <span class="info-label">Data de Saída:</span>
-        <span class="info-value">
-          {{ ordem?.dataSaida ? (ordem.dataSaida | date:'dd/MM/yyyy') : 'Não definida' }}
-        </span>
-      </div>
-      
-      <div class="info-row">
-        <span class="info-label">Problema Relatado:</span>
-  <span class="info-value">{{ ordem?.problemaRelatado }}</span>
+        <span class="info-value">{{ ordem?.dataSaidaReal ? (ordem.dataSaidaReal | date:'dd/MM/yyyy') : 'Não finalizada' }}</span>
       </div>
       
       <div class="info-row" *ngIf="ordem.observacoes">
         <span class="info-label">Observações:</span>
-  <span class="info-value">{{ ordem?.observacoes }}</span>
+        <span class="info-value">{{ ordem?.observacoes }}</span>
       </div>
     </div>
 

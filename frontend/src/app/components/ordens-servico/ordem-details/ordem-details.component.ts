@@ -156,6 +156,37 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  addPeca(): void {
+    if (this.pecaForm.invalid || !this.ordem?.id) {
+      this.errorMessage = 'Selecione uma peça válida';
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const { pecaId, quantidade } = this.pecaForm.value;
+
+    this.ordemService.addPeca(this.ordem.id, pecaId, quantidade)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          // Handle both old format and new format ({ message, ordem })
+          const updatedOrdem = response.ordem || response;
+          this.ordem = updatedOrdem;
+          this.successMessage = '✅ Peça adicionada com sucesso!';
+          this.pecaForm.reset({ quantidade: 1 });
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao adicionar peça:', error);
+          this.errorMessage = 'Erro ao adicionar peça: ' + error.message;
+          this.loading = false;
+        }
+      });
+  }
+
   updateStatus(status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE'): void {
     if (!this.ordem?.id) {
       this.errorMessage = 'Ordem não encontrada';
