@@ -4,10 +4,8 @@ import { Router } from '@angular/router';
 import { 
   CalendarModule, 
   CalendarEvent, 
-  CalendarView, 
-  DateAdapter 
+  CalendarView
 } from 'angular-calendar';
-import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { addMonths, subMonths, startOfToday } from 'date-fns';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -53,7 +51,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Carrega as ordens de serviço do backend
+   * Carrega as ordens de serviço do backend via API
    */
   carregarOrdensServico(): void {
     this.loading = true;
@@ -63,7 +61,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (ordens: OrdemServico[]) => {
-          console.log('✅ Ordens carregadas:', ordens);
+          console.log('✅ Ordens carregadas da API:', ordens.length);
+          // Mapear para CalendarEvent dentro do subscribe
           this.events = ordens.map(os => this.mapearParaCalendarEvent(os));
           this.loading = false;
         },
@@ -77,22 +76,29 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   /**
    * Converte uma ordem de serviço para evento de calendário
+   * O backend envia datas como strings ISO, convertemos para Date aqui
    */
   mapearParaCalendarEvent(os: OrdemServico): CalendarEvent {
     let dataEntrega: Date;
     
-    // Se tem dataPrevisaoSaida e ela é uma string válida
-    if (os.dataPrevisaoSaida && os.dataPrevisaoSaida.toString().trim()) {
+    // Se tem dataPrevisaoSaida e ela é uma string válida (ISO)
+    if (os.dataPrevisaoSaida && typeof os.dataPrevisaoSaida === 'string' && os.dataPrevisaoSaida.trim()) {
       dataEntrega = new Date(os.dataPrevisaoSaida);
       // Valida se a data é válida
       if (isNaN(dataEntrega.getTime())) {
         // Se a data for inválida, usa a dataEntrada + 3 dias
-        dataEntrega = new Date(os.dataEntrada);
+        const dataEntrada = new Date(os.dataEntrada);
+        dataEntrega = new Date(dataEntrada);
         dataEntrega.setDate(dataEntrega.getDate() + 3);
       }
-    } else {
+    } else if (os.dataEntrada) {
       // Se não tem dataPrevisaoSaida, usa dataEntrada + 3 dias
-      dataEntrega = new Date(os.dataEntrada);
+      const dataEntrada = new Date(os.dataEntrada);
+      dataEntrega = new Date(dataEntrada);
+      dataEntrega.setDate(dataEntrega.getDate() + 3);
+    } else {
+      // Fallback: hoje + 3 dias
+      dataEntrega = new Date();
       dataEntrega.setDate(dataEntrega.getDate() + 3);
     }
 

@@ -1,33 +1,15 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { HeaderComponent } from "../header/header.component";
 import { HistoricoBicicletaComponent } from "../dashboard/HistoricoBicicletaComponent/historico-bicicleta.component";
-
-export interface Bicicleta {
-  id?: number;
-  marca: string;
-  modelo: string;
-  tamanhoAro: number;
-  cor: string;
-  cliente: {
-    id: number;
-    nome: string;
-    telefone: string;
-    endereco: string;
-  };
-}
-
-export interface OrdemServico {
-  id?: number;
-  status: string;
-  dataEntrada: string;
-  dataPrevisaoSaida: string;
-  bicicleta: {
-    id: number;
-  };
-}
+import { BicicletaService } from '../../services/bicicleta.service';
+import { OrdemServicoService } from '../../services/ordem-servico.service';
+import { Bicicleta } from '../../shared/models/bicicleta.model';
+import { OrdemServico } from '../../shared/models/ordem-servico.model';
 
 @Component({
   selector: 'app-bicicletas-em-servico',
@@ -36,18 +18,33 @@ export interface OrdemServico {
   templateUrl: './bicicletas-em-servico.component.html',
   styleUrls: ['./bicicletas-em-servico.component.css']
 })
-export class BicicletasEmServicoComponent implements OnInit {
-  bicicletas: Bicicleta[] = [];
+export class BicicletasEmServicoComponent implements OnInit, OnDestroy {
+  // Dados
+  todasBicicletas: Bicicleta[] = [];
+  todasOrdensServico: OrdemServico[] = [];
   bicicletasEmServico: Bicicleta[] = [];
-  ordensServico: OrdemServico[] = [];
+  
+  // Formulário de filtros
   filtrosForm: FormGroup;
   
+  // Estado de carregamento
+  loading: boolean = false;
+  errorMessage: string = '';
+  
+  // Modal
   showModal = false;
   selectedBicicletaId: number | null = null;
 
   @ViewChild('modalHistorico') modal!: ElementRef<HTMLDialogElement>;
 
-  constructor(private fb: FormBuilder) {
+  // Cleanup
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private fb: FormBuilder,
+    private bicicletaService: BicicletaService,
+    private ordemServicoService: OrdemServicoService
+  ) {
     this.filtrosForm = this.fb.group({
       cliente: [''],
       dataEntradaInicio: [''],
@@ -64,82 +61,153 @@ export class BicicletasEmServicoComponent implements OnInit {
     this.carregarDados();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Carrega bicicletas e ordens de serviço do backend
+   */
   carregarDados(): void {
-    const bks = localStorage.getItem('bicicletas');
-    const ordens = localStorage.getItem('ordens-servico');
-    this.bicicletas = bks ? JSON.parse(bks) : [];
-    this.ordensServico = ordens ? JSON.parse(ordens) : [];
+    this.loading = true;
+    this.errorMessage = '';
 
-    console.log('📊 Bicicletas carregadas:', this.bicicletas.length);
-    console.log('📊 Ordens carregadas:', this.ordensServico.length);
+    // Carregar bicicletas
+    this.bicicletaService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (bicicletas) => {
+          this.todasBicicletas = bicicletas;
+          console.log('📊 Bicicletas carregadas:', this.todasBicicletas.length);
+          
+          // Após carregar bicicletas, carregar ordens
+          this.carregarOrdensServico();
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar bicicletas:', error);
+          this.errorMessage = 'Erro ao carregar bicicletas. Tente novamente.';
+          this.loading = false;
+        }
+      });
+  }
 
-    // Filtrar bicicletas que têm uma OS com status ativo (não Entregue)
-    this.bicicletasEmServico = this.bicicletas.filter(bike => {
-      const osDaBike = this.ordensServico.find(os => {
+  /**
+   * Carrega ordens de serviço e filtra bicicletas em serviço
+   */
+  private carregarOrdensServico(): void {
+    this.ordemServicoService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ordens) => {
+          this.todasOrdensServico = ordens;
+          console.log('📊 Ordens carregadas:', this.todasOrdensServico.length);
+          
+          // Filtrar bicicletas que têm uma OS com status ativo (não Entregue)
+          this.filtrarBicicletasEmServico();
+          this.aplicarFiltros();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar ordens:', error);
+          this.errorMessage = 'Erro ao carregar ordens de serviço. Tente novamente.';
+          this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Filtra apenas bicicletas que têm ordens de serviço em aberto
+   */
+  private filtrarBicicletasEmServico(): void {
+    this.bicicletasEmServico = this.todasBicicletas.filter(bike => {
+      const osDaBike = this.todasOrdensServico.find(os => {
         // Valida se bicicleta existe (pode ser null para serviços avulsos)
         if (!os.bicicleta || !os.bicicleta.id) return false;
         return os.bicicleta.id === bike.id;
       });
+      
       // Considera em serviço: qualquer status exceto ENTREGUE
       const temOsAtiva = osDaBike && osDaBike.status !== 'ENTREGUE';
+      
       if (temOsAtiva) {
         console.log(`✅ ${bike.marca} ${bike.modelo} - Status: ${osDaBike?.status}`);
       }
+      
       return temOsAtiva;
     });
 
     console.log('📊 Bicicletas em serviço:', this.bicicletasEmServico.length);
-    this.aplicarFiltros();
   }
 
+  /**
+   * Aplica filtros ao conjunto de bicicletas em serviço
+   */
   aplicarFiltros(): void {
     const filtros = this.filtrosForm.value;
     let filtradas = [...this.bicicletasEmServico];
 
-    if (filtros.cliente) {
+    // Filtro por cliente
+    if (filtros.cliente && filtros.cliente.trim()) {
       filtradas = filtradas.filter(bike =>
-        bike.cliente.nome.toLowerCase().includes(filtros.cliente.toLowerCase())
+        bike.cliente?.nome?.toLowerCase().includes(filtros.cliente.toLowerCase())
       );
     }
 
-    if (filtros.marca) {
+    // Filtro por marca
+    if (filtros.marca && filtros.marca.trim()) {
       filtradas = filtradas.filter(bike =>
-        bike.marca.toLowerCase().includes(filtros.marca.toLowerCase())
+        bike.marca?.toLowerCase().includes(filtros.marca.toLowerCase())
       );
     }
 
-    if (filtros.cor) {
+    // Filtro por cor
+    if (filtros.cor && filtros.cor.trim()) {
       filtradas = filtradas.filter(bike =>
-        bike.cor.toLowerCase().includes(filtros.cor.toLowerCase())
+        bike.cor?.toLowerCase().includes(filtros.cor.toLowerCase())
       );
     }
 
-    if (filtros.status) {
+    // Filtro por status
+    if (filtros.status && filtros.status.trim()) {
       filtradas = filtradas.filter(bike => {
-        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
+        const osDaBike = this.todasOrdensServico.find(os => os.bicicleta?.id === bike.id);
         return osDaBike && osDaBike.status === filtros.status;
       });
     }
 
-    // Filtros de data
+    // Filtro por data de entrada
     if (filtros.dataEntradaInicio || filtros.dataEntradaFim) {
       filtradas = filtradas.filter(bike => {
-        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
+        const osDaBike = this.todasOrdensServico.find(os => os.bicicleta?.id === bike.id);
         if (!osDaBike || !osDaBike.dataEntrada) return false;
+        
         const dataEntrada = new Date(osDaBike.dataEntrada);
-        if (filtros.dataEntradaInicio && dataEntrada < new Date(filtros.dataEntradaInicio)) return false;
-        if (filtros.dataEntradaFim && dataEntrada > new Date(filtros.dataEntradaFim)) return false;
+        
+        if (filtros.dataEntradaInicio && dataEntrada < new Date(filtros.dataEntradaInicio)) {
+          return false;
+        }
+        if (filtros.dataEntradaFim && dataEntrada > new Date(filtros.dataEntradaFim)) {
+          return false;
+        }
         return true;
       });
     }
 
+    // Filtro por data de previsão de saída
     if (filtros.dataPrevisaoInicio || filtros.dataPrevisaoFim) {
       filtradas = filtradas.filter(bike => {
-        const osDaBike = this.ordensServico.find(os => os.bicicleta.id === bike.id);
+        const osDaBike = this.todasOrdensServico.find(os => os.bicicleta?.id === bike.id);
         if (!osDaBike || !osDaBike.dataPrevisaoSaida) return false;
+        
         const dataPrevisao = new Date(osDaBike.dataPrevisaoSaida);
-        if (filtros.dataPrevisaoInicio && dataPrevisao < new Date(filtros.dataPrevisaoInicio)) return false;
-        if (filtros.dataPrevisaoFim && dataPrevisao > new Date(filtros.dataPrevisaoFim)) return false;
+        
+        if (filtros.dataPrevisaoInicio && dataPrevisao < new Date(filtros.dataPrevisaoInicio)) {
+          return false;
+        }
+        if (filtros.dataPrevisaoFim && dataPrevisao > new Date(filtros.dataPrevisaoFim)) {
+          return false;
+        }
         return true;
       });
     }
@@ -147,15 +215,25 @@ export class BicicletasEmServicoComponent implements OnInit {
     this.bicicletasEmServico = filtradas;
   }
 
+  /**
+   * Reaplica filtros quando o usuário interage
+   */
   filtrar(): void {
-    this.carregarDados();
+    this.aplicarFiltros();
   }
 
+  /**
+   * Limpa todos os filtros
+   */
   limparFiltros(): void {
     this.filtrosForm.reset();
-    this.carregarDados();
+    this.filtrarBicicletasEmServico();
+    this.aplicarFiltros();
   }
 
+  /**
+   * Abre modal com histórico de uma bicicleta
+   */
   abrirHistorico(bicicleta: Bicicleta): void {
     this.selectedBicicletaId = bicicleta.id!;
     this.showModal = true;
@@ -165,6 +243,9 @@ export class BicicletasEmServicoComponent implements OnInit {
     this.scrollToBottom();
   }
 
+  /**
+   * Fecha modal de histórico
+   */
   fecharModal(): void {
     this.showModal = false;
     this.selectedBicicletaId = null;
@@ -173,11 +254,17 @@ export class BicicletasEmServicoComponent implements OnInit {
     }
   }
 
+  /**
+   * Obtém status da OS para uma bicicleta
+   */
   getStatusOS(bicicletaId: number): string {
-    const os = this.ordensServico.find(os => os.bicicleta.id === bicicletaId);
+    const os = this.todasOrdensServico.find(os => os.bicicleta?.id === bicicletaId);
     return os ? os.status : '';
   }
 
+  /**
+   * Retorna classe CSS baseada no status
+   */
   getStatusClass(status: string): string {
     switch (status) {
       case 'ABERTA': return 'aberta';
@@ -188,6 +275,9 @@ export class BicicletasEmServicoComponent implements OnInit {
     }
   }
 
+  /**
+   * Formata status em português
+   */
   formatStatus(status: string): string {
     switch (status) {
       case 'ABERTA': return 'Aberta';
@@ -198,6 +288,9 @@ export class BicicletasEmServicoComponent implements OnInit {
     }
   }
 
+  /**
+   * Scroll para o final da página
+   */
   private scrollToBottom(): void {
     setTimeout(() => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });

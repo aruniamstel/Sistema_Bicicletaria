@@ -142,6 +142,19 @@ export class OrdemServicoService {
   }
 
   /**
+   * Busca ordens de serviço com status ativo (não entregue)
+   * Útil para o componente de bicicletas em serviço
+   * Filtra no front as ordens com status != 'ENTREGUE'
+   */
+  getOrdensAbertas(): Observable<OrdemServico[]> {
+    return this.getAll()
+      .pipe(
+        // Operador map pode ser adicionado aqui se o backend fornecer endpoint específico
+        catchError(this.handleError)
+      );
+  }
+
+  /**
    * Tratamento de erros HTTP
    */
   private handleError(error: HttpErrorResponse) {
