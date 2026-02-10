@@ -22,7 +22,8 @@ public class OrdemServicoCreateComplexDTO {
     private LocalDateTime dataEntrada;
     
     @JsonProperty("dataPrevisaoSaida")
-    private String dataPrevisaoSaida; // Pode ser string ou LocalDateTime
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dataPrevisaoSaida;
     
     @JsonProperty("status")
     private String status;

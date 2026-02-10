@@ -182,6 +182,10 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
         next: (response) => {
           // Handle both old format and new format ({ message, ordem })
           const updatedOrdem = response.ordem || response;
+          console.log('✅ Peça adicionada com sucesso!');
+          console.log(`💰 Novo Valor Total: R$ ${updatedOrdem.valorTotal}`);
+          console.log(`📦 Serviços: ${updatedOrdem.servicos?.length || 0}, Peças atuais: ${updatedOrdem.pecas?.length || 0}`);
+          
           this.ordem = updatedOrdem;
           this.successMessage = '✅ Peça adicionada com sucesso!';
           this.pecaForm.reset({ quantidade: 1 });

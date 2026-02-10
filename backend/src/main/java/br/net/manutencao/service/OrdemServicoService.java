@@ -383,17 +383,11 @@ public class OrdemServicoService {
         novaOrdem.setObservacoes(ordemDTO.getObservacoes() != null ? ordemDTO.getObservacoes() : "");
         novaOrdem.setDataEntrada(LocalDateTime.now());
         
-        // Parse da data de previsão
+        // Usar a data de previsão fornecida ou padrão de 3 dias
         LocalDateTime dataPrevisao = LocalDateTime.now().plusDays(3); // Padrão: 3 dias
-        if (ordemDTO.getDataPrevisaoSaida() != null && !ordemDTO.getDataPrevisaoSaida().trim().isEmpty()) {
-            try {
-                // Tenta parsear como LocalDate (formato ISO: YYYY-MM-DD)
-                LocalDate dataParsed = LocalDate.parse(ordemDTO.getDataPrevisaoSaida());
-                dataPrevisao = dataParsed.atStartOfDay();
-            } catch (Exception e) {
-                // Se falhar, mantém o padrão
-                System.err.println("⚠️ Erro ao parsear data de previsão: " + e.getMessage());
-            }
+        if (ordemDTO.getDataPrevisaoSaida() != null) {
+            // Jackson já converte para LocalDateTime automaticamente via @JsonFormat
+            dataPrevisao = ordemDTO.getDataPrevisaoSaida();
         }
         novaOrdem.setDataPrevisaoSaida(dataPrevisao);
         

@@ -310,12 +310,16 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
       };
     }).filter((p: any) => p.peca);
 
-    // Remove o 'Z' do ISO string para compatibilidade com Jackson
-    // Jackson deserializa: "2026-02-08T22:47:02.323" (sem Z)
-    const dataEntrada = new Date().toISOString().slice(0, -1);
-    const dataPrevisao = formValue.dataPrevisaoSaida && formValue.dataPrevisaoSaida.trim() 
-      ? formValue.dataPrevisaoSaida 
-      : undefined;
+    // Converter dataEntrada para ISO 8601: yyyy-MM-dd'T'HH:mm:ss (sem Z e milissegundos)
+    const dataEntrada = new Date().toISOString().split('.')[0]; // Remove milissegundos
+    
+    // Converter dataPrevisaoSaida: input date vem como YYYY-MM-DD, converter para YYYY-MM-DDTHH:mm:ss
+    let dataPrevisao: string | undefined = undefined;
+    if (formValue.dataPrevisaoSaida && formValue.dataPrevisaoSaida.trim()) {
+      // Input date retorna YYYY-MM-DD, precisamos converter para ISO datetime
+      const dateObj = new Date(formValue.dataPrevisaoSaida + 'T00:00:00');
+      dataPrevisao = dateObj.toISOString().split('.')[0]; // Converte e remove milissegundos
+    }
 
     const novaOS = {
       dataEntrada: dataEntrada,

@@ -6,10 +6,10 @@ export interface OrdemServico {
   cliente: Cliente; // Adicionado para compatibilidade com o formulário
   bicicleta: Bicicleta;
   
-  // Datas conforme Requisito 
+  // Datas no formato ISO 8601: yyyy-MM-dd'T'HH:mm:ss (como strings vindas da API)
   dataEntrada: string;
-  dataPrevisaoSaida?: string; // Novo campo solicitado
-  dataSaidaReal?: string;         // Saída real
+  dataPrevisaoSaida?: string; // Formato ISO string ou undefined
+  dataSaidaReal?: string;         // Formato ISO string ou undefined
   
   observacoes?: string; // Opcional conforme Requisito [cite: 5]
   status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE';
