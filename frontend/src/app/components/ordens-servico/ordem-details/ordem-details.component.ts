@@ -114,6 +114,10 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
+          console.log('✅ Ordem carregada:', data);
+          console.log(`💰 Valor Total: R$ ${data.valorTotal}`);
+          console.log(`📦 Serviços: ${data.servicos?.length || 0}, Peças: ${data.pecas?.length || 0}`);
+          
           this.ordem = data;
           this.loading = false;
         },
@@ -143,6 +147,10 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
         next: (response) => {
           // Handle both old format and new format ({ message, ordem })
           const updatedOrdem = response.ordem || response;
+          console.log('✅ Serviço adicionado com sucesso!');
+          console.log(`💰 Novo Valor Total: R$ ${updatedOrdem.valorTotal}`);
+          console.log(`📦 Serviços atuais: ${updatedOrdem.servicos?.length || 0}, Peças: ${updatedOrdem.pecas?.length || 0}`);
+          
           this.ordem = updatedOrdem;
           this.successMessage = '✅ Serviço adicionado com sucesso!';
           this.servicoForm.reset({ quantidade: 1 });

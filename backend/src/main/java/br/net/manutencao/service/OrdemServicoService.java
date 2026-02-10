@@ -107,7 +107,7 @@ public class OrdemServicoService {
     }
 
     // Método auxiliar para buscar ordem com todas as relações inicializadas
-    @Transactional(readOnly = true)
+    @Transactional
     public OrdemServico getOrdemServicoCompletoById(Long id) {
         OrdemServico ordem = ordemServicoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ordem de serviço não encontrada com o ID: " + id));
@@ -121,6 +121,29 @@ public class OrdemServicoService {
         }
         ordem.getServicos().size(); // inicializa lista
         ordem.getPecas().size(); // inicializa lista
+        
+        // ⭐ CRÍTICO: Recalcular valorTotal
+        ordem.calcularValorTotal();
+        ordemServicoRepository.save(ordem);
+        
+        return ordem;
+    }
+
+    /**
+     * Método auxiliar PRIVADO para recalcular e persistir o valor total
+     * Deve ser chamado após modificações em servicos/pecas
+     */
+    @Transactional
+    private OrdemServico atualizarValorTotal(OrdemServico ordem) {
+        // Inicializar as listas
+        ordem.getServicos().size();
+        ordem.getPecas().size();
+        
+        // Recalcular valor
+        ordem.calcularValorTotal();
+        
+        // Persistir
+        ordemServicoRepository.save(ordem);
         
         return ordem;
     }
@@ -183,7 +206,8 @@ public class OrdemServicoService {
             ordem.getServicos().add(ordemServicoServico);
         }
         
-        ordemServicoRepository.save(ordem);
+        // ⭐ CRÍTICO: Recalcular e persistir valorTotal
+        atualizarValorTotal(ordem);
         
         // Retornar ordem com relações inicializadas
         return getOrdemServicoCompletoById(ordem.getId());
@@ -228,7 +252,8 @@ public class OrdemServicoService {
         peca.setQuantidade(peca.getQuantidade() - quantidade);
         pecaRepository.save(peca);
         
-        ordemServicoRepository.save(ordem);
+        // ⭐ CRÍTICO: Recalcular e persistir valorTotal
+        atualizarValorTotal(ordem);
         
         // Retornar ordem com relações inicializadas
         return getOrdemServicoCompletoById(ordem.getId());
@@ -258,10 +283,17 @@ public class OrdemServicoService {
     }
 
     // Método para calcular valor total
-    @Transactional(readOnly = true)
+    @Transactional
     public BigDecimal calcularValorTotal(Long ordemId) {
         OrdemServico ordem = getOrdemServicoById(ordemId);
-        return ordem.getValorTotal();
+        
+        // ⭐ Recalcular o valor total
+        BigDecimal totalCalculado = ordem.calcularValorTotal();
+        
+        // ⭐ Persistir a mudança
+        ordemServicoRepository.save(ordem);
+        
+        return totalCalculado;
     }
 
     // Método para atualizar observações

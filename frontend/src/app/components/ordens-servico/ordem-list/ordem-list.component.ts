@@ -40,6 +40,11 @@ export class OrdemListComponent implements OnInit {
         console.log('✅ Dados recebidos:', data);
         console.log('📊 Número de ordens:', data.length);
         
+        // ⭐ Debug: Logar valorTotal de cada ordem
+        data.forEach(ordem => {
+          console.log(`Ordem #${ordem.id}: valorTotal = ${ordem.valorTotal}, servicos = ${ordem.servicos?.length || 0}, pecas = ${ordem.pecas?.length || 0}`);
+        });
+        
         this.ordensServico = data;
         this.applyFilters();
         this.loading = false;
