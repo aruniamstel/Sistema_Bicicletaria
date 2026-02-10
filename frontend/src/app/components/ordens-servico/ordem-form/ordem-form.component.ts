@@ -310,7 +310,9 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
       };
     }).filter((p: any) => p.peca);
 
-    const dataEntrada = new Date().toISOString();
+    // Remove o 'Z' do ISO string para compatibilidade com Jackson
+    // Jackson deserializa: "2026-02-08T22:47:02.323" (sem Z)
+    const dataEntrada = new Date().toISOString().slice(0, -1);
     const dataPrevisao = formValue.dataPrevisaoSaida && formValue.dataPrevisaoSaida.trim() 
       ? formValue.dataPrevisaoSaida 
       : undefined;
