@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Ordem de Serviço #<span th:text="${ordem.id}"></span></title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            page-break-inside: avoid;
+        }
+
+        /* ============ CABEÇALHO ============ */
+        .header {
+            border-bottom: 3px solid #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header-title {
+            flex: 1;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .header-info {
+            text-align: right;
+            font-size: 11px;
+        }
+
+        .header-info p {
+            margin: 3px 0;
+        }
+
+        /* ============ SEÇÕES ============ */
+        .section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            background-color: #34495e;
+            color: white;
+            padding: 10px 12px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+        }
+
+        /* ============ DADOS CLIENTE E BICICLETA ============ */
+        .info-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+
+        .info-column {
+            flex: 1;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            background-color: #ecf0f1;
+            padding: 8px 10px;
+            border-left: 3px solid #3498db;
+            font-size: 12px;
+            word-break: break-word;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* ============ TABELAS ============ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+
+        thead {
+            background-color: #34495e;
+            color: white;
+        }
+
+        th {
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #bdc3c7;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 10px 8px;
+            border: 1px solid #bdc3c7;
+            font-size: 11px;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background-color: #ecf0f1;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* ============ TOTALIZADORES ============ */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+
+        .totals-box {
+            width: 350px;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 12px;
+        }
+
+        .total-row.grand-total {
+            background-color: #34495e;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: none;
+        }
+
+        .total-label {
+            font-weight: 600;
+        }
+
+        .total-value {
+            font-weight: bold;
+            text-align: right;
+            min-width: 80px;
+        }
+
+        /* ============ OBSERVAÇÕES ============ */
+        .observations-section {
+            margin-top: 20px;
+            page-break-inside: avoid;
+        }
+
+        .observations-box {
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            min-height: 60px;
+            font-size: 11px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        /* ============ AVISO 30 DIAS ============ */
+        .warranty-notice {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ff9800;
+            border-radius: 3px;
+            font-size: 10px;
+            line-height: 1.6;
+            page-break-inside: avoid;
+        }
+
+        .warranty-notice-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+
+        /* ============ RODAPÉ ============ */
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #bdc3c7;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .empty-message {
+            text-align: center;
+            font-style: italic;
+            color: #999;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ============ CABEÇALHO ============ -->
+        <div class="header">
+            <div class="header-title">
+                <h1>Ordem de Serviço #<span th:text="${ordem.id}"></span></h1>
+                <p th:if="${ordem.dataEntrada}">
+                    Data de Entrada: <span th:text="${#temporals.format(ordem.dataEntrada, 'dd/MM/yyyy HH:mm')}"></span>
+                </p>
+            </div>
+            <div class="header-info">
+                <p th:if="${ordem.status}">
+                    <strong>Status:</strong> <span th:text="${ordem.status}"></span>
+                </p>
+                <p th:if="${ordem.dataPrevisaoSaida}">
+                    <strong>Previsão:</strong> <span th:text="${#temporals.format(ordem.dataPrevisaoSaida, 'dd/MM/yyyy')}"></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ============ DADOS CLIENTE E BICICLETA ============ -->
+        <div class="section">
+            <div class="section-title">DADOS DO CLIENTE</div>
+            <div class="info-row">
+                <div class="info-column">
+                    <div class="info-label">Nome</div>
+                    <div class="info-value" th:text="${ordem.cliente.nome ?: '-'}"></div>
+                </div>
+                <div class="info-column">
+                    <div class="info-label">Telefone</div>
+                    <div class="info-value" th:text="${ordem.cliente.telefone ?: '-'}"></div>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-column">
+                    <div class="info-label">Endereço</div>
+                    <div class="info-value" th:text="${ordem.cliente.endereco ?: '-'}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ DADOS BICICLETA ============ -->
+        <div class="section">
+            <div class="section-title">DADOS DA BICICLETA</div>
+            <div class="info-row">
+                <div class="info-column">
+                    <div class="info-label">Marca</div>
+                    <div class="info-value" th:text="${ordem.bicicleta.marca ?: '-'}"></div>
+                </div>
+                <div class="info-column">
+                    <div class="info-label">Modelo</div>
+                    <div class="info-value" th:text="${ordem.bicicleta.modelo ?: '-'}"></div>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-column">
+                    <div class="info-label">Cor</div>
+                    <div class="info-value" th:text="${ordem.bicicleta.cor ?: '-'}"></div>
+                </div>
+                <div class="info-column">
+                    <div class="info-label">Tamanho do Aro</div>
+                    <div class="info-value" th:text="${ordem.bicicleta.tamanhoAro ?: '-'} + '\\\"'"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ TABELA DE SERVIÇOS ============ -->
+        <div class="section">
+            <div class="section-title">SERVIÇOS</div>
+            <table th:if="${!ordem.servicos.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Descrição</th>
+                        <th style="width: 12%;" class="text-center">Qtd</th>
+                        <th style="width: 18%;" class="text-right">Valor Unit.</th>
+                        <th style="width: 20%;" class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${ordem.servicos}">
+                        <td th:text="${item.servico.descricao ?: '-'}"></td>
+                        <td class="text-center" th:text="${item.quantidade}"></td>
+                        <td class="text-right" th:text="${#numbers.formatDecimal(item.servico.valor, 1, 2, 'POINT')}"></td>
+                        <td class="text-right" th:text="${#numbers.formatDecimal(item.getValorTotal(), 1, 2, 'POINT')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-message" th:if="${ordem.servicos.isEmpty()}">
+                Nenhum serviço adicionado
+            </div>
+        </div>
+
+        <!-- ============ TABELA DE PEÇAS ============ -->
+        <div class="section">
+            <div class="section-title">PEÇAS</div>
+            <table th:if="${!ordem.pecas.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Descrição</th>
+                        <th style="width: 12%;" class="text-center">Qtd</th>
+                        <th style="width: 18%;" class="text-right">Valor Unit.</th>
+                        <th style="width: 20%;" class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${ordem.pecas}">
+                        <td th:text="${item.peca.descricao ?: '-'}"></td>
+                        <td class="text-center" th:text="${item.quantidade}"></td>
+                        <td class="text-right" th:text="${#numbers.formatDecimal(item.peca.valor, 1, 2, 'POINT')}"></td>
+                        <td class="text-right" th:text="${#numbers.formatDecimal(item.getValorTotal(), 1, 2, 'POINT')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-message" th:if="${ordem.pecas.isEmpty()}">
+                Nenhuma peça adicionada
+            </div>
+        </div>
+
+        <!-- ============ TOTALIZADORES ============ -->
+        <div class="totals-section">
+            <div class="totals-box">
+                <div class="total-row">
+                    <span class="total-label">Subtotal Serviços:</span>
+                    <span class="total-value" th:text="${#numbers.formatDecimal(ordem.servicos.stream().map(s -> s.getValorTotal()).reduce('0', (a,b) -> a.add(b)), 1, 2, 'POINT')}">R$ 0,00</span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Subtotal Peças:</span>
+                    <span class="total-value" th:text="${#numbers.formatDecimal(ordem.pecas.stream().map(p -> p.getValorTotal()).reduce('0', (a,b) -> a.add(b)), 1, 2, 'POINT')}">R$ 0,00</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span class="total-label">Valor Total:</span>
+                    <span class="total-value" th:text="${#numbers.formatDecimal(ordem.valorTotal, 1, 2, 'POINT')}">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ OBSERVAÇÕES ============ -->
+        <div class="observations-section">
+            <div class="section-title">Observações</div>
+            <div class="observations-box" th:text="${ordem.observacoes ?: '(sem observações)'}"></div>
+        </div>
+
+        <!-- ============ AVISO 30 DIAS ============ -->
+        <div class="warranty-notice" th:if="${ordem.exibirAviso30Dias}">
+            <div class="warranty-notice-title">⚠️ GARANTIA E PRAZO DE ENTREGA</div>
+            <p>
+                A presente ordem de serviço terá validade de 30 (trinta) dias a contar da data de sua abertura.
+                Após este prazo, não nos responsabilizamos por qualquer dano ou deterioração que a bicicleta possa sofrer,
+                bem como pelo armazenamento da mesma, que passará a gerar despesa de guarda.
+            </p>
+            <p style="margin-top: 8px;">
+                O cliente declara ciência e concordância com os termos aqui descritos.
+            </p>
+        </div>
+
+        <!-- ============ RODAPÉ ============ -->
+        <div class="footer">
+            <p>Sistema de Manutenção de Bicicletas © 2024 - Documento Gerado Automaticamente</p>
+            <p style="margin-top: 5px;">Este documento foi gerado em <span th:text="${#temporals.format(#calendars.createNow(), 'dd/MM/yyyy HH:mm:ss')}"></span></p>
+        </div>
+    </div>
+</body>
+</html>

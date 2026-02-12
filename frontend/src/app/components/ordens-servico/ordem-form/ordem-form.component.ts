@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { saveAs } from 'file-saver';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Bicicleta } from '../../../shared/models/bicicleta.model';
 import { Servico } from '../../../shared/models/servico.model';
@@ -340,14 +341,52 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
           console.log('✅ OS Criada:', ordem);
           this.successMessage = '✅ Ordem de Serviço criada com sucesso!';
           this.loadingOperation = false;
-          setTimeout(() => {
-            this.router.navigate(['/ordens-servico']);
-          }, 1000);
+          
+          // 🎯 Chamar geração de PDF
+          this.gerarPdfOrdem(ordem.id);
         },
         error: (err) => {
           console.error('❌ Erro ao criar OS:', err);
           this.errorMessage = 'Erro ao salvar Ordem de Serviço: ' + (err.message || 'Tente novamente');
           this.loadingOperation = false;
+        }
+      });
+  }
+
+  /**
+   * Gera o PDF da ordem de serviço e permite download
+   */
+  private gerarPdfOrdem(ordemId: number): void {
+    this.ordemService.gerarPdf(ordemId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          console.log('✅ PDF gerado com sucesso:', blob.size, 'bytes');
+          
+          // Perguntar ao usuário se deseja visualizar ou baixar o PDF
+          const userChoice = confirm(
+            'PDF gerado com sucesso!\n\n' +
+            'Clique em OK para visualizar o PDF, ou Cancelar para apenas fechar.'
+          );
+          
+          if (userChoice) {
+            // Abrir PDF em nova aba
+            const pdfUrl = URL.createObjectURL(blob);
+            window.open(pdfUrl, '_blank');
+          }
+          
+          // Redirecionar para lista após 1.5 segundos
+          setTimeout(() => {
+            this.router.navigate(['/ordens-servico']);
+          }, 1500);
+        },
+        error: (err) => {
+          console.warn('⚠️ Erro ao gerar PDF:', err.message);
+          // Não bloqueia a navegação - PDF é informativo
+          console.log('ℹ️ Continuando mesmo com erro no PDF...');
+          setTimeout(() => {
+            this.router.navigate(['/ordens-servico']);
+          }, 1000);
         }
       });
   }

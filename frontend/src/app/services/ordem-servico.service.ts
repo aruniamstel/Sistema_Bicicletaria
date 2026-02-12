@@ -171,4 +171,15 @@ export class OrdemServicoService {
     console.error('❌ Erro HTTP:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+  /**
+   * Gera e baixa o PDF de uma ordem de serviço
+   */
+  gerarPdf(ordemId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${ordemId}/pdf`, {
+      responseType: 'blob'
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
 }

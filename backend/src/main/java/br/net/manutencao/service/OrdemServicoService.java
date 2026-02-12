@@ -43,6 +43,9 @@ public class OrdemServicoService {
     @Autowired
     private OrdemServicoPecaRepository ordemServicoPecaRepository;
 
+    @Autowired
+    private PDFService pdfService;
+
     // Métodos básicos de listagem
     @Transactional(readOnly = true)
     public List<OrdemServico> listarTodasOrdens() {
@@ -148,6 +151,22 @@ public class OrdemServicoService {
         return ordem;
     }
 
+    /**
+     * Método auxiliar para gerar PDF da ordem de serviço
+     * Log de erros de PDF não bloqueiam a transação
+     */
+    private void gerarPDFOrdem(OrdemServico ordem) {
+        try {
+            byte[] pdfBytes = pdfService.gerarPdfOrdemServico(ordem);
+            System.out.println("✓ PDF gerado com sucesso para Ordem #" + ordem.getId() + " (" + pdfBytes.length + " bytes)");
+            // TODO: Opcional - salvar PDF em diretório ou banco de dados
+        } catch (Exception e) {
+            System.err.println("⚠️ Erro ao gerar PDF da Ordem #" + ordem.getId() + ": " + e.getMessage());
+            e.printStackTrace();
+            // Não lançar exceção - PDF é informativo, não crítico para a OS
+        }
+    }
+
     // Método principal para criar nova ordem de serviço
     @Transactional
     public OrdemServico criarOrdemServico(OrdemServicoCreateDTO ordemDTO) {
@@ -173,8 +192,14 @@ public class OrdemServicoService {
 
         OrdemServico ordemSalva = ordemServicoRepository.save(novaOrdem);
         
+        // Obter ordem com relações inicializadas (evita LazyInitializationException)
+        OrdemServico ordemCompleta = getOrdemServicoCompletoById(ordemSalva.getId());
+        
+        // Gerar PDF da ordem de serviço
+        gerarPDFOrdem(ordemCompleta);
+        
         // Retornar ordem com relações inicializadas (evita LazyInitializationException)
-        return getOrdemServicoCompletoById(ordemSalva.getId());
+        return ordemCompleta;
     }
 
     // Método para adicionar serviço à ordem
@@ -453,7 +478,11 @@ public class OrdemServicoService {
 
         ordemServicoRepository.save(ordemSalva);
         
+        // 7. Gerar PDF da ordem de serviço
+        OrdemServico ordemCompleta = getOrdemServicoCompletoById(ordemSalva.getId());
+        gerarPDFOrdem(ordemCompleta);
+        
         // Retornar ordem com relações inicializadas (evita LazyInitializationException)
-        return getOrdemServicoCompletoById(ordemSalva.getId());
+        return ordemCompleta;
     }
 }

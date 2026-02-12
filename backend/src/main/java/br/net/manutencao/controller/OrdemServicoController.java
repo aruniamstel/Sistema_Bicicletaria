@@ -8,11 +8,13 @@ import br.net.manutencao.DTO.AdicionarServicoPecaDTO;
 import br.net.manutencao.model.OrdemServico;
 import br.net.manutencao.model.StatusOrdem;
 import br.net.manutencao.service.OrdemServicoService;
+import br.net.manutencao.service.PDFService;
 import br.net.manutencao.exception.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,9 @@ public class OrdemServicoController {
 
     @Autowired
     private OrdemServicoService ordemServicoService;
+
+    @Autowired
+    private PDFService pdfService;
 
     @Autowired
     private OrdemServicoMapper mapper;
@@ -342,6 +347,31 @@ public class OrdemServicoController {
             errorResponse.put("error", "Erro ao atualizar observações");
             errorResponse.put("details", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // Endpoint para gerar e baixar PDF da ordem de serviço
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> downloadPDF(@PathVariable Long id) {
+        try {
+            // Buscar a ordem completa
+            OrdemServico ordem = ordemServicoService.getOrdemServicoCompletoById(id);
+            
+            // Gerar PDF
+            byte[] pdfBytes = pdfService.gerarPdfOrdemServico(ordem);
+            
+            // Retornar como anexo
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header("Content-Disposition", "attachment; filename=OS_" + id + ".pdf")
+                    .body(pdfBytes);
+                    
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao gerar PDF: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
