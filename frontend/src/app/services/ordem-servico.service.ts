@@ -173,10 +173,12 @@ export class OrdemServicoService {
   }
 
   /**
-   * Gera e baixa o PDF de uma ordem de serviço
+   * Baixa o PDF de uma ordem de serviço
+   * @param id ID da ordem de serviço
+   * @returns Observable com o blob do PDF
    */
-  gerarPdf(ordemId: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${ordemId}/pdf`, {
+  downloadPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/pdf`, {
       responseType: 'blob'
     }).pipe(
       catchError(this.handleError)

@@ -357,7 +357,7 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
    * Gera o PDF da ordem de serviço e permite download
    */
   private gerarPdfOrdem(ordemId: number): void {
-    this.ordemService.gerarPdf(ordemId)
+    this.ordemService.downloadPdf(ordemId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (blob: Blob) => {
@@ -370,7 +370,10 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
           );
           
           if (userChoice) {
-            // Abrir PDF em nova aba
+            // Opção 1: Usar saveAs (file-saver) para download
+            // saveAs(blob, `OS_${ordemId}.pdf`);
+            
+            // Opção 2: Abrir PDF em nova aba
             const pdfUrl = URL.createObjectURL(blob);
             window.open(pdfUrl, '_blank');
           }
