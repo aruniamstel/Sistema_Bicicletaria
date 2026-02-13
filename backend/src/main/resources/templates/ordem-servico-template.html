@@ -264,7 +264,7 @@
         <div class="header">
             <div class="header-title">
                 <h1>Ordem de Serviço #<span th:text="${ordem.id}"></span></h1>
-                <p>Gerada em: <span th:text="${#temporals.format(ordem.dataEntrada, 'dd/MM/yyyy HH:mm')}"></span></p>
+                <p>Gerada em: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm:ss')}"></span></p>
             </div>
             <div class="header-info">
                 <p><strong>Status:</strong> <span th:text="${ordem.status}"></span></p>
