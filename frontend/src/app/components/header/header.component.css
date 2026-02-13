@@ -29,6 +29,13 @@
   margin-left: 0.5rem;
 }
 
+.header-logo {
+  max-height: 45px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  object-fit: contain;
+}
+
 .nav-menu {
   display: flex;
   align-items: center;
