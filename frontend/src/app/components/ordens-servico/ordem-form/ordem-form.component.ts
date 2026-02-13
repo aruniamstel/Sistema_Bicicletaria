@@ -342,54 +342,39 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
           this.successMessage = '✅ Ordem de Serviço criada com sucesso!';
           this.loadingOperation = false;
           
-          // 🎯 Chamar geração de PDF
-          this.gerarPdfOrdem(ordem.id);
+          // Oferecer visualização do PDF
+          if (confirm('Ordem de Serviço criada! Deseja visualizar o PDF agora?')) {
+            this.ordemService.downloadPdf(ordem.id)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (blob: Blob) => {
+                  const file = new Blob([blob], { type: 'application/pdf' });
+                  saveAs(file, `Ordem_Servico_${ordem.id}.pdf`);
+                  console.log('✅ PDF baixado com sucesso');
+                  
+                  // Redirecionar após download
+                  setTimeout(() => {
+                    this.router.navigate(['/ordens-servico']);
+                  }, 1500);
+                },
+                error: (err) => {
+                  console.warn('⚠️ Erro ao gerar PDF:', err.message);
+                  setTimeout(() => {
+                    this.router.navigate(['/ordens-servico']);
+                  }, 1000);
+                }
+              });
+          } else {
+            // Redirecionamento sem PDF
+            setTimeout(() => {
+              this.router.navigate(['/ordens-servico']);
+            }, 1000);
+          }
         },
         error: (err) => {
           console.error('❌ Erro ao criar OS:', err);
           this.errorMessage = 'Erro ao salvar Ordem de Serviço: ' + (err.message || 'Tente novamente');
           this.loadingOperation = false;
-        }
-      });
-  }
-
-  /**
-   * Gera o PDF da ordem de serviço e permite download
-   */
-  private gerarPdfOrdem(ordemId: number): void {
-    this.ordemService.downloadPdf(ordemId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (blob: Blob) => {
-          console.log('✅ PDF gerado com sucesso:', blob.size, 'bytes');
-          
-          // Perguntar ao usuário se deseja visualizar ou baixar o PDF
-          const userChoice = confirm(
-            'PDF gerado com sucesso!\n\n' +
-            'Clique em OK para visualizar o PDF, ou Cancelar para apenas fechar.'
-          );
-          
-          if (userChoice) {
-            // Opção 1: Usar saveAs (file-saver) para download
-            // saveAs(blob, `OS_${ordemId}.pdf`);
-            
-            // Opção 2: Abrir PDF em nova aba
-            const pdfUrl = URL.createObjectURL(blob);
-            window.open(pdfUrl, '_blank');
-          }
-          
-          // Redirecionar para lista após 1.5 segundos
-          setTimeout(() => {
-            this.router.navigate(['/ordens-servico']);
-          }, 1500);
-        },
-        error: (err) => {
-          console.warn('⚠️ Erro ao gerar PDF:', err.message);
-          // Não bloqueia a navegação - PDF é informativo
-          console.log('ℹ️ Continuando mesmo com erro no PDF...');
-          setTimeout(() => {
-            this.router.navigate(['/ordens-servico']);
-          }, 1000);
         }
       });
   }
