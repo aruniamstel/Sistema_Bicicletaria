@@ -2,12 +2,15 @@ package br.net.manutencao.service;
 
 import br.net.manutencao.model.OrdemServico;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.util.Base64;
 import java.util.Locale;
 
 @Service
@@ -26,6 +29,18 @@ public class PDFService {
     public byte[] gerarPdfOrdemServico(OrdemServico ordemServico) throws Exception {
         // Preparar contexto Thymeleaf
         Context context = new Context(new Locale("pt", "BR"));
+
+        // Ler a logo e converter para Base64
+        try {
+            ClassPathResource imgFile = new ClassPathResource("templates/logo.png");
+            byte[] imageBytes = Files.readAllBytes(imgFile.getFile().toPath());
+            String base64Logo = Base64.getEncoder().encodeToString(imageBytes);
+            context.setVariable("logoBase64", base64Logo);
+        } catch (Exception e) {
+            context.setVariable("logoBase64", null); // Caso a imagem não exista
+            System.err.println("Erro ao carregar a logo: " + e.getMessage());
+        }
+
         context.setVariable("ordem", ordemServico);
 
         // Processar template HTML

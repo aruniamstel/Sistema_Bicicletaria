@@ -262,6 +262,11 @@
     <div class="container">
         <!-- ============ CABEÇALHO ============ -->
         <div class="header">
+            <div class="header-logo">
+                <img th:if="${logoBase64 != null}" 
+                th:src="'data:image/png;base64,' + ${logoBase64}" 
+                style="height: 60px;" />
+            </div>
             <div class="header-title">
                 <h1>Ordem de Serviço #<span th:text="${ordem.id}"></span></h1>
                 <p>Gerada em: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm:ss')}"></span></p>
