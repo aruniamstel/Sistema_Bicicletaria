@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../../../services/cliente.service';
+import { ExportarService } from '../../../services/exportar.service';
 
 @Component({
   selector: 'app-cliente-manager',
@@ -35,7 +36,8 @@ export class ClienteManagerComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
+    private exportarService: ExportarService
   ) {
     this.clienteForm = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(3)]],
@@ -290,5 +292,27 @@ export class ClienteManagerComponent implements OnInit, OnDestroy {
         formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 100);
+  }
+
+  /**
+   * Exporta dados de clientes em CSV
+   */
+  exportarClientesCSV(): void {
+    this.loading = true;
+    this.errorMessage = '';
+    
+    this.exportarService.exportarEBaixar('clientes', `clientes_${new Date().getTime()}.csv`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.successMessage = '✅ Clientes exportados com sucesso!';
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao exportar clientes:', error);
+          this.errorMessage = 'Erro ao exportar clientes. Tente novamente.';
+          this.loading = false;
+        }
+      });
   }
 }

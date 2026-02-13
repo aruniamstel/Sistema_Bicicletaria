@@ -14,6 +14,10 @@
       <option value="CONCLUIDA">Concluída</option>
       <option value="ENTREGUE">Entregue</option>
     </select>
+
+    <button class="btn-export" (click)="exportarOrdensCSV()" [disabled]="loading" title="Exportar CSV">
+      📥 Exportar CSV
+    </button>
   </div>
 
   <div *ngIf="loading" class="loading-spinner">Carregando...</div>

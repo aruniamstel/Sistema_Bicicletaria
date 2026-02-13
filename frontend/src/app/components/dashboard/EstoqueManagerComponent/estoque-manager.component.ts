@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Peca } from '../../../shared/models/peca.model';
 import { PecaService } from '../../../services/peca.service';
+import { ExportarService } from '../../../services/exportar.service';
 
 @Component({
   selector: 'app-estoque-manager',
@@ -34,7 +35,8 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private pecaService: PecaService
+    private pecaService: PecaService,
+    private exportarService: ExportarService
   ) {
     this.pecaForm = this.fb.group({
       descricao: ['', Validators.required],
@@ -231,5 +233,27 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
   limparFiltros(): void {
     this.filtrosForm.reset();
     this.aplicarFiltros();
+  }
+
+  /**
+   * Exporta dados de peças em CSV
+   */
+  exportarPecasCSV(): void {
+    this.loading = true;
+    this.errorMessage = '';
+    
+    this.exportarService.exportarEBaixar('pecas', `pecas_${new Date().getTime()}.csv`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.successMessage = '✅ Peças exportadas com sucesso!';
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao exportar peças:', error);
+          this.errorMessage = 'Erro ao exportar peças. Tente novamente.';
+          this.loading = false;
+        }
+      });
   }
 }

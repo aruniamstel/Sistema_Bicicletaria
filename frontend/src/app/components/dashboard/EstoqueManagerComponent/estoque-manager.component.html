@@ -84,6 +84,9 @@
     </div>
     <div class="filter-actions">
       <button type="button" class="btn-secondary" (click)="limparFiltros()">🧹 Limpar Filtros</button>
+      <button type="button" class="btn-primary" (click)="exportarPecasCSV()" [disabled]="loading">
+        📥 Exportar CSV
+      </button>
     </div>
   </form>
 </div>

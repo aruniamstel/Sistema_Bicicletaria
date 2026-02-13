@@ -3,6 +3,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OrdemServico } from '../../../shared/models/ordem-servico.model';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
+import { ExportarService } from '../../../services/exportar.service';
 import { HeaderComponent } from "../../header/header.component";
 
 @Component({
@@ -22,7 +23,8 @@ export class OrdemListComponent implements OnInit {
 
   constructor(
     private ordemService: OrdemServicoService,
-    private router: Router
+    private router: Router,
+    private exportarService: ExportarService
   ) { }
 
    ngOnInit(): void {
@@ -144,5 +146,27 @@ export class OrdemListComponent implements OnInit {
         this.error = 'Erro ao atualizar status: ' + error.message;
       }
     });
+  }
+
+  /**
+   * Exporta dados de ordens de serviço em CSV
+   */
+  exportarOrdensCSV(): void {
+    this.loading = true;
+    this.error = '';
+    
+    this.exportarService.exportarEBaixar('ordens', `ordens_servico_${new Date().getTime()}.csv`)
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          // Recarrega para resetar o estado
+          this.loadOrdensServico();
+        },
+        error: (error) => {
+          console.error('❌ Erro ao exportar ordens:', error);
+          this.error = 'Erro ao exportar ordens. Tente novamente.';
+          this.loading = false;
+        }
+      });
   }
 }

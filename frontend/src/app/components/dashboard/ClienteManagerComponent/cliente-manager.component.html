@@ -100,6 +100,9 @@
       <button type="button" (click)="limparFiltros()" class="btn-filter-clear">
         ❌ Limpar Filtros
       </button>
+      <button type="button" (click)="exportarClientesCSV()" class="btn-primary" [disabled]="loading">
+        📥 Exportar CSV
+      </button>
     </form>
   </div>
 

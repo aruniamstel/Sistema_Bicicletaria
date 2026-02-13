@@ -9,6 +9,7 @@ import { Cliente } from '../../../shared/models/cliente.model';
 import { BicicletaService } from '../../../services/bicicleta.service';
 import { ClienteService } from '../../../services/cliente.service';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
+import { ExportarService } from '../../../services/exportar.service';
 import { HistoricoBicicletaComponent } from '../HistoricoBicicletaComponent/historico-bicicleta.component';
 
 @Component({
@@ -47,7 +48,8 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private bicicletaService: BicicletaService,
     private clienteService: ClienteService,
-    private ordemServicoService: OrdemServicoService
+    private ordemServicoService: OrdemServicoService,
+    private exportarService: ExportarService
   ) {
     this.bicicletaForm = this.fb.group({
       selectedClienteId: ['', Validators.required],
@@ -388,5 +390,27 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
         formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 100);
+  }
+
+  /**
+   * Exporta dados de bicicletas em CSV
+   */
+  exportarBicicletasCSV(): void {
+    this.loading = true;
+    this.errorMessage = '';
+    
+    this.exportarService.exportarEBaixar('bicicletas', `bicicletas_${new Date().getTime()}.csv`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.successMessage = '✅ Bicicletas exportadas com sucesso!';
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao exportar bicicletas:', error);
+          this.errorMessage = 'Erro ao exportar bicicletas. Tente novamente.';
+          this.loading = false;
+        }
+      });
   }
 }
