@@ -7,7 +7,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 15mm;
+            margin: 20mm;
         }
 
         * {
@@ -420,7 +420,7 @@
         <!-- ============ RODAPÉ ============ -->
         <div class="footer">
             <p>Sistema de Manutenção de Bicicletas © 2024 - Documento Gerado Automaticamente</p>
-            <p style="margin-top: 5px;">Gerado em: <span th:text="${#temporals.format(#calendars.createNow(), 'dd/MM/yyyy HH:mm:ss')}"></span></p>
+            <p style="margin-top: 5px;">Gerado em: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm:ss')}"></span></p>
         </div>
     </div>
 </body>
