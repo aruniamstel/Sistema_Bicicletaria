@@ -178,10 +178,10 @@ export class OrdemServicoService {
    * @returns Observable com o blob do PDF
    */
   downloadPdf(id: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${id}/pdf`, {
-      responseType: 'blob'
-    }).pipe(
-      catchError(this.handleError)
-    );
-  }
+  return this.http.get(`${this.apiUrl}/${id}/pdf`, { 
+    responseType: 'blob' 
+  }).pipe(
+    catchError(this.handleError)
+  );
+}
 }

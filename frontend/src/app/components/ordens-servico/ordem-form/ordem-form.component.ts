@@ -342,33 +342,36 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
           this.successMessage = '✅ Ordem de Serviço criada com sucesso!';
           this.loadingOperation = false;
           
-          // Oferecer visualização do PDF
-          if (confirm('Ordem de Serviço criada! Deseja visualizar o PDF agora?')) {
+          // Oferecer download do PDF
+          if (confirm('Ordem de Serviço criada com sucesso! Deseja baixar o PDF?')) {
             this.ordemService.downloadPdf(ordem.id)
               .pipe(takeUntil(this.destroy$))
               .subscribe({
                 next: (blob: Blob) => {
-                  const file = new Blob([blob], { type: 'application/pdf' });
-                  saveAs(file, `Ordem_Servico_${ordem.id}.pdf`);
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Ordem_Servico_${ordem.id}.pdf`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
                   console.log('✅ PDF baixado com sucesso');
                   
-                  // Redirecionar após download
                   setTimeout(() => {
                     this.router.navigate(['/ordens-servico']);
-                  }, 1500);
+                  }, 500);
                 },
                 error: (err) => {
-                  console.warn('⚠️ Erro ao gerar PDF:', err.message);
+                  console.error('❌ Erro ao baixar PDF:', err);
                   setTimeout(() => {
                     this.router.navigate(['/ordens-servico']);
-                  }, 1000);
+                  }, 500);
                 }
               });
           } else {
-            // Redirecionamento sem PDF
+            // Apenas redireciona sem download
             setTimeout(() => {
               this.router.navigate(['/ordens-servico']);
-            }, 1000);
+            }, 500);
           }
         },
         error: (err) => {
