@@ -3,17 +3,16 @@ package br.net.manutencao.controller;
 import br.net.manutencao.service.ExportarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/exportar")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class ExportarController {
 
     @Autowired
@@ -22,14 +21,23 @@ public class ExportarController {
     /**
      * Exporta dados em CSV de diferentes entidades
      * Aceita: clientes, bicicletas, pecas, ordens
+     * 
+     * @param entidade: clientes, bicicletas, pecas ou ordens
+     * @return CSV com dados da entidade especificada
      */
     @GetMapping("/{entidade}")
-    public ResponseEntity<?> exportarCSV(@PathVariable String entidade) {
+    public ResponseEntity<String> exportarCSV(@PathVariable(name = "entidade") String entidade) {
+        // Validação inicial
+        if (entidade == null || entidade.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Entidade não pode estar vazia");
+        }
+
         try {
             String csvData;
             String nomeArquivo;
 
-            switch (entidade.toLowerCase()) {
+            switch (entidade.toLowerCase().trim()) {
                 case "clientes":
                     csvData = exportarService.gerarClientesCSV();
                     nomeArquivo = "clientes.csv";
@@ -47,15 +55,13 @@ public class ExportarController {
                     nomeArquivo = "ordens_servico.csv";
                     break;
                 default:
-                    return ResponseEntity.badRequest()
-                            .body(Map.of(
-                                    "error", "Entidade inválida",
-                                    "mensagem", "Entidades válidas: clientes, bicicletas, pecas, ordens"
-                            ));
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Entidade inválida. Válidas: clientes, bicicletas, pecas, ordens");
             }
 
-            if (csvData.isEmpty() || csvData.equals("")) {
-                return ResponseEntity.noContent().build();
+            if (csvData == null || csvData.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .build();
             }
 
             // Configurar headers para forçar download
@@ -64,16 +70,11 @@ public class ExportarController {
             headers.setContentDispositionFormData("attachment", nomeArquivo);
             headers.add("Content-Length", String.valueOf(csvData.getBytes(StandardCharsets.UTF_8).length));
 
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(csvData);
+            return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
 
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of(
-                            "error", "Erro ao gerar relatório",
-                            "mensagem", e.getMessage()
-                    ));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao gerar relatório: " + e.getMessage());
         }
     }
 

@@ -16,11 +16,17 @@ export class ExportarService {
    * @param entidade - tipo de entidade: 'clientes', 'bicicletas', 'pecas', 'ordens'
    */
   exportarCsv(entidade: string): Observable<Blob> {
-  return this.http.get(`${this.apiUrl}/${entidade}`, {
-    // Forçamos o TypeScript a tratar a string 'blob' como o tipo literal correto
-    responseType: 'blob' as 'json' 
-  }) as unknown as Observable<Blob>;
-}
+    if (!entidade || entidade.trim().length === 0) {
+      throw new Error('Entidade não pode estar vazia');
+    }
+
+    const url = `${this.apiUrl}/${entidade.toLowerCase().trim()}`;
+    console.log('📥 Requisição de exportação:', url);
+
+    return this.http.get(url, {
+      responseType: 'blob' as const
+    });
+  }
 
   /**
    * Realiza download do arquivo CSV
@@ -44,17 +50,20 @@ export class ExportarService {
    * @param nomeArquivo - nome do arquivo (opcional, será gerado automaticamente se não informado)
    */
   exportarEBaixar(entidade: string, nomeArquivo?: string): Observable<Blob> {
-    const nome = nomeArquivo || `${entidade}_${new Date().getTime()}.csv`;
+    const nome = nomeArquivo || `${entidade.toLowerCase()}_${new Date().getTime()}.csv`;
+    
     return new Observable(observer => {
       this.exportarCsv(entidade).subscribe({
         next: (blob) => {
+          console.log('✅ CSV recebido com sucesso. Tamanho:', blob.size, 'bytes');
           this.realizarDownload(blob, nome);
           observer.next(blob);
           observer.complete();
         },
         error: (error) => {
           console.error('❌ Erro ao exportar CSV:', error);
-          observer.error(error);
+          const errorMsg = error?.error?.message || error?.message || 'Erro desconhecido ao exportar';
+          observer.error(new Error(errorMsg));
         }
       });
     });
