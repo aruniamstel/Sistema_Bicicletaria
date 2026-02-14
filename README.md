@@ -4,7 +4,13 @@
 
 O Sistema de Gestão para Bicicletaria está sendo desenvolvido para atender as necessidades operacionais do dia dia de lojas de manutenção de bicicletas.
 
-**Estado Atual:** Em desenvolvimento
+**Estado Atual:** Em desenvolvimento 
+
+*Status do Desenvolvimento:* Backend concluído  
+
+### Funcionalidades implementadas:  
+- Geração de PDF da Ordem de Serviço
+- Possibilidade de exportar dados no formato CSV
 
 ## 🛠️ O Que já Foi Implementado
 
@@ -19,7 +25,7 @@ O Sistema de Gestão para Bicicletaria está sendo desenvolvido para atender as 
 
 ## 🎯 Habilidades Desenvolvidas
 
-Este projeto, está sendo fundamental para construir:
+Este projeto, foi fundamental para construir:
 - Pensamento arquitetural de software
 - Soft skills de levantamento de requisitos, interação com o cliente
 - Aprofudamento e aprimoramento da minha experiência com Java Spring Boot
@@ -28,5 +34,5 @@ Este projeto, está sendo fundamental para construir:
 ## 📝 Notas do Autor
 
 Autor: Aruni van Amstel
-Hoje, como desenvolvedor focado em [React/Java/Full-stack], valorizo cada lição aprendida aqui sobre arquitetura de software e resolução de problemas complexos - habilidades que aplico diariamente no desenvolvimento web moderno.
+Hoje, como desenvolvedor focado em [React/Java/Python/Full-stack], valorizo cada lição aprendida aqui sobre arquitetura de software e resolução de problemas complexos - habilidades que aplico diariamente no desenvolvimento web moderno.
 
