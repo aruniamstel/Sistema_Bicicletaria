@@ -36,7 +36,7 @@ public class SecurityConfig {
 
     /**
      * Configuração do SecurityFilterChain
-     * Permite CORS com as configurações acima
+     * Permite CORS com as configurações acima e libera o endpoint /login
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -44,6 +44,7 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults()) // Aplicar CORS com as configurações do corsConfigurationSource
             .csrf(csrf -> csrf.disable()) // Desabilitar CSRF para facilitar testes (considerar habilitar em produção)
             .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/login").permitAll() // Permitir POST /login sem autenticação
                 .requestMatchers("/api/exportar/**").permitAll() // Permitir exportação sem autenticação
                 .anyRequest().permitAll() // Permitir todas as requisições por enquanto
             );

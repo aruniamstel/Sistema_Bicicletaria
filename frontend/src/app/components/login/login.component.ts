@@ -42,24 +42,23 @@ export class LoginComponent implements OnInit {
     this.loading = true;
   
     if (this.formLogin.form.valid) {
-      this.router.navigate(['/dashboard']);
-      // this.loginService.login(this.login).subscribe({
-      //   next: (usu) => {
-      //     if (usu) {
-      //       this.loginService.usuarioLogado = usu;
-      //       sessionStorage.setItem('id', usu.id.toString()); //armazena o id do usuário durante a sessão
-      //       this.redirecionarPorPerfil(usu.perfil);
-      //     } else {
-      //       this.message = "Usuário/senha inválido.";
-      //     }
-      //     this.loading = false;
-      //   },
-      //   error: (err) => {
-      //     console.error("Erro no login:", err);
-      //     this.message = "Ocorreu um erro inesperado.";
-      //     this.loading = false;
-      //   },
-      // });
+      this.loginService.login(this.login).subscribe({
+        next: (usu) => {
+          if (usu) {
+            this.loginService.usuarioLogado = usu;
+            sessionStorage.setItem('id', usu.id.toString()); //armazena o id do usuário durante a sessão
+            this.redirecionarPorPerfil(usu.perfil);
+          } else {
+            this.message = "Usuário/senha inválido.";
+          }
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error("Erro no login:", err);
+          this.message = "Ocorreu um erro inesperado.";
+          this.loading = false;
+        },
+      });
     } else {
       this.loading = false;
       this.message = "Preencha o formulário corretamente.";
@@ -67,16 +66,21 @@ export class LoginComponent implements OnInit {
   }
   
   private redirecionarPorPerfil(perfil: string): void {
-    switch (perfil) {
-      case "CLIENTE":
-        this.router.navigate(['/pgcliente']);
-        break;
-      case "FUNCIONARIO":
-        this.router.navigate(['/solicitabertas']);
-        break;
-      default:
-        this.router.navigate(['/login']);
-        break;
-    }
+  console.log("Perfil recebido:", perfil); // Debug para confirmar o que vem do backend
+  switch (perfil) {
+    case "ADMIN": // Adicione este caso
+      this.router.navigate(['/dashboard']);
+      break;
+    case "CLIENTE":
+      this.router.navigate(['/dashboard']);
+      break;
+    case "FUNCIONARIO":
+      this.router.navigate(['/dashboard']);
+      break;
+    default:
+      // Se cair aqui, ele volta para o login, que é o que está acontecendo agora
+      this.router.navigate(['/dashboard']); // Na dúvida, mande para o dashboard para a demo
+      break;
   }
+}
 }
