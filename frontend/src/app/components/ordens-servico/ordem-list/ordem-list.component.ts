@@ -174,6 +174,7 @@ export class OrdemListComponent implements OnInit {
    * Gera e baixa o PDF de uma ordem de serviço
    */
   gerarPDF(ordemId: number): void {
+    
     console.log('📄 Gerando PDF para ordem #' + ordemId);
     
     this.ordemService.downloadPdf(ordemId).subscribe({

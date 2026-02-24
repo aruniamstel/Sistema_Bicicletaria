@@ -69,6 +69,13 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+
+    this.filtrosForm.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
+      this.aplicarFiltros();
+    });
+    
     this.carregarDados();
   }
 
