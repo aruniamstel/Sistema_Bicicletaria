@@ -2,14 +2,13 @@ package br.net.manutencao.service;
 
 import br.net.manutencao.model.OrdemServico;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.Base64;
 import java.util.Locale;
 
@@ -30,15 +29,21 @@ public class PDFService {
         // Preparar contexto Thymeleaf
         Context context = new Context(new Locale("pt", "BR"));
 
-        // Ler a logo e converter para Base64
+        // Ler a logo do classpath e converter para Base64
         try {
-            ClassPathResource imgFile = new ClassPathResource("templates/logo.png");
-            byte[] imageBytes = Files.readAllBytes(imgFile.getFile().toPath());
-            String base64Logo = Base64.getEncoder().encodeToString(imageBytes);
-            context.setVariable("logoBase64", base64Logo);
+            InputStream is = getClass().getResourceAsStream("/templates/logo.png");
+            if (is != null) {
+                byte[] logoBytes = is.readAllBytes();
+                String base64Logo = Base64.getEncoder().encodeToString(logoBytes);
+                context.setVariable("logoBase64", base64Logo);
+                System.out.println("✅ Logo carregada com sucesso do classpath");
+            } else {
+                context.setVariable("logoBase64", null);
+                System.err.println("⚠️ Logo não encontrada no classpath: /templates/logo.png");
+            }
         } catch (Exception e) {
-            context.setVariable("logoBase64", null); // Caso a imagem não exista
-            System.err.println("Erro ao carregar a logo: " + e.getMessage());
+            context.setVariable("logoBase64", null);
+            System.err.println("❌ Erro ao carregar a logo: " + e.getMessage());
         }
 
         context.setVariable("ordem", ordemServico);
