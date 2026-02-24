@@ -274,6 +274,12 @@
             <div class="header-info">
                 <p><strong>Status:</strong> <span th:text="${ordem.status}"></span></p>
                 <p><strong>Valor Total:</strong> R$ <span th:text="${#numbers.formatDecimal(ordem.valorTotal, 1, 2, 'COMMA')}"></span></p>
+                <p style="margin-top: 10px; font-size: 9px; border-top: 1px solid #ccc; padding-top: 8px;">
+                    <strong>Endereço:</strong> <br>Rua Exemplo, 123, Bairro Centro
+                </p>
+                <p style="margin-top: 5px; font-size: 9px;">
+                    <strong>Telefone:</strong> <br>(41) 99999-9999
+                </p>
             </div>
         </div>
 
@@ -419,6 +425,14 @@
             </p>
             <p style="margin-top: 6px;">
                 <strong>Data da Conclusão:</strong> <span th:text="${ordem.dataEntrada != null ? #temporals.format(ordem.dataEntrada, 'dd/MM/yyyy') : 'A definir'}"></span>
+            </p>
+        </div>
+
+        <!-- ============ AVISO DE ORÇAMENTO ============ -->
+        <div class="warranty-notice" style="background-color: #fde8e8; border-color: #e74c3c; border-left-color: #e74c3c;">
+            <div class="warranty-notice-title" style="color: #c0392b;">⚠️ AVISO IMPORTANTE - ORÇAMENTO</div>
+            <p>
+                <strong>Atenção:</strong> O orçamento inicial pode sofrer alterações caso sejam identificadas necessidades de peças ou serviços adicionais durante a execução.
             </p>
         </div>
 

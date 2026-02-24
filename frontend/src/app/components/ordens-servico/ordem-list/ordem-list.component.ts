@@ -169,4 +169,63 @@ export class OrdemListComponent implements OnInit {
         }
       });
   }
-}
+
+  /**
+   * Gera e baixa o PDF de uma ordem de serviço
+   */
+  gerarPDF(ordemId: number): void {
+    console.log('📄 Gerando PDF para ordem #' + ordemId);
+    
+    this.ordemService.downloadPdf(ordemId).subscribe({
+      next: (blob) => {
+        // Criar URL do blob e fazer download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ordem-servico-${ordemId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        console.log('✅ PDF baixado com sucesso');
+      },
+      error: (error) => {
+        console.error('❌ Erro ao gerar PDF:', error);
+        this.error = 'Erro ao gerar PDF. Tente novamente.';
+      }
+    });
+  }
+
+  /**
+   * Reverte o status de ENTREGUE para EM_ANDAMENTO
+   */
+  revertStatus(ordem: OrdemServico): void {
+    if (ordem.status !== 'ENTREGUE') {
+      this.error = 'Apenas ordens entregues podem ser revertidas.';
+      return;
+    }
+
+    const confirmacao = confirm(
+      `Tem certeza que deseja reverter a ordem #${ordem.id} de ENTREGUE para EM ANDAMENTO?`
+    );
+
+    if (!confirmacao) {
+      return;
+    }
+
+    this.ordemService.updateStatus(ordem.id!, 'EM_ANDAMENTO').subscribe({
+      next: (response) => {
+        const updatedOrdem = response.ordem || response;
+        const index = this.ordensServico.findIndex(o => o.id === ordem.id);
+        if (index !== -1) {
+          this.ordensServico[index] = updatedOrdem;
+          this.applyFilters();
+          console.log('✅ Status revertido com sucesso');
+        }
+      },
+      error: (error) => {
+        console.error('❌ Erro ao reverter status:', error);
+        this.error = 'Erro ao reverter status: ' + error.message;
+      }
+    });
+  }

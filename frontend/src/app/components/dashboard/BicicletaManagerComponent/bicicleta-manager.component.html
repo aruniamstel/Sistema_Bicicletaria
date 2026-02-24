@@ -81,6 +81,10 @@
     <form [formGroup]="filtrosForm" class="filters-form">
       <div class="filter-row">
         <div class="filter-field">
+          <label>Cliente</label>
+          <input type="text" formControlName="cliente" placeholder="Buscar por cliente...">
+        </div>
+        <div class="filter-field">
           <label>Marca</label>
           <input type="text" formControlName="marca" placeholder="Buscar por marca...">
         </div>

@@ -60,6 +60,7 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
     });
 
     this.filtrosForm = this.fb.group({
+      cliente: [''],
       marca: [''],
       cor: [''],
       modelo: [''],
@@ -280,6 +281,12 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
   aplicarFiltros(): void {
     const filtros = this.filtrosForm.value;
     let filtradas = [...this.bicicletas];
+
+    if (filtros.cliente) {
+      filtradas = filtradas.filter(bike =>
+        bike.cliente?.nome.toLowerCase().includes(filtros.cliente.toLowerCase())
+      );
+    }
 
     if (filtros.marca) {
       filtradas = filtradas.filter(bike =>

@@ -41,6 +41,7 @@
         <th>Status</th>
         <th>Valor Total</th>
         <th>Ações</th>
+        <th>PDF</th>
       </tr>
     </thead>
     <tbody>
@@ -80,6 +81,21 @@
               class="action-button status-button"
               (click)="updateStatus(ordem, 'ENTREGUE')">
         Entregar
+      </button>
+
+      <button *ngIf="ordem.status === 'ENTREGUE'"
+              class="action-button status-button revert-button"
+              (click)="revertStatus(ordem)"
+              title="Reverter para Em Andamento">
+        ↩️ Reverter
+      </button>
+    </td>
+    <td class="pdf-button">
+      <button class="action-button pdf-button-icon" 
+              (click)="gerarPDF(ordem.id!)"
+              title="Baixar PDF da Ordem"
+              [disabled]="loading">
+        📄 PDF
       </button>
     </td>
   </tr>
