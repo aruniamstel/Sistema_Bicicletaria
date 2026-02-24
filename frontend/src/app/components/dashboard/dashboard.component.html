@@ -3,12 +3,17 @@
 <div class="dashboard-container">
   <!-- Cabeçalho -->
   <div class="dashboard-header">
-    <h1>📊 Dashboard - Gestão Completa</h1>
+    <h1>📊 Cadastro - Gestão Completa</h1>
     <p>Gerencie bicicletas, serviços, peças e clientes em um só lugar</p>
   </div>
 
   <!-- Navegação por Abas -->
   <div class="tabs-navigation">
+    <button 
+      [class]="'tab-button ' + (activeTab === 'clientes' ? 'active' : '')"
+      (click)="setActiveTab('clientes')">
+      👥 Clientes
+    </button>
     <button 
       [class]="'tab-button ' + (activeTab === 'bicicletas' ? 'active' : '')"
       (click)="setActiveTab('bicicletas')">
@@ -23,11 +28,6 @@
       [class]="'tab-button ' + (activeTab === 'pecas' ? 'active' : '')"
       (click)="setActiveTab('pecas')">
       ⚙️ Peças
-    </button>
-    <button 
-      [class]="'tab-button ' + (activeTab === 'clientes' ? 'active' : '')"
-      (click)="setActiveTab('clientes')">
-      👥 Clientes
     </button>
   </div>
 
