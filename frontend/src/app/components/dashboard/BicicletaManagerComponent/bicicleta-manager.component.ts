@@ -21,6 +21,7 @@ import { HistoricoBicicletaComponent } from '../HistoricoBicicletaComponent/hist
 })
 export class BicicletaManagerComponent implements OnInit, OnDestroy {
   bicicletas: Bicicleta[] = [];
+  bicicletasFiltradas: Bicicleta[] = []; // Esta será exibida no HTML (*ngFor)
   bicicletasEmServico: Bicicleta[] = [];
   clientes: Cliente[] = [];
   ordensServico: OrdemServico[] = [];
@@ -75,7 +76,7 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
     .subscribe(() => {
       this.aplicarFiltros();
     });
-    
+
     this.carregarDados();
   }
 
@@ -97,6 +98,7 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (bks) => {
           this.bicicletas = bks;
+          this.bicicletasFiltradas = bks; // Inicialmente, todas as bicicletas são exibidas
           console.log('✅ Bicicletas carregadas:', bks);
           this.aplicarFiltros();
         },
@@ -319,7 +321,7 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
       );
     }
 
-    this.bicicletas = filtradas;
+    this.bicicletasFiltradas = filtradas;
   }
 
   /**
