@@ -25,6 +25,12 @@ public class OrdemServicoServico {
     @JsonIgnore
     private OrdemServico ordemServico;
 
+    // NOVO: Vincular ao serviço de uma bicicleta específica
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bicicleta_id")
+    @JsonIgnore
+    private Bicicleta bicicleta;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "servico_id")
     private Servico servico;

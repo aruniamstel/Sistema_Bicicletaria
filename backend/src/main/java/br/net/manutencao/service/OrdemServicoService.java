@@ -2,6 +2,9 @@ package br.net.manutencao.service;
 
 import br.net.manutencao.DTO.OrdemServicoCreateDTO;
 import br.net.manutencao.DTO.OrdemServicoCreateComplexDTO;
+import br.net.manutencao.DTO.BicicletaComItensDTO;
+import br.net.manutencao.DTO.OrdemServicoServicoDTO;
+import br.net.manutencao.DTO.OrdemServicoPecaDTO;
 import br.net.manutencao.model.*;
 import br.net.manutencao.repository.*;
 import br.net.manutencao.exception.ResourceNotFoundException;
@@ -122,8 +125,28 @@ public class OrdemServicoService {
         if (ordem.getBicicleta() != null) {
             ordem.getBicicleta().getMarca(); // acessa propriedade para inicializar
         }
+        
+        // ✅ NOVO: Inicializar bicicletas (1:N)
+        if (ordem.getBicicletas() != null) {
+            ordem.getBicicletas().forEach(bike -> {
+                bike.getMarca(); // Inicializar cada bicicleta
+            });
+        }
+        
         ordem.getServicos().size(); // inicializa lista
         ordem.getPecas().size(); // inicializa lista
+        
+        // ✅ Inicializar bicicleta de cada serviço
+        ordem.getServicos().forEach(s -> {
+            if (s.getServico() != null) s.getServico().getId();
+            if (s.getBicicleta() != null) s.getBicicleta().getId();
+        });
+        
+        // ✅ Inicializar bicicleta de cada peça
+        ordem.getPecas().forEach(p -> {
+            if (p.getPeca() != null) p.getPeca().getId();
+            if (p.getBicicleta() != null) p.getBicicleta().getId();
+        });
         
         // ⭐ CRÍTICO: Recalcular valorTotal
         ordem.calcularValorTotal();
@@ -374,10 +397,274 @@ public class OrdemServicoService {
         }
     }
 
+    // ✅ NOVO MÉTODO: Vincular bicicletas com itens aninhados (serviços e peças por bike)
+    @Transactional
+    private void vincularBicicletasComItens(OrdemServico ordem, List<BicicletaComItensDTO> bicicletasData) {
+        if (bicicletasData == null || bicicletasData.isEmpty()) {
+            return;
+        }
+
+        for (BicicletaComItensDTO bikeData : bicicletasData) {
+            // Buscar ou criar bicicleta
+            Bicicleta bicicleta;
+            if (bikeData.getId() != null) {
+                bicicleta = bicicletaRepository.findById(bikeData.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada: " + bikeData.getId()));
+            } else {
+                // Nova bicicleta
+                bicicleta = new Bicicleta();
+                bicicleta.setMarca(bikeData.getMarca());
+                bicicleta.setModelo(bikeData.getModelo());
+                bicicleta.setCor(bikeData.getCor());
+                bicicleta.setTamanhoAro(bikeData.getTamanhoAro());
+                bicicleta = bicicletaRepository.save(bicicleta);
+            }
+
+            // Adicionar bicicleta à ordem
+            if (!ordem.getBicicletas().contains(bicicleta)) {
+                ordem.getBicicletas().add(bicicleta);
+            }
+
+            // Adicionar serviços desta bicicleta
+            if (bikeData.getServicos() != null) {
+                for (OrdemServicoServicoDTO servicoData : bikeData.getServicos()) {
+                    if (servicoData.getServico() != null && servicoData.getServico().getId() != null) {
+                        Servico servico = servicoRepository.findById(servicoData.getServico().getId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + servicoData.getServico().getId()));
+                        
+                        OrdemServicoServico osServico = new OrdemServicoServico();
+                        osServico.setOrdemServico(ordem);
+                        osServico.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+                        osServico.setServico(servico);
+                        osServico.setQuantidade(servicoData.getQuantidade() != null ? servicoData.getQuantidade() : 1);
+                        osServico.setValor(servico.getValor());
+                        
+                        ordemServicoServicoRepository.save(osServico);
+                        ordem.getServicos().add(osServico);
+                    }
+                }
+            }
+
+            // Adicionar peças desta bicicleta
+            if (bikeData.getPecas() != null) {
+                for (OrdemServicoPecaDTO pecaData : bikeData.getPecas()) {
+                    if (pecaData.getPeca() != null && pecaData.getPeca().getId() != null) {
+                        Peca peca = pecaRepository.findById(pecaData.getPeca().getId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada: " + pecaData.getPeca().getId()));
+                        
+                        // Validar estoque
+                        Integer qtd = pecaData.getQuantidade() != null ? pecaData.getQuantidade() : 1;
+                        if (peca.getQuantidade() < qtd) {
+                            throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getDescricao() + 
+                                ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + qtd);
+                        }
+                        
+                        OrdemServicoPeca osPeca = new OrdemServicoPeca();
+                        osPeca.setOrdemServico(ordem);
+                        osPeca.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+                        osPeca.setPeca(peca);
+                        osPeca.setQuantidade(qtd);
+                        osPeca.setValor(peca.getValor());
+                        
+                        ordemServicoPecaRepository.save(osPeca);
+                        ordem.getPecas().add(osPeca);
+                        
+                        // Atualizar estoque
+                        peca.setQuantidade(peca.getQuantidade() - qtd);
+                        pecaRepository.save(peca);
+                    }
+                }
+            }
+        }
+    }
+
     // Método para buscar ordens por período
     @Transactional(readOnly = true)
     public List<OrdemServico> buscarOrdensPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
         return ordemServicoRepository.findByPeriodo(dataInicio, dataFim);
+    }
+
+    // ✅ NOVO MÉTODO PRINCIPAL: Criar ordem com múltiplas bicicletas (1:N)
+    @Transactional
+    public OrdemServico criarOrdemServicoComMultiplasBicicletas(Map<String, Object> payload) {
+        System.out.println("🔧 Iniciando criação de ordem com múltiplas bicicletas...");
+        
+        // Extrair cliente do payload
+        Map<String, Object> clienteData = (Map<String, Object>) payload.get("cliente");
+        if (clienteData == null) {
+            throw new IllegalArgumentException("❌ Cliente é obrigatório no payload");
+        }
+
+        Number clienteId = (Number) clienteData.get("id");
+        if (clienteId == null) {
+            throw new IllegalArgumentException("❌ ID do cliente é obrigatório");
+        }
+
+        Cliente cliente = clienteRepository.findById(clienteId.longValue())
+                .orElseThrow(() -> new ResourceNotFoundException("❌ Cliente não encontrado com ID: " + clienteId));
+
+        // Criar ordem base
+        OrdemServico novaOrdem = new OrdemServico();
+        novaOrdem.setCliente(cliente);
+        novaOrdem.setObservacoes(payload.get("observacoes") != null ? (String) payload.get("observacoes") : "");
+        novaOrdem.setDataEntrada(LocalDateTime.now());
+
+        // Data de previsão
+        LocalDateTime dataPrevisao = LocalDateTime.now().plusDays(3);
+        if (payload.get("dataPrevisaoSaida") != null) {
+            dataPrevisao = LocalDateTime.parse((String) payload.get("dataPrevisaoSaida"));
+        }
+        novaOrdem.setDataPrevisaoSaida(dataPrevisao);
+
+        novaOrdem.setStatus(StatusOrdem.ABERTA);
+        novaOrdem.setValorTotal(BigDecimal.ZERO);
+        novaOrdem.setExibirAviso30Dias(payload.get("exibirAviso30Dias") != null ? 
+            (Boolean) payload.get("exibirAviso30Dias") : false);
+
+        // Salvar ordem base
+        OrdemServico ordemSalva = ordemServicoRepository.save(novaOrdem);
+        System.out.println("✅ Ordem #" + ordemSalva.getId() + " criada");
+
+        // Processar bicicletas com itens
+        List<Map<String, Object>> bicicletasData = (List<Map<String, Object>>) payload.get("bicicletas");
+        if (bicicletasData != null && !bicicletasData.isEmpty()) {
+            System.out.println("🚲 Processando " + bicicletasData.size() + " bicicleta(s)...");
+            
+            for (Map<String, Object> bikeData : bicicletasData) {
+                processarBicicletaComItens(ordemSalva, bikeData);
+            }
+        }
+
+        // Calcular valor total
+        atualizarValorTotal(ordemSalva);
+        System.out.println("💰 Valor total calculado: " + ordemSalva.getValorTotal());
+
+        // Gerar PDF
+        OrdemServico ordemCompleta = getOrdemServicoCompletoById(ordemSalva.getId());
+        gerarPDFOrdem(ordemCompleta);
+
+        System.out.println("✅ Ordem #" + ordemSalva.getId() + " criada com sucesso!");
+        return ordemCompleta;
+    }
+
+    // ✅ MÉTODO AUXILIAR: Processar bicicleta individual com itens
+    @Transactional
+    private void processarBicicletaComItens(OrdemServico ordem, Map<String, Object> bikeData) {
+        // Buscar ou criar bicicleta
+        Bicicleta bicicleta;
+        Object bikeIdObj = bikeData.get("id");
+        
+        if (bikeIdObj != null && !(bikeIdObj instanceof String && ((String) bikeIdObj).isEmpty())) {
+            Long bikeId = bikeIdObj instanceof Number ? ((Number) bikeIdObj).longValue() : Long.parseLong(bikeIdObj.toString());
+            bicicleta = bicicletaRepository.findById(bikeId)
+                .orElseThrow(() -> new ResourceNotFoundException("❌ Bicicleta não encontrada: " + bikeId));
+            System.out.println("  ✓ Bicicleta existente encontrada: " + bicicleta.getMarca() + " " + bicicleta.getModelo());
+        } else {
+            // Nova bicicleta
+            bicicleta = new Bicicleta();
+            bicicleta.setMarca((String) bikeData.get("marca"));
+            bicicleta.setModelo((String) bikeData.get("modelo"));
+            bicicleta.setCor((String) bikeData.get("cor"));
+            Number araObj = (Number) bikeData.get("tamanhoAro");
+            Integer tamanho = araObj != null ? araObj.intValue() : 0;
+            bicicleta.setTamanhoAro(tamanho);
+            
+            bicicleta = bicicletaRepository.save(bicicleta);
+            System.out.println("  ✓ Nova bicicleta criada: " + bicicleta.getMarca() + " " + bicicleta.getModelo());
+        }
+
+        // Adicionar bicicleta à ordem
+        if (!ordem.getBicicletas().contains(bicicleta)) {
+            ordem.getBicicletas().add(bicicleta);
+        }
+
+        // Processar serviços
+        List<Map<String, Object>> servicosData = (List<Map<String, Object>>) bikeData.get("servicos");
+        if (servicosData != null) {
+            for (Map<String, Object> servicoData : servicosData) {
+                processarServicoParaBicicleta(ordem, bicicleta, servicoData);
+            }
+        }
+
+        // Processar peças
+        List<Map<String, Object>> pecasData = (List<Map<String, Object>>) bikeData.get("pecas");
+        if (pecasData != null) {
+            for (Map<String, Object> pecaData : pecasData) {
+                processarPecaParaBicicleta(ordem, bicicleta, pecaData);
+            }
+        }
+    }
+
+    // ✅ MÉTODO AUXILIAR: Processar serviço individual
+    @Transactional
+    private void processarServicoParaBicicleta(OrdemServico ordem, Bicicleta bicicleta, Map<String, Object> servicoData) {
+        Map<String, Object> servicoObj = (Map<String, Object>) servicoData.get("servico");
+        if (servicoObj == null) {
+            return;
+        }
+
+        Number servicoId = (Number) servicoObj.get("id");
+        if (servicoId == null) {
+            return;
+        }
+
+        Servico servico = servicoRepository.findById(servicoId.longValue())
+            .orElseThrow(() -> new ResourceNotFoundException("❌ Serviço não encontrado: " + servicoId));
+
+        Number qtdObj = (Number) servicoData.get("quantidade");
+        Integer quantidade = qtdObj != null ? qtdObj.intValue() : 1;
+
+        OrdemServicoServico osServico = new OrdemServicoServico();
+        osServico.setOrdemServico(ordem);
+        osServico.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+        osServico.setServico(servico);
+        osServico.setQuantidade(quantidade);
+        osServico.setValor(servico.getValor());
+
+        ordemServicoServicoRepository.save(osServico);
+        ordem.getServicos().add(osServico);
+        System.out.println("    ✓ Serviço adicionado: " + servico.getDescricao() + " (x" + quantidade + ")");
+    }
+
+    // ✅ MÉTODO AUXILIAR: Processar peça individual
+    @Transactional
+    private void processarPecaParaBicicleta(OrdemServico ordem, Bicicleta bicicleta, Map<String, Object> pecaData) {
+        Map<String, Object> pecaObj = (Map<String, Object>) pecaData.get("peca");
+        if (pecaObj == null) {
+            return;
+        }
+
+        Number pecaId = (Number) pecaObj.get("id");
+        if (pecaId == null) {
+            return;
+        }
+
+        Peca peca = pecaRepository.findById(pecaId.longValue())
+            .orElseThrow(() -> new ResourceNotFoundException("❌ Peça não encontrada: " + pecaId));
+
+        Number qtdObj = (Number) pecaData.get("quantidade");
+        Integer quantidade = qtdObj != null ? qtdObj.intValue() : 1;
+
+        // Validar estoque
+        if (peca.getQuantidade() < quantidade) {
+            throw new IllegalArgumentException("❌ Estoque insuficiente para a peça: " + peca.getDescricao() + 
+                ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
+        }
+
+        OrdemServicoPeca osPeca = new OrdemServicoPeca();
+        osPeca.setOrdemServico(ordem);
+        osPeca.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+        osPeca.setPeca(peca);
+        osPeca.setQuantidade(quantidade);
+        osPeca.setValor(peca.getValor());
+
+        ordemServicoPecaRepository.save(osPeca);
+        ordem.getPecas().add(osPeca);
+
+        // Atualizar estoque
+        peca.setQuantidade(peca.getQuantidade() - quantidade);
+        pecaRepository.save(peca);
+        System.out.println("    ✓ Peça adicionada: " + peca.getDescricao() + " (x" + quantidade + ")");
     }
 
     /**

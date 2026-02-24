@@ -1,0 +1,185 @@
+<app-header></app-header>
+
+<div class="form-container">
+  <h2 class="form-title">🚴‍♂️ Nova Ordem de Serviço (Múltiplas Bicicletas)</h2>
+
+  <form [formGroup]="ordemForm" (ngSubmit)="onSubmit()">
+    <!-- ========== SEÇÃO DE CLIENTE ========== -->
+    <div class="form-section">
+      <h3>👤 Cliente</h3>
+      
+      <div class="form-row">
+        <div class="form-field">
+          <label>Selecionar Cliente Cadastrado</label>
+          <select formControlName="cliente">
+            <option value="">Selecione um cliente</option>
+            <option *ngFor="let cliente of clientes" [value]="cliente.id">
+              {{ cliente.nome }} - {{ cliente.telefone }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Formulário de Novo Cliente -->
+      <div class="novo-cliente-container" *ngIf="!ordemForm.get('cliente')?.value">
+        <p class="hint-text">Ou preencha para cadastrar um novo cliente agora:</p>
+        
+        <div class="form-row">
+          <div class="form-field">
+            <input formControlName="nomeNovoCliente" placeholder="Nome do Cliente" />
+          </div>
+          <div class="form-field">
+            <input 
+              formControlName="telefoneNovoCliente" 
+              (input)="formatarTelefone($event)" 
+              placeholder="Telefone (WhatsApp)" 
+              maxlength="15"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <input formControlName="enderecoNovoCliente" placeholder="Endereço" />
+          </div>
+          <div class="form-field">
+            <input formControlName="instagramNovoCliente" placeholder="Instagram (opcional)" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SEÇÃO DE BICICLETAS (NOVO) ========== -->
+    <div class="form-section">
+      <h3>🚲 Bicicletas da Ordem</h3>
+
+      <!-- Formulário para Adicionar Bicicleta -->
+      <div class="bicicleta-adicionar-container">
+        <h4>Adicionar Bicicleta</h4>
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label>Bicicleta Existente</label>
+            <select formControlName="bicicletaExistente">
+              <option value="">-- Selecione --</option>
+              <option *ngFor="let bicicleta of todasBicicletas" [value]="bicicleta.id">
+                {{ bicicleta.marca }} - {{ bicicleta.modelo }} ({{ bicicleta.cor }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <p class="ou-text">OU preencha para cadastrar uma nova bicicleta:</p>
+
+        <div class="form-row">
+          <div class="form-field">
+            <input formControlName="novaBicicletaMarca" placeholder="Marca" />
+          </div>
+          <div class="form-field">
+            <input formControlName="novaBicicletaModelo" placeholder="Modelo" />
+          </div>
+          <div class="form-field">
+            <input formControlName="novaBicicletaCor" placeholder="Cor" />
+          </div>
+          <div class="form-field">
+            <input type="number" formControlName="novaBicicletaTamanhoAro" placeholder="Aro" min="12" max="29" />
+          </div>
+        </div>
+
+        <button type="button" class="add-button" (click)="adicionarBicicletaAoCarrinho()">
+          ✅ Adicionar Bicicleta à Ordem
+        </button>
+      </div>
+
+      <!-- Carrinho de Bicicletas -->
+      <div class="bicicletas-carrinho">
+        <h4>🛒 Bicicletas Adicionadas ({{ bicicletasAdicionadas.length }})</h4>
+
+        <div *ngIf="bicicletasAdicionadas.length === 0" class="empty-state">
+          Nenhuma bicicleta adicionada ainda.
+        </div>
+
+        <div *ngFor="let bike of bicicletasAdicionadas; let i=index" class="bicicleta-card">
+          <div class="bike-header">
+            <h5>{{ bike.marca }} {{ bike.modelo }} ({{ bike.cor }}, {{ bike.tamanhoAro }}")</h5>
+            <button type="button" class="remove-button" (click)="removerBicicletaDoCarrinho(i)">🗑️ Remover</button>
+          </div>
+
+          <!-- Serviços desta Bicicleta -->
+          <div class="itens-section">
+            <h6>🛠️ Serviços</h6>
+            <div *ngFor="let servico of bike.servicos; let j=index" class="item-row">
+              <select (change)="onServicoChange(i, j, $any($event.target).value)">
+                <option value="">Selecione o serviço</option>
+                <option *ngFor="let s of listaServicosDisponiveis" [value]="s.id" [selected]="servico.servico?.id === s.id">
+                  {{ s.descricao }} - R$ {{ s.valor }}
+                </option>
+              </select>
+              <input type="number" [(ngModel)]="servico.quantidade" placeholder="Qtd" min="1" />
+              <button type="button" class="remove-item-btn" (click)="removerServicoDeaBicicleta(i, j)">🗑️</button>
+            </div>
+            <button type="button" class="add-item-button" (click)="adicionarServicoParaBicicleta(i)">
+              + Adicionar Serviço
+            </button>
+          </div>
+
+          <!-- Peças desta Bicicleta -->
+          <div class="itens-section">
+            <h6>⚙️ Peças</h6>
+            <div *ngFor="let peca of bike.pecas; let j=index" class="item-row">
+              <select (change)="onPecaChange(i, j, $any($event.target).value)">
+                <option value="">Selecione a peça</option>
+                <option *ngFor="let p of listaPecasDisponiveis" [value]="p.id" [selected]="peca.peca?.id === p.id">
+                  {{ p.descricao }} - R$ {{ p.valor }}
+                </option>
+              </select>
+              <input type="number" [(ngModel)]="peca.quantidade" placeholder="Qtd" min="1" />
+              <button type="button" class="remove-item-btn" (click)="removerPecaDeBicicleta(i, j)">🗑️</button>
+            </div>
+            <button type="button" class="add-item-button" (click)="adicionarPecaParaBicicleta(i)">
+              + Adicionar Peça
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SEÇÃO DE DATA E OBSERVAÇÕES ========== -->
+    <div class="form-section">
+      <div class="form-row">
+        <div class="form-field">
+          <label>📅 Previsão de Saída</label>
+          <input type="date" formControlName="dataPrevisaoSaida">
+        </div>
+      </div>
+
+      <div class="form-field observacoes-field">
+        <label>📝 Observações</label>
+        <textarea 
+          formControlName="observacoes" 
+          placeholder="Condições das bicicletas, detalhes extras..."
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="form-field checkbox-field">
+        <label>
+          <input type="checkbox" formControlName="exibirAvisoTrintaDias"> 
+          ⚠️ Exibir aviso de 30 dias no PDF
+        </label>
+      </div>
+    </div>
+
+    <!-- ========== BOTÕES DE AÇÃO ========== -->
+    <div class="form-buttons">
+      <button type="button" class="cancel-button" (click)="cancel()">❌ Cancelar</button>
+      <button type="submit" class="save-button" [disabled]="ordemForm.invalid || loading">
+        ✅ Criar Ordem de Serviço
+      </button>
+    </div>
+  </form>
+
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+  <div *ngIf="loadingOperation" class="loading-overlay"></div>
+</div>

@@ -3,34 +3,55 @@ import { Cliente } from './cliente.model';
 
 export interface OrdemServico {
   id?: number;
-  cliente: Cliente; // Adicionado para compatibilidade com o formulário
-  bicicleta: Bicicleta;
+  cliente: Cliente;
+  
+  // NOVO: Múltiplas bicicletas com seus itens aninhados
+  bicicletas: BicicletaComItens[];
+  
+  // Mantido para compatibilidade (será preenchido com a primeira bicicleta se houver)
+  bicicleta?: Bicicleta;
   
   // Datas no formato ISO 8601: yyyy-MM-dd'T'HH:mm:ss (como strings vindas da API)
   dataEntrada: string;
-  dataPrevisaoSaida?: string; // Formato ISO string ou undefined
-  dataSaidaReal?: string;         // Formato ISO string ou undefined
+  dataPrevisaoSaida?: string;
+  dataSaidaReal?: string;
   
-  observacoes?: string; // Opcional conforme Requisito [cite: 5]
+  observacoes?: string;
   status: 'ABERTA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'ENTREGUE';
   
-  // Itens da OS
-  servicos: OrdemServicoServico[];
-  pecas: OrdemServicoPeca[];
+  // Itens da OS (agregação de todos)
+  servicos?: OrdemServicoServico[];
+  pecas?: OrdemServicoPeca[];
   
   valorTotal?: number;
-  
-  // Controle do PDF conforme Requisito 
-  exibirAviso30Dias: boolean; 
+  exibirAviso30Dias: boolean;
 }
 
-
+/**
+ * NOVO: Bicicleta com seus Serviços e Peças aninhados dentro de uma OS
+ */
+export interface BicicletaComItens {
+  id?: number;
+  marca: string;
+  modelo: string;
+  cor: string;
+  tamanhoAro: number;
+  
+  // Serviços específicos desta bicicleta
+  servicos: OrdemServicoServico[];
+  
+  // Peças específicas desta bicicleta
+  pecas: OrdemServicoPeca[];
+}
 
 export interface OrdemServicoServico {
   id?: number;
   servico: Servico;
   quantidade: number;
   valor: number;
+  
+  // NOVO: Referência à bicicleta
+  bicicletaId?: number;
 }
 
 export interface OrdemServicoPeca {
@@ -38,6 +59,9 @@ export interface OrdemServicoPeca {
   peca: Peca;
   quantidade: number;
   valor: number;
+  
+  // NOVO: Referência à bicicleta
+  bicicletaId?: number;
 }
 
 export interface Servico {

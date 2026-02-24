@@ -22,12 +22,18 @@
       </div>
       
       <div class="info-row">
-        <span class="info-label">Bicicleta:</span>
-        <span class="info-value" *ngIf="ordem?.bicicleta">
-          {{ ordem.bicicleta.marca }} - {{ ordem.bicicleta.modelo }}
-          ({{ ordem.bicicleta.cor }})
+        <span class="info-label">Bicicleta(s):</span>
+        <span class="info-value" *ngIf="ordem?.bicicletas && ordem.bicicletas.length > 0">
+          {{ ordem.bicicletas.length }} bicicleta(s)
+          <ul style="margin-top: 8px; padding-left: 20px;">
+            <li *ngFor="let bike of ordem.bicicletas">
+              {{ bike.marca }} {{ bike.modelo }} ({{ bike.cor }}, {{ bike.tamanhoAro }}")
+            </li>
+          </ul>
         </span>
-        <span class="info-value" *ngIf="!ordem?.bicicleta">AVULSA</span>
+        <span class="info-value" *ngIf="!ordem?.bicicletas || ordem.bicicletas.length === 0">
+          AVULSA (sem bicicleta)
+        </span>
       </div>
       
       <div class="info-row">
@@ -81,6 +87,7 @@
   <table class="items-table" *ngIf="(ordem?.servicos?.length || 0) > 0">
         <thead>
           <tr>
+            <th>Bicicleta</th>
             <th>Serviço</th>
             <th>Quantidade</th>
             <th>Valor Unit.</th>
@@ -89,6 +96,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let item of ordem?.servicos">
+            <td>
+              <span *ngIf="item.bicicletaId">
+                {{ getBicicletaInfo(item.bicicletaId)?.marca }} {{ getBicicletaInfo(item.bicicletaId)?.modelo }}
+              </span>
+              <span *ngIf="!item.bicicletaId">AVULSA</span>
+            </td>
             <td>{{ item.servico?.descricao }}</td>
             <td>{{ item.quantidade }}</td>
             <td>{{ item.servico?.valor | currency:'BRL' }}</td>
@@ -124,6 +137,7 @@
   <table class="items-table" *ngIf="(ordem?.pecas?.length || 0) > 0">
         <thead>
           <tr>
+            <th>Bicicleta</th>
             <th>Peça</th>
             <th>Quantidade</th>
             <th>Valor Unit.</th>
@@ -132,6 +146,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let item of ordem?.pecas">
+            <td>
+              <span *ngIf="item.bicicletaId">
+                {{ getBicicletaInfo(item.bicicletaId)?.marca }} {{ getBicicletaInfo(item.bicicletaId)?.modelo }}
+              </span>
+              <span *ngIf="!item.bicicletaId">AVULSA</span>
+            </td>
             <td>{{ item.peca?.descricao }}</td>
             <td>{{ item.quantidade }}</td>
             <td>{{ item.peca?.valor | currency:'BRL' }}</td>

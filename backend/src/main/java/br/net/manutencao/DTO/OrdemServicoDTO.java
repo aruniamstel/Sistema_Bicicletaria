@@ -15,6 +15,11 @@ import java.util.List;
 public class OrdemServicoDTO {
     private Long id;
     private ClienteDTO cliente;
+    
+    // NOVO: Múltiplas bicicletas com seus itens aninhados
+    private List<BicicletaComItensDTO> bicicletas;
+    
+    // Mantido para compatibilidade (será preenchido com a primeira bicicleta se houver)
     private BicicletaDTO bicicleta;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -28,8 +33,11 @@ public class OrdemServicoDTO {
     
     private String observacoes;
     private String status;
+    
+    // Mantido para compatibilidade (agrupa todos os itens)
     private List<OrdemServicoServicoDTO> servicos;
     private List<OrdemServicoPecaDTO> pecas;
+    
     private BigDecimal valorTotal;
     private boolean exibirAviso30Dias;
 }

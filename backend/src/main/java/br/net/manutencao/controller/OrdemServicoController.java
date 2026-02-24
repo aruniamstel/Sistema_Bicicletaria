@@ -100,17 +100,28 @@ public class OrdemServicoController {
         
         try {
             // Detectar qual formato baseado na presença de campos
+            boolean isMultiplasOrdensBike = payload.containsKey("bicicletas") && payload.get("bicicletas") instanceof List;
             boolean isComplexFormat = payload.containsKey("cliente") && payload.get("cliente") instanceof Map;
             boolean isSimpleFormat = payload.containsKey("clienteId") && payload.get("clienteId") != null;
             
-            if (!isComplexFormat && !isSimpleFormat) {
+            if (!isMultiplasOrdensBike && !isComplexFormat && !isSimpleFormat) {
                 response.put("error", "Payload inválido");
-                response.put("details", "Deve conter 'cliente' (objeto) ou 'clienteId' (número)");
+                response.put("details", "Deve conter 'bicicletas' (lista), 'cliente' (objeto), ou 'clienteId' (número)");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
             
             try {
-                if (isComplexFormat) {
+                // ✅ NOVO: Formato com múltiplas bicicletas (1:N)
+                if (isMultiplasOrdensBike && isComplexFormat) {
+                    System.out.println("🚀 Detectado formato com MÚLTIPLAS BICICLETAS");
+                    OrdemServico ordemCriada = ordemServicoService.criarOrdemServicoComMultiplasBicicletas(payload);
+                    response.put("message", "Ordem de serviço criada com múltiplas bicicletas!");
+                    response.put("id", ordemCriada.getId().toString());
+                    response.put("ordem", mapper.toDTO(ordemCriada));
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                } 
+                // Formato antigo: complexo (compatibilidade)
+                else if (isComplexFormat) {
                     System.out.println("✅ Detectado formato complexo (cliente como objeto)");
                     OrdemServicoCreateComplexDTO ordemDTO = objectMapper.convertValue(payload, OrdemServicoCreateComplexDTO.class);
                     OrdemServico ordemCriada = ordemServicoService.criarOrdemServicoCompleta(ordemDTO);
@@ -118,7 +129,9 @@ public class OrdemServicoController {
                     response.put("id", ordemCriada.getId().toString());
                     response.put("ordem", mapper.toDTO(ordemCriada));
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
-                } else {
+                } 
+                // Formato simples (compatibilidade)
+                else {
                     System.out.println("✅ Detectado formato simples (clienteId como número)");
                     OrdemServicoCreateDTO ordemDTO = objectMapper.convertValue(payload, OrdemServicoCreateDTO.class);
                     OrdemServico ordemCriada = ordemServicoService.criarOrdemServico(ordemDTO);

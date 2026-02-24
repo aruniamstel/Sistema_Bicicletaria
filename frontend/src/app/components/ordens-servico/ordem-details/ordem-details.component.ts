@@ -250,4 +250,15 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
   voltar(): void {
     this.router.navigate(['/ordens-servico']);
   }
+
+  /**
+   * NOVO: Retorna informações da bicicleta pelo ID
+   * Busca na lista de bicicletas adicionadas à OS
+   */
+  getBicicletaInfo(bicicletaId: number) {
+    if (!this.ordem?.bicicletas) {
+      return null;
+    }
+    return this.ordem.bicicletas.find(b => b.id === bicicletaId);
+  }
 }

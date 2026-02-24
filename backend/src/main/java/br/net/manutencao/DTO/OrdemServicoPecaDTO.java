@@ -14,4 +14,14 @@ public class OrdemServicoPecaDTO {
     private PecaDTO peca;
     private Integer quantidade;
     private BigDecimal valor;
+    
+    // NOVO: Referência à bicicleta a qual esta peça pertence
+    private Long bicicletaId;
+    
+    public BigDecimal getValorTotal() {
+        if (valor == null || quantidade == null) {
+            return BigDecimal.ZERO;
+        }
+        return valor.multiply(BigDecimal.valueOf(quantidade));
+    }
 }
