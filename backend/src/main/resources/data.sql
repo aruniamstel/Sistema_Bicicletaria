@@ -3,9 +3,10 @@ INSERT INTO cliente (nome, telefone, endereco, instagram) VALUES
 ('João Silva', '(11) 99999-9999', 'Rua das Bicicletas, 123', '@joaobike'),
 ('Maria Santos', '(11) 88888-8888', 'Avenida Principal, 456', '@mariabikes');
 
-INSERT INTO bicicleta (marca, modelo, tamanho_aro, cor, cliente_id) VALUES 
-('Caloi', 'Mountain Bike', 26, 'Vermelha', 1),
-('Monark', 'Barra Circular', 29, 'Preta', 2);
+-- Inserir bicicletas SEM ordem_servico_id (será adicionado quando uma ordem for criada)
+INSERT INTO bicicleta (marca, modelo, tamanho_aro, cor, cliente_id, ordem_servico_id) VALUES 
+('Caloi', 'Mountain Bike', 26, 'Vermelha', 1, NULL),
+('Monark', 'Barra Circular', 29, 'Preta', 2, NULL);
 
 INSERT INTO servico (descricao, valor) VALUES 
 ('Revisão Básica', 50.00),

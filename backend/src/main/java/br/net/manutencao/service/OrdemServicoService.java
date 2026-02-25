@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @Service
@@ -122,11 +123,8 @@ public class OrdemServicoService {
         if (ordem.getCliente() != null) {
             ordem.getCliente().getNome(); // acessa propriedade para inicializar
         }
-        if (ordem.getBicicleta() != null) {
-            ordem.getBicicleta().getMarca(); // acessa propriedade para inicializar
-        }
         
-        // ✅ NOVO: Inicializar bicicletas (1:N)
+        // ✅ Inicializar bicicletas (1:N)
         if (ordem.getBicicletas() != null) {
             ordem.getBicicletas().forEach(bike -> {
                 bike.getMarca(); // Inicializar cada bicicleta
@@ -199,12 +197,15 @@ public class OrdemServicoService {
         Cliente cliente = clienteRepository.findById(ordemDTO.getClienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + ordemDTO.getClienteId()));
 
-        // Buscar bicicleta
+        // Buscar bicicleta (primeira do DTO)
         Bicicleta bicicleta = bicicletaRepository.findById(ordemDTO.getBicicletaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + ordemDTO.getBicicletaId()));
 
         novaOrdem.setCliente(cliente);
-        novaOrdem.setBicicleta(bicicleta);
+        // Adicionar bicicleta à lista (agora é 1:N)
+        novaOrdem.getBicicletas().add(bicicleta);
+        bicicleta.setOrdemServico(novaOrdem);
+        
         novaOrdem.setObservacoes(ordemDTO.getObservacoes());
         novaOrdem.setDataEntrada(LocalDateTime.now());
         novaOrdem.setDataPrevisaoSaida(ordemDTO.getDataPrevisaoSaida() != null ?
@@ -682,16 +683,22 @@ public class OrdemServicoService {
         Cliente cliente = clienteRepository.findById(ordemDTO.getCliente().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + ordemDTO.getCliente().getId()));
 
-        // 2. Buscar e validar bicicleta (opcional)
-        Bicicleta bicicleta = null;
+        // 2. Buscar e validar bicicleta (agora será adicionada à lista)
+        List<Bicicleta> bicicletas = new ArrayList<>();
         if (ordemDTO.getBicicleta() != null && ordemDTO.getBicicleta().getId() != null) {
-            bicicleta = bicicletaRepository.findById(ordemDTO.getBicicleta().getId())
+            Bicicleta bike = bicicletaRepository.findById(ordemDTO.getBicicleta().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + ordemDTO.getBicicleta().getId()));
+            bicicletas.add(bike);
         }
 
         // 3. Definir dados básicos
         novaOrdem.setCliente(cliente);
-        novaOrdem.setBicicleta(bicicleta);
+        // Adicionar bicicletas à ordem (1:N)
+        for (Bicicleta bike : bicicletas) {
+            novaOrdem.getBicicletas().add(bike);
+            bike.setOrdemServico(novaOrdem);
+        }
+        
         novaOrdem.setObservacoes(ordemDTO.getObservacoes() != null ? ordemDTO.getObservacoes() : "");
         novaOrdem.setDataEntrada(LocalDateTime.now());
         

@@ -28,7 +28,6 @@ public class OrdemServicoPeca {
     // NOVO: Vincular à peça de uma bicicleta específica
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bicicleta_id")
-    @JsonIgnore
     private Bicicleta bicicleta;
 
     @ManyToOne(fetch = FetchType.LAZY)

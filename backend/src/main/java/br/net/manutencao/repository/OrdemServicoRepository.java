@@ -13,24 +13,24 @@ import java.util.List;
 @Repository
 public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long> {
 
-    // Buscar TODAS as ordens com eager loading de cliente e bicicleta
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicleta")
+    // Buscar TODAS as ordens com eager loading de cliente e bicicletas
+    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas")
     List<OrdemServico> findAll();
 
-    // Buscar ordens por cliente (através da bicicleta)
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicleta WHERE os.cliente.id = :clienteId")
+    // Buscar ordens por cliente
+    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas WHERE os.cliente.id = :clienteId")
     List<OrdemServico> findByClienteId(@Param("clienteId") Long clienteId);
 
-    // Buscar ordens por bicicleta
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicleta WHERE os.bicicleta.id = :bicicletaId")
+    // Buscar ordens por bicicleta (agora bicicletas é 1:N)
+    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas b WHERE b.id = :bicicletaId")
     List<OrdemServico> findByBicicletaId(@Param("bicicletaId") Long bicicletaId);
 
     // Buscar ordens por status
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicleta WHERE os.status = :status")
+    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas WHERE os.status = :status")
     List<OrdemServico> findByStatus(@Param("status") StatusOrdem status);
 
     // Buscar ordens em aberto
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicleta WHERE os.status IN :statuses")
+    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas WHERE os.status IN :statuses")
     List<OrdemServico> findByStatusIn(@Param("statuses") List<StatusOrdem> statuses);
 
     // Relatório: Faturamento por data (ordens ENTREGUES) - CORRIGIDO

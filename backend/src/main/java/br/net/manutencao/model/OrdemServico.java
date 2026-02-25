@@ -25,14 +25,9 @@ public class OrdemServico {
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    // NOVO: Múltiplas bicicletas em uma OS
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "ordem_servico_id")
+    // NOVO: Múltiplas bicicletas em uma OS (mappedBy para relacionamento bidirecional)
+    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Bicicleta> bicicletas = new ArrayList<>();
-
-    // Mantido para compatibilidade (será preenchido com a primeira bicicleta se houver)
-    @Transient
-    private Bicicleta bicicleta;
 
     // Datas conforme frontend
     private LocalDateTime dataEntrada;

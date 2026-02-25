@@ -81,9 +81,9 @@ public class BicicletaService {
         Bicicleta bicicleta = bicicletaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + id));
 
-        // Verificar se há ordens de serviço associadas
-        if (bicicleta.getOrdensServico() != null && !bicicleta.getOrdensServico().isEmpty()) {
-            throw new IllegalStateException("Não é possível deletar a bicicleta pois existem ordens de serviço associadas");
+        // Verificar se há ordem de serviço associada
+        if (bicicleta.getOrdemServico() != null) {
+            throw new IllegalStateException("Não é possível deletar a bicicleta pois existe uma ordem de serviço associada");
         }
 
         bicicletaRepository.delete(bicicleta);

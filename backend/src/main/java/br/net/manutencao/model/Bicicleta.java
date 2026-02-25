@@ -43,6 +43,9 @@ public class Bicicleta {
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "bicicleta", fetch = jakarta.persistence.FetchType.LAZY)
-    private List<OrdemServico> ordensServico = new ArrayList<>();
+    // NOVO: Relacionamento com OrdemServico (lado "Many")
+    @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @JoinColumn(name = "ordem_servico_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private OrdemServico ordemServico;
 }

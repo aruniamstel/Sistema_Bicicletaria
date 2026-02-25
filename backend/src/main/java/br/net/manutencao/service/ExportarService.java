@@ -143,8 +143,11 @@ public class ExportarService {
         List<OrdemServico> ordens = ordemServicoRepository.findAll();
         for (OrdemServico ordem : ordens) {
             String nomeCliente = ordem.getCliente() != null ? ordem.getCliente().getNome() : "";
-            String descricaoBicicleta = ordem.getBicicleta() != null ? 
-                    ordem.getBicicleta().getMarca() + " " + ordem.getBicicleta().getModelo() : "";
+            String descricaoBicicleta = "";
+            if (ordem.getBicicletas() != null && !ordem.getBicicletas().isEmpty()) {
+                Bicicleta primeira = ordem.getBicicletas().get(0);
+                descricaoBicicleta = primeira.getMarca() + " " + primeira.getModelo();
+            }
             String status = ordem.getStatus() != null ? ordem.getStatus().toString() : "";
             
             csv.append(String.format("%d%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
