@@ -15,16 +15,18 @@ import { ServicoService } from '../../../services/servico.service';
 import { PecaService } from '../../../services/peca.service';
 import { HeaderComponent } from '../../header/header.component';
 
+import { Peca as PecaEstoque } from '../../../shared/models/peca.model';
+
 /**
- * Validador: Exige cliente OU (nome + telefone de novo cliente)
+ * Validador: Exige cliente OU (descricao + telefone de novo cliente)
  */
 function clienteOuNovoClienteValidator(control: AbstractControl): ValidationErrors | null {
   const cliente = control.get('cliente')?.value;
-  const nomeNovoCliente = control.get('nomeNovoCliente')?.value;
+  const descricaoNovoCliente = control.get('descricaoNovoCliente')?.value;
   const telefoneNovoCliente = control.get('telefoneNovoCliente')?.value;
 
   const temCliente = cliente && cliente.toString().trim();
-  const temNovoCliente = (nomeNovoCliente && nomeNovoCliente.toString().trim()) || 
+  const temNovoCliente = (descricaoNovoCliente && descricaoNovoCliente.toString().trim()) || 
                          (telefoneNovoCliente && telefoneNovoCliente.toString().trim());
 
   if (!temCliente && !temNovoCliente) {
@@ -37,16 +39,16 @@ function clienteOuNovoClienteValidator(control: AbstractControl): ValidationErro
   selector: 'app-ordem-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, HeaderComponent],
-  templateUrl: './ordem-form.component.html',
+  templateUrl: './ordem-form-novo.component.html',
   styleUrls: ['./ordem-form.component.css']
 })
-export class OrdemFormComponent implements OnInit, OnDestroy {
+export class OrdemFormNovoComponent implements OnInit, OnDestroy {
   ordemForm: FormGroup;
   clientes: Cliente[] = [];
   todasBicicletas: Bicicleta[] = [];
   
   listaServicosDisponiveis: Servico[] = [];
-  listaPecasDisponiveis: Peca[] = [];
+  listaPecasDisponiveis: PecaEstoque[] = [];
   
   // NOVO: Carrinho de bicicletas
   bicicletasAdicionadas: BicicletaComItens[] = [];
@@ -70,7 +72,7 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
     this.ordemForm = this.fb.group({
       // Cliente
       cliente: [''],
-      nomeNovoCliente: [''],
+      descricaoNovoCliente: [''],
       telefoneNovoCliente: [''],
       enderecoNovoCliente: [''],
       instagramNovoCliente: [''],
@@ -127,7 +129,7 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
     this.pecaService.getAll()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: (data: PecaEstoque[]) => {
           this.listaPecasDisponiveis = data;
           console.log('✅ Peças carregadas:', data);
         },
@@ -318,13 +320,31 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
   /**
    * Atualiza a peça selecionada e seu valor
    */
-  onPecaChange(bicicletaIndex: number, pecaIndex: number, pecaId: number): void {
-    const peca = this.listaPecasDisponiveis.find(p => p.id === pecaId);
-    if (peca) {
-      this.bicicletasAdicionadas[bicicletaIndex].pecas[pecaIndex].peca = peca;
-      this.bicicletasAdicionadas[bicicletaIndex].pecas[pecaIndex].valor = peca.valor;
-    }
+ onPecaChange(bicicletaIndex: number, pecaIndex: number): void {
+  // 1. Pega o ID da peça que foi selecionado no array de bicicletas adicionadas
+  const pecaId = this.bicicletasAdicionadas[bicicletaIndex].pecas[pecaIndex].id;
+  
+  // 2. Procura a peça no estoque (lista de PecaEstoque)
+  const pecaEstoque = this.listaPecasDisponiveis.find(p => p.id === pecaId);
+
+  if (pecaEstoque) {
+    // 3. Monta o objeto EXATAMENTE como a interface OrdemServicoPeca exige:
+    // Ela precisa de: peca (objeto), quantidade (number) e valor (number)
+    this.bicicletasAdicionadas[bicicletaIndex].pecas[pecaIndex] = {
+      id: undefined, // O ID do item da OS ainda não existe (será gerado pelo banco)
+      quantidade: 1,
+      valor: pecaEstoque.valor || 0,
+      peca: {
+        id: pecaEstoque.id,
+        descricao: pecaEstoque.descricao,
+        valor: pecaEstoque.valor,
+        quantidade: pecaEstoque.quantidade // Esta é a quantidade em estoque do model peca.model
+      }
+    };
+
+    console.log(`Peça ${pecaEstoque.descricao} vinculada à bicicleta ${bicicletaIndex}`);
   }
+}
 
   // ==================== FORMATAÇÃO ====================
 
@@ -377,7 +397,7 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
     const clienteId = parseInt(formValue.cliente) || null;
     const novoCliente = this.temDadosNovoCliente()
       ? {
-          nome: formValue.nomeNovoCliente,
+          descricao: formValue.descricaoNovoCliente,
           telefone: formValue.telefoneNovoCliente,
           endereco: formValue.enderecoNovoCliente,
           instagram: formValue.instagramNovoCliente
@@ -417,7 +437,7 @@ export class OrdemFormComponent implements OnInit, OnDestroy {
 
   private temDadosNovoCliente(): boolean {
     const form = this.ordemForm.value;
-    return !!(form.nomeNovoCliente || form.telefoneNovoCliente);
+    return !!(form.descricaoNovoCliente || form.telefoneNovoCliente);
   }
 
   cancel(): void {

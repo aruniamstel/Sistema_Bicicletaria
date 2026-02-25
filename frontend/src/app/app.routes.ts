@@ -20,7 +20,7 @@ import { OrdemFormComponent } from './components/ordens-servico/ordem-form/ordem
 import { OrdemDetailsComponent } from './components/ordens-servico/ordem-details/ordem-details.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
-
+import { OrdemFormNovoComponent } from './components/ordens-servico/ordem-form/ordem-form-novo.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -119,7 +119,7 @@ export const routes: Routes = [
         path: 'ordens-servico',
         children: [
             { path: '', component: OrdemListComponent },
-            { path: 'novo', component: OrdemFormComponent },
+            { path: 'novo', component: OrdemFormNovoComponent },
             { path: ':id', component: OrdemDetailsComponent }
         ],
         canActivate: [authGuard],

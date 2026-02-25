@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { OrdemServico } from '../../../shared/models/ordem-servico.model';
+import { BicicletaComItens, OrdemServico } from '../../../shared/models/ordem-servico.model';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
 import { ServicoService } from '../../../services/servico.service';
 import { PecaService } from '../../../services/peca.service';
@@ -27,7 +27,7 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
     dataEntrada: new Date().toISOString(),
     exibirAviso30Dias: true,
     cliente: {} as Cliente,
-    bicicleta: {} as Bicicleta,
+    bicicletas: [] as  BicicletaComItens[],
     servicos: [],
     pecas: [],
     valorTotal: 0
