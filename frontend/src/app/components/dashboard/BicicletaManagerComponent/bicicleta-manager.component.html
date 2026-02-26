@@ -134,8 +134,8 @@
           <td class="col-modelo">{{ bicicleta.modelo }}</td>
           <td class="col-cor">{{ bicicleta.cor }}</td>
           <td class="col-aro">{{ bicicleta.tamanhoAro }}"</td>
-          <td class="col-dono">{{ bicicleta.cliente.nome }}</td>
-          <td class="col-telefone">{{ bicicleta.cliente.telefone }}</td>
+          <td class="col-dono">{{ bicicleta.cliente?.nome }}</td>
+          <td class="col-telefone">{{ bicicleta.cliente?.telefone }}</td>
           <td class="col-actions">
             <button 
               type="button" 

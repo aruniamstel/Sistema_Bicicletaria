@@ -82,10 +82,11 @@ export class OrdemListComponent implements OnInit {
         // Buscar no cliente (sempre existe)
         const matchCliente = ordem.cliente?.nome?.toLowerCase().includes(term) || false;
         
-        // Buscar na bicicleta se ela existir
-        const matchBicicleta = ordem.bicicleta 
-          ? (ordem.bicicleta.marca?.toLowerCase().includes(term) ||
-             ordem.bicicleta.modelo?.toLowerCase().includes(term))
+        // Buscar nas bicicletas (agora é array)
+        const matchBicicleta = ordem.bicicletas && ordem.bicicletas.length > 0
+          ? ordem.bicicletas.some(bike => 
+              bike.marca?.toLowerCase().includes(term) ||
+              bike.modelo?.toLowerCase().includes(term))
           : false;
         
         return matchCliente || matchBicicleta;

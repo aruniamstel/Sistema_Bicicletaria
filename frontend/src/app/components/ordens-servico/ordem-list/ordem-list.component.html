@@ -48,9 +48,9 @@
   <tr *ngFor="let ordem of filteredOrdens">
     <!-- ✅ Exibe cliente da ordem ou AVULSA se não existir -->
     <td>{{ ordem.cliente?.nome || 'AVULSA' }}</td>
-    <!-- ✅ Exibe bicicleta ou AVULSA se não existir -->
-    <td *ngIf="ordem.bicicleta">{{ ordem.bicicleta.marca }} - {{ ordem.bicicleta.modelo }}</td>
-    <td *ngIf="!ordem.bicicleta">AVULSA</td>
+    <!-- ✅ Exibe primeira bicicleta ou AVULSA se não existir -->
+    <td *ngIf="ordem.bicicletas && ordem.bicicletas.length > 0">{{ ordem.bicicletas[0].marca }} - {{ ordem.bicicletas[0].modelo }}</td>
+    <td *ngIf="!ordem.bicicletas || ordem.bicicletas.length === 0">AVULSA</td>
     <td>{{ ordem.dataEntrada ? (ordem.dataEntrada | date:'dd/MM/yyyy') : '-' }}</td>
     <td>{{ ordem.dataPrevisaoSaida ? (ordem.dataPrevisaoSaida | date:'dd/MM/yyyy') : '-' }}</td>
     <td>{{ ordem.dataSaidaReal ? (ordem.dataSaidaReal | date:'dd/MM/yyyy') : '-' }}</td>
