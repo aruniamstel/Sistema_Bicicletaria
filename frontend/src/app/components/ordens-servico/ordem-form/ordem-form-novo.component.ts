@@ -364,6 +364,16 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
     this.ordemForm.get('telefoneNovoCliente')?.setValue(value);
   }
 
+  onQtdServicoChange(event: any, bIndex: number, sIndex: number): void {
+  const qtd = Number(event.target.value);
+  this.bicicletasAdicionadas[bIndex].servicos[sIndex].quantidade = qtd > 0 ? qtd : 1;
+}
+
+onQtdPecaChange(event: any, bIndex: number, pIndex: number): void {
+  const qtd = Number(event.target.value);
+  this.bicicletasAdicionadas[bIndex].pecas[pIndex].quantidade = qtd > 0 ? qtd : 1;
+}
+
   // ==================== SUBMISSÃO ====================
 
   onSubmit(): void {

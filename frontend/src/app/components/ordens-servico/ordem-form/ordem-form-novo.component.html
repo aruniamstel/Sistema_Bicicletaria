@@ -115,7 +115,12 @@
                   {{ s.descricao }} - R$ {{ s.valor }}
                 </option>
               </select>
-              <input type="number" [(ngModel)]="servico.quantidade" placeholder="Qtd" min="1" />
+              <input 
+              type="number" 
+              [value]="servico.quantidade" 
+              (input)="onQtdServicoChange($event, i, j)" 
+              placeholder="Qtd" 
+              min="1" />
               <button type="button" class="remove-item-btn" (click)="removerServicoDeaBicicleta(i, j)">🗑️</button>
             </div>
             <button type="button" class="add-item-button" (click)="adicionarServicoParaBicicleta(i)">
@@ -133,7 +138,12 @@
                   {{ p.descricao }} - R$ {{ p.valor }}
                 </option>
               </select>
-              <input type="number" [(ngModel)]="peca.quantidade" placeholder="Qtd" min="1" />
+              <input 
+                type="number" 
+                [value]="peca.quantidade" 
+                (input)="onQtdPecaChange($event, i, j)" 
+                placeholder="Qtd" 
+                min="1" />
               <button type="button" class="remove-item-btn" (click)="removerPecaDeBicicleta(i, j)">🗑️</button>
             </div>
             <button type="button" class="add-item-button" (click)="adicionarPecaParaBicicleta(i)">
