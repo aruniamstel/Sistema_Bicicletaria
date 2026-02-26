@@ -72,7 +72,7 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
     this.ordemForm = this.fb.group({
       // Cliente
       cliente: [''],
-      descricaoNovoCliente: [''],
+      nomeNovoCliente: [''],
       telefoneNovoCliente: [''],
       enderecoNovoCliente: [''],
       instagramNovoCliente: [''],
