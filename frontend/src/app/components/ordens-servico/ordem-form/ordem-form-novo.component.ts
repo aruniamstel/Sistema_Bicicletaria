@@ -427,10 +427,12 @@ onQtdPecaChange(event: any, bIndex: number, pIndex: number): void {
   }
 
   private criarOrdemServico(formValue: any, clienteId: number): void {
+    const dataFormatada = formValue.dataPrevisaoSaida ? `${formValue.dataPrevisaoSaida}T18:00:00` : null;
+
     const payload = {
       cliente: { id: clienteId },
       bicicletas: this.bicicletasAdicionadas,
-      dataPrevisaoSaida: formValue.dataPrevisaoSaida || null,
+      dataPrevisaoSaida: dataFormatada || null,
       observacoes: formValue.observacoes || '',
       exibirAviso30Dias: formValue.exibirAvisoTrintaDias,
       status: 'ABERTA'
