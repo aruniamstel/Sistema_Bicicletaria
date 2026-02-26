@@ -400,24 +400,35 @@ onQtdPecaChange(event: any, bIndex: number, pIndex: number): void {
       return;
     }
 
-    this.criarOrdemServico(formValue);
+    if (temNovoCliente) {
+      const novoClienteData: Cliente = {
+        id: undefined,
+        nome: formValue.nomeNovoCliente,
+        telefone: formValue.telefoneNovoCliente,
+        endereco: formValue.enderecoNovoCliente || '',
+        instagram: formValue.instagramNovoCliente || ''
+      };
+
+      this.clienteService.create(novoClienteData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (clienteCriado: Cliente) => {
+            this.criarOrdemServico(formValue, clienteCriado.id);
+          },
+          error: (error) => {
+            console.error('❌ Erro ao criar cliente:', error);
+            this.errorMessage = 'Erro ao criar novo cliente: ' + error.message;
+            this.loadingOperation = false;
+          }
+        });
+    } else {
+      this.criarOrdemServico(formValue, clienteSelecionado);
+    }
   }
 
-  private criarOrdemServico(formValue: any): void {
-    const clienteId = parseInt(formValue.cliente) || null;
-    const novoCliente = this.temDadosNovoCliente()
-      ? {
-          descricao: formValue.descricaoNovoCliente,
-          telefone: formValue.telefoneNovoCliente,
-          endereco: formValue.enderecoNovoCliente,
-          instagram: formValue.instagramNovoCliente
-        }
-      : null;
-
+  private criarOrdemServico(formValue: any, clienteId: number): void {
     const payload = {
-      cliente: clienteId
-        ? this.clientes.find(c => c.id === clienteId)
-        : novoCliente,
+      cliente: { id: clienteId },
       bicicletas: this.bicicletasAdicionadas,
       dataPrevisaoSaida: formValue.dataPrevisaoSaida || null,
       observacoes: formValue.observacoes || '',
@@ -427,27 +438,29 @@ onQtdPecaChange(event: any, bIndex: number, pIndex: number): void {
 
     console.log('📤 Enviando payload:', payload);
 
-    this.ordemService.create(payload).subscribe({
-      next: (response) => {
-        console.log('✅ Ordem de serviço criada com sucesso!', response);
-        this.successMessage = 'Ordem de serviço criada com sucesso!';
-        this.loadingOperation = false;
-        
-        setTimeout(() => {
-          this.router.navigate(['/ordens-servico']);
-        }, 1500);
-      },
-      error: (error) => {
-        console.error('❌ Erro ao criar ordem:', error);
-        this.errorMessage = 'Erro ao criar ordem de serviço: ' + error.message;
-        this.loadingOperation = false;
-      }
-    });
+    this.ordemService.create(payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Ordem de serviço criada com sucesso!', response);
+          this.successMessage = 'Ordem de serviço criada com sucesso!';
+          this.loadingOperation = false;
+          
+          setTimeout(() => {
+            this.router.navigate(['/ordens-servico']);
+          }, 1500);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao criar ordem:', error);
+          this.errorMessage = 'Erro ao criar ordem de serviço: ' + error.message;
+          this.loadingOperation = false;
+        }
+      });
   }
 
   private temDadosNovoCliente(): boolean {
     const form = this.ordemForm.value;
-    return !!(form.descricaoNovoCliente || form.telefoneNovoCliente);
+    return !!(form.nomeNovoCliente || form.telefoneNovoCliente);
   }
 
   cancel(): void {
