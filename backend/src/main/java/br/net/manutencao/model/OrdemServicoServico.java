@@ -20,15 +20,11 @@ public class OrdemServicoServico {
     private Integer quantidade;
     private BigDecimal valor;
 
+    // Vínculo com BicicletaComItens (a bicicleta que recebe o serviço dentro da OS)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ordem_servico_id")
+    @JoinColumn(name = "bicicleta_item_id")
     @JsonIgnore
-    private OrdemServico ordemServico;
-
-    // NOVO: Vincular ao serviço de uma bicicleta específica
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bicicleta_id")
-    private Bicicleta bicicleta;
+    private BicicletaComItens bicicletaItem;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "servico_id")

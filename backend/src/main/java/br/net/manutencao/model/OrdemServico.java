@@ -29,6 +29,10 @@ public class OrdemServico {
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Bicicleta> bicicletas = new ArrayList<>();
 
+    // NOVO: Bicicletas com itens (serviços/peças) para cada ordem
+    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<BicicletaComItens> bicicletasComItens = new ArrayList<>();
+
     // Datas conforme frontend
     private LocalDateTime dataEntrada;
     private LocalDateTime dataPrevisaoSaida;

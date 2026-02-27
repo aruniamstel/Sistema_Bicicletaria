@@ -14,17 +14,17 @@ public class OrdemServicoMapper {
         dto.setId(ordem.getId());
         dto.setCliente(toClienteDTO(ordem.getCliente()));
         
-        // Mapear bicicletas com itens aninhados
-        if (ordem.getBicicletas() != null && !ordem.getBicicletas().isEmpty()) {
-            List<BicicletaComItensDTO> bicicletasDTO = ordem.getBicicletas().stream()
-                .map(bike -> toBicicletaComItensDTO(bike, ordem.getServicos(), ordem.getPecas()))
+        // Mapear bicicletasComItens ao invés de bicicletas
+        if (ordem.getBicicletasComItens() != null && !ordem.getBicicletasComItens().isEmpty()) {
+            List<BicicletaComItensDTO> bicicletasDTO = ordem.getBicicletasComItens().stream()
+                .map(this::toBicicletaComItensDTO)
                 .collect(Collectors.toList());
             dto.setBicicletas(bicicletasDTO);
             
             // Manter primeira bicicleta para compatibilidade
             if (!bicicletasDTO.isEmpty()) {
-                Bicicleta primeiraBike = ordem.getBicicletas().get(0);
-                dto.setBicicleta(toBicicletaDTO(primeiraBike));
+                BicicletaComItens primeiraBike = ordem.getBicicletasComItens().get(0);
+                dto.setBicicleta(toBicicletaComItensCompatibilitDTO(primeiraBike));
             }
         }
         
@@ -34,13 +34,13 @@ public class OrdemServicoMapper {
         dto.setObservacoes(ordem.getObservacoes());
         dto.setStatus(ordem.getStatus().name());
         
-        // Mapear serviços com bicicletaId
+        // Mapear serviços com referência a bicicletaItem
         List<OrdemServicoServicoDTO> servicosDTO = ordem.getServicos().stream()
             .map(this::toServicoDTO)
             .collect(Collectors.toList());
         dto.setServicos(servicosDTO);
         
-        // Mapear peças com bicicletaId
+        // Mapear peças com referência a bicicletaItem
         List<OrdemServicoPecaDTO> pecasDTO = ordem.getPecas().stream()
             .map(this::toPecaDTO)
             .collect(Collectors.toList());
@@ -61,28 +61,26 @@ public class OrdemServicoMapper {
                             cliente.getEndereco(), cliente.getInstagram());
     }
 
-    private BicicletaComItensDTO toBicicletaComItensDTO(Bicicleta bicicleta, List<OrdemServicoServico> servicos, List<OrdemServicoPeca> pecas) {
-        if (bicicleta == null) return null;
+    private BicicletaComItensDTO toBicicletaComItensDTO(BicicletaComItens bikeItem) {
+        if (bikeItem == null) return null;
         BicicletaComItensDTO dto = new BicicletaComItensDTO();
-        dto.setId(bicicleta.getId());
-        dto.setMarca(bicicleta.getMarca());
-        dto.setModelo(bicicleta.getModelo());
-        dto.setCor(bicicleta.getCor());
-        dto.setTamanhoAro(bicicleta.getTamanhoAro());
+        dto.setId(bikeItem.getId());
+        dto.setMarca(bikeItem.getMarca());
+        dto.setModelo(bikeItem.getModelo());
+        dto.setCor(bikeItem.getCor());
+        dto.setTamanhoAro(bikeItem.getTamanhoAro());
         
-        // Serviços desta bicicleta
-        if (servicos != null) {
-            List<OrdemServicoServicoDTO> servicosDTO = servicos.stream()
-                .filter(s -> s.getBicicleta() != null && s.getBicicleta().getId().equals(bicicleta.getId()))
+        // Serviços desta bicicleta item
+        if (bikeItem.getServicos() != null) {
+            List<OrdemServicoServicoDTO> servicosDTO = bikeItem.getServicos().stream()
                 .map(this::toServicoDTO)
                 .collect(Collectors.toList());
             dto.setServicos(servicosDTO);
         }
         
-        // Peças desta bicicleta
-        if (pecas != null) {
-            List<OrdemServicoPecaDTO> pecasDTO = pecas.stream()
-                .filter(p -> p.getBicicleta() != null && p.getBicicleta().getId().equals(bicicleta.getId()))
+        // Peças desta bicicleta item
+        if (bikeItem.getPecas() != null) {
+            List<OrdemServicoPecaDTO> pecasDTO = bikeItem.getPecas().stream()
                 .map(this::toPecaDTO)
                 .collect(Collectors.toList());
             dto.setPecas(pecasDTO);
@@ -91,15 +89,15 @@ public class OrdemServicoMapper {
         return dto;
     }
 
-    private BicicletaDTO toBicicletaDTO(Bicicleta bicicleta) {
-        if (bicicleta == null) return null;
+    // Para compatibilidade ao retornar uma bicicleta simples
+    private BicicletaDTO toBicicletaComItensCompatibilitDTO(BicicletaComItens bikeItem) {
+        if (bikeItem == null) return null;
         BicicletaDTO dto = new BicicletaDTO();
-        dto.setId(bicicleta.getId());
-        dto.setMarca(bicicleta.getMarca());
-        dto.setModelo(bicicleta.getModelo());
-        dto.setTamanhoAro(bicicleta.getTamanhoAro());
-        dto.setCor(bicicleta.getCor());
-        dto.setCliente(toClienteDTO(bicicleta.getCliente()));
+        dto.setId(bikeItem.getId());
+        dto.setMarca(bikeItem.getMarca());
+        dto.setModelo(bikeItem.getModelo());
+        dto.setTamanhoAro(bikeItem.getTamanhoAro());
+        dto.setCor(bikeItem.getCor());
         return dto;
     }
 
@@ -113,8 +111,8 @@ public class OrdemServicoMapper {
         dto.setServico(toServicoDTO(oss.getServico()));
         dto.setQuantidade(oss.getQuantidade());
         dto.setValor(oss.getValor());
-        if (oss.getBicicleta() != null) {
-            dto.setBicicletaId(oss.getBicicleta().getId());
+        if (oss.getBicicletaItem() != null) {
+            dto.setBicicletaId(oss.getBicicletaItem().getId());
         }
         return dto;
     }
@@ -134,8 +132,8 @@ public class OrdemServicoMapper {
         dto.setPeca(toPecaDTO(osp.getPeca()));
         dto.setQuantidade(osp.getQuantidade());
         dto.setValor(osp.getValor());
-        if (osp.getBicicleta() != null) {
-            dto.setBicicletaId(osp.getBicicleta().getId());
+        if (osp.getBicicletaItem() != null) {
+            dto.setBicicletaId(osp.getBicicletaItem().getId());
         }
         return dto;
     }

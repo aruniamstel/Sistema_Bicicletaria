@@ -50,6 +50,9 @@ public class OrdemServicoService {
     @Autowired
     private PDFService pdfService;
 
+    @Autowired
+    private BicicletaComItensRepository bicicletaComItensRepository;
+
     // Métodos básicos de listagem
     @Transactional(readOnly = true)
     public List<OrdemServico> listarTodasOrdens() {
@@ -134,16 +137,16 @@ public class OrdemServicoService {
         ordem.getServicos().size(); // inicializa lista
         ordem.getPecas().size(); // inicializa lista
         
-        // ✅ Inicializar bicicleta de cada serviço
+        // ✅ Inicializar bicicletaItem de cada serviço
         ordem.getServicos().forEach(s -> {
             if (s.getServico() != null) s.getServico().getId();
-            if (s.getBicicleta() != null) s.getBicicleta().getId();
+            if (s.getBicicletaItem() != null) s.getBicicletaItem().getId();
         });
         
-        // ✅ Inicializar bicicleta de cada peça
+        // ✅ Inicializar bicicletaItem de cada peça
         ordem.getPecas().forEach(p -> {
             if (p.getPeca() != null) p.getPeca().getId();
-            if (p.getBicicleta() != null) p.getBicicleta().getId();
+            if (p.getBicicletaItem() != null) p.getBicicletaItem().getId();
         });
         
         // ⭐ CRÍTICO: Recalcular valorTotal
@@ -203,6 +206,9 @@ public class OrdemServicoService {
 
         novaOrdem.setCliente(cliente);
         // Adicionar bicicleta à lista (agora é 1:N)
+        if (novaOrdem.getBicicletas() != null) {
+            novaOrdem.setBicicletas(new ArrayList<>());
+        }
         novaOrdem.getBicicletas().add(bicicleta);
         bicicleta.setOrdemServico(novaOrdem);
         
@@ -246,7 +252,8 @@ public class OrdemServicoService {
         } else {
             // Criar novo relacionamento
             OrdemServicoServico ordemServicoServico = new OrdemServicoServico();
-            ordemServicoServico.setOrdemServico(ordem);
+            // NOTA: Para a nova arquitetura, use criarOrdemServicoComMultiplasBicicletas
+            // ordemServicoServico.setOrdemServico(ordem); // REMOVIDO - use BicicletaComItens
             ordemServicoServico.setServico(servico);
             ordemServicoServico.setQuantidade(quantidade);
             ordemServicoServico.setValor(servico.getValor());
@@ -288,7 +295,8 @@ public class OrdemServicoService {
         } else {
             // Criar novo relacionamento
             OrdemServicoPeca ordemServicoPeca = new OrdemServicoPeca();
-            ordemServicoPeca.setOrdemServico(ordem);
+            // NOTA: Para a nova arquitetura, use criarOrdemServicoComMultiplasBicicletas
+            // ordemServicoPeca.setOrdemServico(ordem); // REMOVIDO - use BicicletaComItens
             ordemServicoPeca.setPeca(peca);
             ordemServicoPeca.setQuantidade(quantidade);
             ordemServicoPeca.setValor(peca.getValor());
@@ -434,8 +442,9 @@ public class OrdemServicoService {
                             .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + servicoData.getServico().getId()));
                         
                         OrdemServicoServico osServico = new OrdemServicoServico();
-                        osServico.setOrdemServico(ordem);
-                        osServico.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+                        // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
+                        // osServico.setOrdemServico(ordem); // REMOVIDO
+                        // osServico.setBicicleta(bicicleta); // REMOVIDO
                         osServico.setServico(servico);
                         osServico.setQuantidade(servicoData.getQuantidade() != null ? servicoData.getQuantidade() : 1);
                         osServico.setValor(servico.getValor());
@@ -461,8 +470,9 @@ public class OrdemServicoService {
                         }
                         
                         OrdemServicoPeca osPeca = new OrdemServicoPeca();
-                        osPeca.setOrdemServico(ordem);
-                        osPeca.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+                        // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
+                        // osPeca.setOrdemServico(ordem); // REMOVIDO
+                        // osPeca.setBicicleta(bicicleta); // REMOVIDO
                         osPeca.setPeca(peca);
                         osPeca.setQuantidade(qtd);
                         osPeca.setValor(peca.getValor());
@@ -536,7 +546,20 @@ public class OrdemServicoService {
             }
         }
 
-        // Calcular valor total
+        // ✅ VÍNCULO OBRIGATÓRIO: Antes de persistir, vincular todas as bicicletas com itens
+        if (ordemSalva.getBicicletasComItens() != null) {
+            ordemSalva.getBicicletasComItens().forEach(bike -> {
+                bike.setOrdemServico(ordemSalva);
+                if (bike.getServicos() != null) {
+                    bike.getServicos().forEach(s -> s.setBicicletaItem(bike));
+                }
+                if (bike.getPecas() != null) {
+                    bike.getPecas().forEach(p -> p.setBicicletaItem(bike));
+                }
+            });
+        }
+
+        // Calcular valor total e persistir
         atualizarValorTotal(ordemSalva);
         System.out.println("💰 Valor total calculado: " + ordemSalva.getValorTotal());
 
@@ -551,54 +574,59 @@ public class OrdemServicoService {
     // ✅ MÉTODO AUXILIAR: Processar bicicleta individual com itens
     @Transactional
     private void processarBicicletaComItens(OrdemServico ordem, Map<String, Object> bikeData) {
-        // Buscar ou criar bicicleta
-        Bicicleta bicicleta;
-        Object bikeIdObj = bikeData.get("id");
+        // ✅ NOVO: Criar BicicletaComItens ao invés de usar Bicicleta diretamente
+        BicicletaComItens bikeItem = new BicicletaComItens();
         
+        // Se possui ID, é referência a bicicleta do catálogo
+        Object bikeIdObj = bikeData.get("id");
         if (bikeIdObj != null && !(bikeIdObj instanceof String && ((String) bikeIdObj).isEmpty())) {
             Long bikeId = bikeIdObj instanceof Number ? ((Number) bikeIdObj).longValue() : Long.parseLong(bikeIdObj.toString());
-            bicicleta = bicicletaRepository.findById(bikeId)
+            Bicicleta bicicletaCatalogo = bicicletaRepository.findById(bikeId)
                 .orElseThrow(() -> new ResourceNotFoundException("❌ Bicicleta não encontrada: " + bikeId));
-            System.out.println("  ✓ Bicicleta existente encontrada: " + bicicleta.getMarca() + " " + bicicleta.getModelo());
+            
+            // Copiar dados da bicicleta do catálogo
+            bikeItem.setMarca(bicicletaCatalogo.getMarca());
+            bikeItem.setModelo(bicicletaCatalogo.getModelo());
+            bikeItem.setCor(bicicletaCatalogo.getCor());
+            bikeItem.setTamanhoAro(bicicletaCatalogo.getTamanhoAro());
+            System.out.println("  ✓ Bicicleta do catálogo referenciada: " + bicicletaCatalogo.getMarca() + " " + bicicletaCatalogo.getModelo());
         } else {
-            // Nova bicicleta
-            bicicleta = new Bicicleta();
-            bicicleta.setMarca((String) bikeData.get("marca"));
-            bicicleta.setModelo((String) bikeData.get("modelo"));
-            bicicleta.setCor((String) bikeData.get("cor"));
+            // Nova bicicleta (entrada manual)
+            bikeItem.setMarca((String) bikeData.get("marca"));
+            bikeItem.setModelo((String) bikeData.get("modelo"));
+            bikeItem.setCor((String) bikeData.get("cor"));
             Number araObj = (Number) bikeData.get("tamanhoAro");
             Integer tamanho = araObj != null ? araObj.intValue() : 0;
-            bicicleta.setTamanhoAro(tamanho);
-            
-            bicicleta = bicicletaRepository.save(bicicleta);
-            System.out.println("  ✓ Nova bicicleta criada: " + bicicleta.getMarca() + " " + bicicleta.getModelo());
+            bikeItem.setTamanhoAro(tamanho);
+            System.out.println("  ✓ Nova bicicleta criada (manual): " + bikeItem.getMarca() + " " + bikeItem.getModelo());
         }
 
-        // Adicionar bicicleta à ordem
-        if (!ordem.getBicicletas().contains(bicicleta)) {
-            ordem.getBicicletas().add(bicicleta);
-        }
+        // ✅ OBRIGATÓRIO: Vincular a BicicletaComItens à ordem
+        bikeItem.setOrdemServico(ordem);
+        
+        // Salvar BicicletaComItens
+        BicicletaComItens bikeItemSalva = bicicletaComItensRepository.save(bikeItem);
 
-        // Processar serviços
+        // Processar serviços para esta bicicleta
         List<Map<String, Object>> servicosData = (List<Map<String, Object>>) bikeData.get("servicos");
         if (servicosData != null) {
             for (Map<String, Object> servicoData : servicosData) {
-                processarServicoParaBicicleta(ordem, bicicleta, servicoData);
+                processarServicoParaBicicletaComItens(bikeItemSalva, servicoData);
             }
         }
 
-        // Processar peças
+        // Processar peças para esta bicicleta
         List<Map<String, Object>> pecasData = (List<Map<String, Object>>) bikeData.get("pecas");
         if (pecasData != null) {
             for (Map<String, Object> pecaData : pecasData) {
-                processarPecaParaBicicleta(ordem, bicicleta, pecaData);
+                processarPecaParaBicicletaComItens(bikeItemSalva, pecaData);
             }
         }
     }
 
-    // ✅ MÉTODO AUXILIAR: Processar serviço individual
+    // ✅ MÉTODO AUXILIAR: Processar serviço para BicicletaComItens
     @Transactional
-    private void processarServicoParaBicicleta(OrdemServico ordem, Bicicleta bicicleta, Map<String, Object> servicoData) {
+    private void processarServicoParaBicicletaComItens(BicicletaComItens bikeItem, Map<String, Object> servicoData) {
         Map<String, Object> servicoObj = (Map<String, Object>) servicoData.get("servico");
         if (servicoObj == null) {
             return;
@@ -615,21 +643,21 @@ public class OrdemServicoService {
         Number qtdObj = (Number) servicoData.get("quantidade");
         Integer quantidade = qtdObj != null ? qtdObj.intValue() : 1;
 
+        // ✅ NOVO: Criar OrdemServicoServico com BicicletaComItens
         OrdemServicoServico osServico = new OrdemServicoServico();
-        osServico.setOrdemServico(ordem);
-        osServico.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+        osServico.setBicicletaItem(bikeItem);
         osServico.setServico(servico);
         osServico.setQuantidade(quantidade);
         osServico.setValor(servico.getValor());
 
         ordemServicoServicoRepository.save(osServico);
-        ordem.getServicos().add(osServico);
+        bikeItem.getServicos().add(osServico);
         System.out.println("    ✓ Serviço adicionado: " + servico.getDescricao() + " (x" + quantidade + ")");
     }
 
-    // ✅ MÉTODO AUXILIAR: Processar peça individual
+    // ✅ MÉTODO AUXILIAR: Processar peça para BicicletaComItens
     @Transactional
-    private void processarPecaParaBicicleta(OrdemServico ordem, Bicicleta bicicleta, Map<String, Object> pecaData) {
+    private void processarPecaParaBicicletaComItens(BicicletaComItens bikeItem, Map<String, Object> pecaData) {
         Map<String, Object> pecaObj = (Map<String, Object>) pecaData.get("peca");
         if (pecaObj == null) {
             return;
@@ -652,15 +680,15 @@ public class OrdemServicoService {
                 ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
         }
 
+        // ✅ NOVO: Criar OrdemServicoPeca com BicicletaComItens
         OrdemServicoPeca osPeca = new OrdemServicoPeca();
-        osPeca.setOrdemServico(ordem);
-        osPeca.setBicicleta(bicicleta); // ✅ Vincular à bicicleta
+        osPeca.setBicicletaItem(bikeItem);
         osPeca.setPeca(peca);
         osPeca.setQuantidade(quantidade);
         osPeca.setValor(peca.getValor());
 
         ordemServicoPecaRepository.save(osPeca);
-        ordem.getPecas().add(osPeca);
+        bikeItem.getPecas().add(osPeca);
 
         // Atualizar estoque
         peca.setQuantidade(peca.getQuantidade() - quantidade);
@@ -728,7 +756,8 @@ public class OrdemServicoService {
                             .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + servicoId));
                     
                     OrdemServicoServico ordemServicoServico = new OrdemServicoServico();
-                    ordemServicoServico.setOrdemServico(ordemSalva);
+                    // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
+                    // ordemServicoServico.setOrdemServico(ordemSalva); // REMOVIDO
                     ordemServicoServico.setServico(servico);
                     ordemServicoServico.setQuantidade(quantidade);
                     ordemServicoServico.setValor(servico.getValor());
@@ -756,7 +785,8 @@ public class OrdemServicoService {
                     }
                     
                     OrdemServicoPeca ordemServicoPeca = new OrdemServicoPeca();
-                    ordemServicoPeca.setOrdemServico(ordemSalva);
+                    // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
+                    // ordemServicoPeca.setOrdemServico(ordemSalva); // REMOVIDO
                     ordemServicoPeca.setPeca(peca);
                     ordemServicoPeca.setQuantidade(quantidade);
                     ordemServicoPeca.setValor(peca.getValor());
