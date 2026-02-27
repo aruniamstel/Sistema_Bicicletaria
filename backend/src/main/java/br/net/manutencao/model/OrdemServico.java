@@ -1,6 +1,7 @@
 package br.net.manutencao.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -25,12 +26,14 @@ public class OrdemServico {
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    // NOVO: Múltiplas bicicletas em uma OS (mappedBy para relacionamento bidirecional)
+    // Múltiplas bicicletas em uma OS (relacionamento bidirecional)
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Bicicleta> bicicletas = new ArrayList<>();
 
-    // NOVO: Bicicletas com itens (serviços/peças) para cada ordem
+    // Bicicletas com itens (serviços/peças) para cada ordem
+    // ÚNICA lista de relacionamento 1:N para BicicletaComItens
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference("ordem-bicicletas")
     private List<BicicletaComItens> bicicletasComItens = new ArrayList<>();
 
     // Datas conforme frontend
@@ -40,12 +43,6 @@ public class OrdemServico {
 
     private String observacoes;
     private StatusOrdem status;
-
-    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrdemServicoServico> servicos = new ArrayList<>();
-
-    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrdemServicoPeca> pecas = new ArrayList<>();
 
     private BigDecimal valorTotal;
 
@@ -65,17 +62,25 @@ public class OrdemServico {
         }
     }
 
-    // Método para calcular valor total
+    // Método para calcular valor total (percorre as bicicletas e seus itens)
     public BigDecimal calcularValorTotal() {
-        BigDecimal totalServicos = servicos.stream()
-            .map(OrdemServicoServico::getValorTotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal total = BigDecimal.ZERO;
 
-        BigDecimal totalPecas = pecas.stream()
-            .map(OrdemServicoPeca::getValorTotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        for (BicicletaComItens bicicleta : bicicletasComItens) {
+            // Soma dos serviços
+            BigDecimal totalServicos = bicicleta.getServicos().stream()
+                .map(ItemServico::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        this.valorTotal = totalServicos.add(totalPecas);
+            // Soma das peças
+            BigDecimal totalPecas = bicicleta.getPecas().stream()
+                .map(ItemPeca::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            total = total.add(totalServicos).add(totalPecas);
+        }
+
+        this.valorTotal = total;
         return this.valorTotal;
     }
 }

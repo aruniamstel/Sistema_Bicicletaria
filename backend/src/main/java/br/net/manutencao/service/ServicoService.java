@@ -76,7 +76,7 @@ public class ServicoService {
         Servico servico = buscarPorId(id);
         
         // Verificar se o serviço está em uso em ordens de serviço
-        if (!servico.getOrdemServicoServicos().isEmpty()) {
+        if (!servico.getItemServicos().isEmpty()) {
             throw new IllegalStateException(
                 "Não é possível excluir o serviço pois ele está vinculado a ordens de serviço"
             );

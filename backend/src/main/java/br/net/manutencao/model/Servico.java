@@ -28,5 +28,5 @@ public class Servico {
 
     @OneToMany(mappedBy = "servico", fetch = jakarta.persistence.FetchType.LAZY)
     @JsonIgnore
-    private List<OrdemServicoServico> ordemServicoServicos = new ArrayList<>();
+    private List<ItemServico> ItemServicos = new ArrayList<>();
 }

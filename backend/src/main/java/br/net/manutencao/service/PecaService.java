@@ -98,7 +98,7 @@ public class PecaService {
         Peca peca = buscarPorId(id);
         
         // Verificar se a peça está em uso em ordens de serviço
-        if (!peca.getOrdemServicoPecas().isEmpty()) {
+        if (!peca.getItemPecas().isEmpty()) {
             throw new IllegalStateException(
                 "Não é possível excluir a peça pois ela está vinculada a ordens de serviço"
             );

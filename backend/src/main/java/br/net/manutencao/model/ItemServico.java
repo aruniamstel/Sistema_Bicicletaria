@@ -1,7 +1,7 @@
 package br.net.manutencao.model;
 
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,9 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrdemServicoServico {
+@Table(name = "item_servico")
+public class ItemServico {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,17 +22,22 @@ public class OrdemServicoServico {
     private Integer quantidade;
     private BigDecimal valor;
 
-    // Vínculo com BicicletaComItens (a bicicleta que recebe o serviço dentro da OS)
+    // Descrição do serviço (nome, tipo, etc.)
+    private String descricao;
+
+    // Vínculo obrigatório com BicicletaComItens (FK)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bicicleta_item_id")
-    @JsonIgnore
+    @JsonBackReference("bicicleta-servicos")
     private BicicletaComItens bicicletaItem;
 
+    // Vínculo opcional com Serviço (tabela de referência)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "servico_id")
     private Servico servico;
 
     public BigDecimal getValorTotal() {
+        if (valor == null || quantidade == null) return BigDecimal.ZERO;
         return valor.multiply(BigDecimal.valueOf(quantidade));
     }
 }

@@ -101,11 +101,11 @@ public class OrdemServicoMapper {
         return dto;
     }
 
-    private List<OrdemServicoServicoDTO> toServicoDTOList(List<OrdemServicoServico> servicos) {
+    /*private List<OrdemServicoServicoDTO> toServicoDTOList(List<OrdemServicoServico> servicos) {
         return servicos.stream().map(this::toServicoDTO).collect(Collectors.toList());
-    }
+    } */
 
-    private OrdemServicoServicoDTO toServicoDTO(OrdemServicoServico oss) {
+    /*private OrdemServicoServicoDTO toServicoDTO(ItemServico oss) {
         OrdemServicoServicoDTO dto = new OrdemServicoServicoDTO();
         dto.setId(oss.getId());
         dto.setServico(toServicoDTO(oss.getServico()));
@@ -115,18 +115,19 @@ public class OrdemServicoMapper {
             dto.setBicicletaId(oss.getBicicletaItem().getId());
         }
         return dto;
-    }
+    } */
 
+    /* 
     private ServicoDTO toServicoDTO(Servico servico) {
         if (servico == null) return null;
         return new ServicoDTO(servico.getId(), servico.getDescricao(), servico.getValor());
-    }
+    } */
 
-    private List<OrdemServicoPecaDTO> toPecaDTOList(List<OrdemServicoPeca> pecas) {
+   /*  private List<OrdemServicoPecaDTO> toPecaDTOList(List<OrdemServicoPeca> pecas) {
         return pecas.stream().map(this::toPecaDTO).collect(Collectors.toList());
-    }
+    } */
 
-    private OrdemServicoPecaDTO toPecaDTO(OrdemServicoPeca osp) {
+   /*  private OrdemServicoPecaDTO toPecaDTO(ItemPeca osp) {
         OrdemServicoPecaDTO dto = new OrdemServicoPecaDTO();
         dto.setId(osp.getId());
         dto.setPeca(toPecaDTO(osp.getPeca()));
@@ -136,7 +137,37 @@ public class OrdemServicoMapper {
             dto.setBicicletaId(osp.getBicicletaItem().getId());
         }
         return dto;
+    } */
+
+    // Converte a nova entidade ItemServico para o DTO que o Angular já conhece
+private OrdemServicoServicoDTO toServicoDTO(ItemServico item) {
+    if (item == null) return null;
+    OrdemServicoServicoDTO dto = new OrdemServicoServicoDTO();
+    dto.setId(item.getId());
+    dto.setQuantidade(item.getQuantidade());
+    dto.setValor(item.getValor());
+    
+    // Se o item estiver ligado a um Serviço do catálogo
+    if (item.getServico() != null) {
+        dto.setServico(toServicoDTO(item.getServico()));
     }
+    return dto;
+}
+
+// Converte a nova entidade ItemPeca para o DTO
+private OrdemServicoPecaDTO toPecaDTO(ItemPeca item) {
+    if (item == null) return null;
+    OrdemServicoPecaDTO dto = new OrdemServicoPecaDTO();
+    dto.setId(item.getId());
+    dto.setQuantidade(item.getQuantidade());
+    dto.setValor(item.getValor());
+
+    // Se o item estiver ligado a uma Peça do catálogo
+    if (item.getPeca() != null) {
+        dto.setPeca(toPecaDTO(item.getPeca()));
+    }
+    return dto;
+}
 
     private PecaDTO toPecaDTO(Peca peca) {
         if (peca == null) return null;

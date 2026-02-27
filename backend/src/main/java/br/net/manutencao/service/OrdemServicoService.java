@@ -3,8 +3,8 @@ package br.net.manutencao.service;
 import br.net.manutencao.DTO.OrdemServicoCreateDTO;
 import br.net.manutencao.DTO.OrdemServicoCreateComplexDTO;
 import br.net.manutencao.DTO.BicicletaComItensDTO;
-import br.net.manutencao.DTO.OrdemServicoServicoDTO;
-import br.net.manutencao.DTO.OrdemServicoPecaDTO;
+import br.net.manutencao.DTO.ItemServicoDTO;
+import br.net.manutencao.DTO.ItemPecaDTO;
 import br.net.manutencao.model.*;
 import br.net.manutencao.repository.*;
 import br.net.manutencao.exception.ResourceNotFoundException;
@@ -42,10 +42,10 @@ public class OrdemServicoService {
     private PecaRepository pecaRepository;
 
     @Autowired
-    private OrdemServicoServicoRepository ordemServicoServicoRepository;
+    private ItemServicoRepository ItemServicoRepository;
 
     @Autowired
-    private OrdemServicoPecaRepository ordemServicoPecaRepository;
+    private ItemPecaRepository ItemPecaRepository;
 
     @Autowired
     private PDFService pdfService;
@@ -240,26 +240,26 @@ public class OrdemServicoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + servicoId));
         
         // Verificar se o serviço já foi adicionado à ordem
-        Optional<OrdemServicoServico> existing = ordem.getServicos().stream()
+        Optional<ItemServico> existing = ordem.getServicos().stream()
                 .filter(oss -> oss.getServico().getId().equals(servicoId))
                 .findFirst();
         
         if (existing.isPresent()) {
             // Atualizar quantidade se já existir
-            OrdemServicoServico oss = existing.get();
+            ItemServico oss = existing.get();
             oss.setQuantidade(oss.getQuantidade() + quantidade);
-            ordemServicoServicoRepository.save(oss);
+            ItemServicoRepository.save(oss);
         } else {
             // Criar novo relacionamento
-            OrdemServicoServico ordemServicoServico = new OrdemServicoServico();
+            ItemServico ItemServico = new ItemServico();
             // NOTA: Para a nova arquitetura, use criarOrdemServicoComMultiplasBicicletas
-            // ordemServicoServico.setOrdemServico(ordem); // REMOVIDO - use BicicletaComItens
-            ordemServicoServico.setServico(servico);
-            ordemServicoServico.setQuantidade(quantidade);
-            ordemServicoServico.setValor(servico.getValor());
+            // ItemServico.setOrdemServico(ordem); // REMOVIDO - use BicicletaComItens
+            ItemServico.setServico(servico);
+            ItemServico.setQuantidade(quantidade);
+            ItemServico.setValor(servico.getValor());
             
-            ordemServicoServicoRepository.save(ordemServicoServico);
-            ordem.getServicos().add(ordemServicoServico);
+            ItemServicoRepository.save(ItemServico);
+            ordem.getServicos().add(ItemServico);
         }
         
         // ⭐ CRÍTICO: Recalcular e persistir valorTotal
@@ -283,26 +283,26 @@ public class OrdemServicoService {
         }
         
         // Verificar se a peça já foi adicionada à ordem
-        Optional<OrdemServicoPeca> existing = ordem.getPecas().stream()
+        Optional<ItemPeca> existing = ordem.getPecas().stream()
                 .filter(osp -> osp.getPeca().getId().equals(pecaId))
                 .findFirst();
         
         if (existing.isPresent()) {
             // Atualizar quantidade se já existir
-            OrdemServicoPeca osp = existing.get();
+            ItemPeca osp = existing.get();
             osp.setQuantidade(osp.getQuantidade() + quantidade);
-            ordemServicoPecaRepository.save(osp);
+            ItemPecaRepository.save(osp);
         } else {
             // Criar novo relacionamento
-            OrdemServicoPeca ordemServicoPeca = new OrdemServicoPeca();
+            ItemPeca ItemPeca = new ItemPeca();
             // NOTA: Para a nova arquitetura, use criarOrdemServicoComMultiplasBicicletas
-            // ordemServicoPeca.setOrdemServico(ordem); // REMOVIDO - use BicicletaComItens
-            ordemServicoPeca.setPeca(peca);
-            ordemServicoPeca.setQuantidade(quantidade);
-            ordemServicoPeca.setValor(peca.getValor());
+            // ItemPeca.setOrdemServico(ordem); // REMOVIDO - use BicicletaComItens
+            ItemPeca.setPeca(peca);
+            ItemPeca.setQuantidade(quantidade);
+            ItemPeca.setValor(peca.getValor());
             
-            ordemServicoPecaRepository.save(ordemServicoPeca);
-            ordem.getPecas().add(ordemServicoPeca);
+            ItemPecaRepository.save(ItemPeca);
+            ordem.getPecas().add(ItemPeca);
         }
         
         // Atualizar estoque
@@ -366,13 +366,13 @@ public class OrdemServicoService {
     public OrdemServico removerServico(Long ordemId, Long servicoId) {
         OrdemServico ordem = getOrdemServicoById(ordemId);
         
-        Optional<OrdemServicoServico> servicoToRemove = ordem.getServicos().stream()
+        Optional<ItemServico> servicoToRemove = ordem.getServicos().stream()
                 .filter(oss -> oss.getServico().getId().equals(servicoId))
                 .findFirst();
         
         if (servicoToRemove.isPresent()) {
             ordem.getServicos().remove(servicoToRemove.get());
-            ordemServicoServicoRepository.delete(servicoToRemove.get());
+            ItemServicoRepository.delete(servicoToRemove.get());
             return ordemServicoRepository.save(ordem);
         } else {
             throw new ResourceNotFoundException("Serviço não encontrado na ordem de serviço");
@@ -384,12 +384,12 @@ public class OrdemServicoService {
     public OrdemServico removerPeca(Long ordemId, Long pecaId) {
         OrdemServico ordem = getOrdemServicoById(ordemId);
         
-        Optional<OrdemServicoPeca> pecaToRemove = ordem.getPecas().stream()
+        Optional<ItemPeca> pecaToRemove = ordem.getPecas().stream()
                 .filter(osp -> osp.getPeca().getId().equals(pecaId))
                 .findFirst();
         
         if (pecaToRemove.isPresent()) {
-            OrdemServicoPeca osp = pecaToRemove.get();
+            ItemPeca osp = pecaToRemove.get();
             Peca peca = osp.getPeca();
             
             // Devolver ao estoque
@@ -398,7 +398,7 @@ public class OrdemServicoService {
             
             // Remover da ordem
             ordem.getPecas().remove(osp);
-            ordemServicoPecaRepository.delete(osp);
+            ItemPecaRepository.delete(osp);
             
             return ordemServicoRepository.save(ordem);
         } else {
@@ -436,12 +436,12 @@ public class OrdemServicoService {
 
             // Adicionar serviços desta bicicleta
             if (bikeData.getServicos() != null) {
-                for (OrdemServicoServicoDTO servicoData : bikeData.getServicos()) {
+                for (ItemServicoDTO servicoData : bikeData.getServicos()) {
                     if (servicoData.getServico() != null && servicoData.getServico().getId() != null) {
                         Servico servico = servicoRepository.findById(servicoData.getServico().getId())
                             .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + servicoData.getServico().getId()));
                         
-                        OrdemServicoServico osServico = new OrdemServicoServico();
+                        ItemServico osServico = new ItemServico();
                         // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
                         // osServico.setOrdemServico(ordem); // REMOVIDO
                         // osServico.setBicicleta(bicicleta); // REMOVIDO
@@ -449,7 +449,7 @@ public class OrdemServicoService {
                         osServico.setQuantidade(servicoData.getQuantidade() != null ? servicoData.getQuantidade() : 1);
                         osServico.setValor(servico.getValor());
                         
-                        ordemServicoServicoRepository.save(osServico);
+                        ItemServicoRepository.save(osServico);
                         ordem.getServicos().add(osServico);
                     }
                 }
@@ -457,7 +457,7 @@ public class OrdemServicoService {
 
             // Adicionar peças desta bicicleta
             if (bikeData.getPecas() != null) {
-                for (OrdemServicoPecaDTO pecaData : bikeData.getPecas()) {
+                for (ItemPecaDTO pecaData : bikeData.getPecas()) {
                     if (pecaData.getPeca() != null && pecaData.getPeca().getId() != null) {
                         Peca peca = pecaRepository.findById(pecaData.getPeca().getId())
                             .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada: " + pecaData.getPeca().getId()));
@@ -469,7 +469,7 @@ public class OrdemServicoService {
                                 ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + qtd);
                         }
                         
-                        OrdemServicoPeca osPeca = new OrdemServicoPeca();
+                        ItemPeca osPeca = new ItemPeca();
                         // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
                         // osPeca.setOrdemServico(ordem); // REMOVIDO
                         // osPeca.setBicicleta(bicicleta); // REMOVIDO
@@ -477,7 +477,7 @@ public class OrdemServicoService {
                         osPeca.setQuantidade(qtd);
                         osPeca.setValor(peca.getValor());
                         
-                        ordemServicoPecaRepository.save(osPeca);
+                        ItemPecaRepository.save(osPeca);
                         ordem.getPecas().add(osPeca);
                         
                         // Atualizar estoque
@@ -643,14 +643,14 @@ public class OrdemServicoService {
         Number qtdObj = (Number) servicoData.get("quantidade");
         Integer quantidade = qtdObj != null ? qtdObj.intValue() : 1;
 
-        // ✅ NOVO: Criar OrdemServicoServico com BicicletaComItens
-        OrdemServicoServico osServico = new OrdemServicoServico();
+        // ✅ NOVO: Criar ItemServico com BicicletaComItens
+        ItemServico osServico = new ItemServico();
         osServico.setBicicletaItem(bikeItem);
         osServico.setServico(servico);
         osServico.setQuantidade(quantidade);
         osServico.setValor(servico.getValor());
 
-        ordemServicoServicoRepository.save(osServico);
+        ItemServicoRepository.save(osServico);
         bikeItem.getServicos().add(osServico);
         System.out.println("    ✓ Serviço adicionado: " + servico.getDescricao() + " (x" + quantidade + ")");
     }
@@ -680,14 +680,14 @@ public class OrdemServicoService {
                 ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
         }
 
-        // ✅ NOVO: Criar OrdemServicoPeca com BicicletaComItens
-        OrdemServicoPeca osPeca = new OrdemServicoPeca();
+        // ✅ NOVO: Criar ItemPeca com BicicletaComItens
+        ItemPeca osPeca = new ItemPeca();
         osPeca.setBicicletaItem(bikeItem);
         osPeca.setPeca(peca);
         osPeca.setQuantidade(quantidade);
         osPeca.setValor(peca.getValor());
 
-        ordemServicoPecaRepository.save(osPeca);
+        ItemPecaRepository.save(osPeca);
         bikeItem.getPecas().add(osPeca);
 
         // Atualizar estoque
@@ -755,15 +755,15 @@ public class OrdemServicoService {
                     Servico servico = servicoRepository.findById(servicoId)
                             .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + servicoId));
                     
-                    OrdemServicoServico ordemServicoServico = new OrdemServicoServico();
+                    ItemServico ItemServico = new ItemServico();
                     // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
-                    // ordemServicoServico.setOrdemServico(ordemSalva); // REMOVIDO
-                    ordemServicoServico.setServico(servico);
-                    ordemServicoServico.setQuantidade(quantidade);
-                    ordemServicoServico.setValor(servico.getValor());
+                    // ItemServico.setOrdemServico(ordemSalva); // REMOVIDO
+                    ItemServico.setServico(servico);
+                    ItemServico.setQuantidade(quantidade);
+                    ItemServico.setValor(servico.getValor());
                     
-                    ordemServicoServicoRepository.save(ordemServicoServico);
-                    ordemSalva.getServicos().add(ordemServicoServico);
+                    ItemServicoRepository.save(ItemServico);
+                    ordemSalva.getServicos().add(ItemServico);
                 }
             }
         }
@@ -784,15 +784,15 @@ public class OrdemServicoService {
                                 ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
                     }
                     
-                    OrdemServicoPeca ordemServicoPeca = new OrdemServicoPeca();
+                    ItemPeca ItemPeca = new ItemPeca();
                     // NOTA: Para nova arquitetura com BicicletaComItens, use criarOrdemServicoComMultiplasBicicletas
-                    // ordemServicoPeca.setOrdemServico(ordemSalva); // REMOVIDO
-                    ordemServicoPeca.setPeca(peca);
-                    ordemServicoPeca.setQuantidade(quantidade);
-                    ordemServicoPeca.setValor(peca.getValor());
+                    // ItemPeca.setOrdemServico(ordemSalva); // REMOVIDO
+                    ItemPeca.setPeca(peca);
+                    ItemPeca.setQuantidade(quantidade);
+                    ItemPeca.setValor(peca.getValor());
                     
-                    ordemServicoPecaRepository.save(ordemServicoPeca);
-                    ordemSalva.getPecas().add(ordemServicoPeca);
+                    ItemPecaRepository.save(ItemPeca);
+                    ordemSalva.getPecas().add(ItemPeca);
                 }
             }
         }
