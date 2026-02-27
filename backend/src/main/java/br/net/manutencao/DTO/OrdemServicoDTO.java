@@ -35,8 +35,8 @@ public class OrdemServicoDTO {
     private String status;
     
     // Mantido para compatibilidade (agrupa todos os itens)
-    private List<OrdemServicoServicoDTO> servicos;
-    private List<OrdemServicoPecaDTO> pecas;
+    private List<ItemServicoDTO> servicos;
+    private List<ItemPecaDTO> pecas;
     
     private BigDecimal valorTotal;
     private boolean exibirAviso30Dias;

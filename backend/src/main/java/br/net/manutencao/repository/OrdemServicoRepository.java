@@ -42,7 +42,7 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 
     // Relatório: Faturamento por serviço - CORRIGIDO
     @Query("SELECT s.descricao AS servico, SUM(oss.valor * oss.quantidade) AS valorTotal " +
-           "FROM OrdemServicoServico oss " +
+           "FROM ItemServico oss " +
            "JOIN oss.servico s " +
            "JOIN oss.ordemServico os " +
            "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
@@ -52,7 +52,7 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
 
     // Relatório: Faturamento por peça - CORRIGIDO
     @Query("SELECT p.descricao AS peca, SUM(osp.valor * osp.quantidade) AS valorTotal " +
-           "FROM OrdemServicoPeca osp " +
+           "FROM ItemPeca osp " +
            "JOIN osp.peca p " +
            "JOIN osp.ordemServico os " +
            "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +

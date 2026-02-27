@@ -9,13 +9,13 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrdemServicoServicoDTO {
+public class ItemPecaDTO {
     private Long id;
-    private ServicoDTO servico;
+    private PecaDTO peca;
     private Integer quantidade;
     private BigDecimal valor;
     
-    // NOVO: Referência à bicicleta a qual este serviço pertence
+    // NOVO: Referência à bicicleta a qual esta peça pertence
     private Long bicicletaId;
     
     public BigDecimal getValorTotal() {

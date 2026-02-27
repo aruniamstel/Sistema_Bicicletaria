@@ -35,13 +35,13 @@ public class OrdemServicoMapper {
         dto.setStatus(ordem.getStatus().name());
         
         // Mapear serviços com referência a bicicletaItem
-        List<OrdemServicoServicoDTO> servicosDTO = ordem.getServicos().stream()
+        List<ItemServicoDTO> servicosDTO = ordem.getServicos().stream()
             .map(this::toServicoDTO)
             .collect(Collectors.toList());
         dto.setServicos(servicosDTO);
         
         // Mapear peças com referência a bicicletaItem
-        List<OrdemServicoPecaDTO> pecasDTO = ordem.getPecas().stream()
+        List<ItemPecaDTO> pecasDTO = ordem.getPecas().stream()
             .map(this::toPecaDTO)
             .collect(Collectors.toList());
         dto.setPecas(pecasDTO);
@@ -72,7 +72,7 @@ public class OrdemServicoMapper {
         
         // Serviços desta bicicleta item
         if (bikeItem.getServicos() != null) {
-            List<OrdemServicoServicoDTO> servicosDTO = bikeItem.getServicos().stream()
+            List<ItemServicoDTO> servicosDTO = bikeItem.getServicos().stream()
                 .map(this::toServicoDTO)
                 .collect(Collectors.toList());
             dto.setServicos(servicosDTO);
@@ -80,7 +80,7 @@ public class OrdemServicoMapper {
         
         // Peças desta bicicleta item
         if (bikeItem.getPecas() != null) {
-            List<OrdemServicoPecaDTO> pecasDTO = bikeItem.getPecas().stream()
+            List<ItemPecaDTO> pecasDTO = bikeItem.getPecas().stream()
                 .map(this::toPecaDTO)
                 .collect(Collectors.toList());
             dto.setPecas(pecasDTO);
@@ -101,12 +101,12 @@ public class OrdemServicoMapper {
         return dto;
     }
 
-    /*private List<OrdemServicoServicoDTO> toServicoDTOList(List<OrdemServicoServico> servicos) {
+    /*private List<ItemServicoDTO> toServicoDTOList(List<ItemServico> servicos) {
         return servicos.stream().map(this::toServicoDTO).collect(Collectors.toList());
     } */
 
-    /*private OrdemServicoServicoDTO toServicoDTO(ItemServico oss) {
-        OrdemServicoServicoDTO dto = new OrdemServicoServicoDTO();
+    /*private ItemServicoDTO toServicoDTO(ItemServico oss) {
+        ItemServicoDTO dto = new ItemServicoDTO();
         dto.setId(oss.getId());
         dto.setServico(toServicoDTO(oss.getServico()));
         dto.setQuantidade(oss.getQuantidade());
@@ -123,12 +123,12 @@ public class OrdemServicoMapper {
         return new ServicoDTO(servico.getId(), servico.getDescricao(), servico.getValor());
     } */
 
-   /*  private List<OrdemServicoPecaDTO> toPecaDTOList(List<OrdemServicoPeca> pecas) {
+   /*  private List<ItemPecaDTO> toPecaDTOList(List<ItemPeca> pecas) {
         return pecas.stream().map(this::toPecaDTO).collect(Collectors.toList());
     } */
 
-   /*  private OrdemServicoPecaDTO toPecaDTO(ItemPeca osp) {
-        OrdemServicoPecaDTO dto = new OrdemServicoPecaDTO();
+   /*  private ItemPecaDTO toPecaDTO(ItemPeca osp) {
+        ItemPecaDTO dto = new ItemPecaDTO();
         dto.setId(osp.getId());
         dto.setPeca(toPecaDTO(osp.getPeca()));
         dto.setQuantidade(osp.getQuantidade());
@@ -140,9 +140,9 @@ public class OrdemServicoMapper {
     } */
 
     // Converte a nova entidade ItemServico para o DTO que o Angular já conhece
-private OrdemServicoServicoDTO toServicoDTO(ItemServico item) {
+private ItemServicoDTO toServicoDTO(ItemServico item) {
     if (item == null) return null;
-    OrdemServicoServicoDTO dto = new OrdemServicoServicoDTO();
+    ItemServicoDTO dto = new ItemServicoDTO();
     dto.setId(item.getId());
     dto.setQuantidade(item.getQuantidade());
     dto.setValor(item.getValor());
@@ -155,9 +155,9 @@ private OrdemServicoServicoDTO toServicoDTO(ItemServico item) {
 }
 
 // Converte a nova entidade ItemPeca para o DTO
-private OrdemServicoPecaDTO toPecaDTO(ItemPeca item) {
+private ItemPecaDTO toPecaDTO(ItemPeca item) {
     if (item == null) return null;
-    OrdemServicoPecaDTO dto = new OrdemServicoPecaDTO();
+    ItemPecaDTO dto = new ItemPecaDTO();
     dto.setId(item.getId());
     dto.setQuantidade(item.getQuantidade());
     dto.setValor(item.getValor());

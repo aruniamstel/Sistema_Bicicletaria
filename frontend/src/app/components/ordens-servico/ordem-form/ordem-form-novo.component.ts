@@ -328,7 +328,7 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
   const pecaEstoque = this.listaPecasDisponiveis.find(p => p.id === pecaId);
 
   if (pecaEstoque) {
-    // 3. Monta o objeto EXATAMENTE como a interface OrdemServicoPeca exige:
+    // 3. Monta o objeto EXATAMENTE como a interface ItemPeca exige:
     // Ela precisa de: peca (objeto), quantidade (number) e valor (number)
     this.bicicletasAdicionadas[bicicletaIndex].pecas[pecaIndex] = {
       id: undefined, // O ID do item da OS ainda não existe (será gerado pelo banco)

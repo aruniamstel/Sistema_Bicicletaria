@@ -21,7 +21,7 @@ export interface OrdemServico {
   
   // Itens da OS (agregação de todos)
   servicos?: OrdemServicoServico[];
-  pecas?: OrdemServicoPeca[];
+  pecas?: ItemPeca[];
   
   valorTotal?: number;
   exibirAviso30Dias: boolean;
@@ -41,7 +41,7 @@ export interface BicicletaComItens {
   servicos: OrdemServicoServico[];
   
   // Peças específicas desta bicicleta
-  pecas: OrdemServicoPeca[];
+  pecas: ItemPeca[];
 }
 
 export interface OrdemServicoServico {
@@ -54,7 +54,7 @@ export interface OrdemServicoServico {
   bicicletaId?: number;
 }
 
-export interface OrdemServicoPeca {
+export interface ItemPeca {
   id?: number;
   peca: Peca;
   quantidade: number;

@@ -21,8 +21,8 @@ public class BicicletaComItensDTO {
     private Integer tamanhoAro;
     
     // Serviços específicos desta bicicleta
-    private List<OrdemServicoServicoDTO> servicos;
+    private List<ItemServicoDTO> servicos;
     
     // Peças específicas desta bicicleta
-    private List<OrdemServicoPecaDTO> pecas;
+    private List<ItemPecaDTO> pecas;
 }
