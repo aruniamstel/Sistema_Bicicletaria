@@ -85,7 +85,7 @@ public class OrdemServicoService {
     }
 
     // Métodos de relatório
-    public List<Object[]> getFaturamentoDiario() {
+    public List<OrdemServico> getFaturamentoDiario() {
         return ordemServicoRepository.findOrdensEntreguesPorData();
     }
 
@@ -565,7 +565,7 @@ public class OrdemServicoService {
     @Transactional(readOnly = true)
     public List<OrdemServico> buscarOrdensPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
         return ordemServicoRepository.findByPeriodo(dataInicio, dataFim);
-    }
+    } 
 
     // ✅ NOVO MÉTODO PRINCIPAL: Criar ordem com múltiplas bicicletas (1:N)
     @Transactional

@@ -282,7 +282,7 @@ public class OrdemServicoController {
     @GetMapping("/relatorios/faturamento-diario")
     public ResponseEntity<?> getFaturamentoDiario() {
         try {
-            List<Object[]> faturamento = ordemServicoService.getFaturamentoDiario();
+            List<OrdemServico> faturamento = ordemServicoService.getFaturamentoDiario();
             if (faturamento.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }

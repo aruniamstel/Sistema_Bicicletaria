@@ -8,68 +8,91 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
 public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long> {
 
-    // Buscar TODAS as ordens com eager loading de cliente e bicicletas
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas")
+    // 1. Buscar TODAS as ordens com eager loading corrigido para a nova estrutura
+    @Query("SELECT DISTINCT os FROM OrdemServico os " +
+           "LEFT JOIN FETCH os.cliente " +
+           "LEFT JOIN FETCH os.bicicletasComItens")
     List<OrdemServico> findAll();
 
-    // Buscar ordens por cliente
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas WHERE os.cliente.id = :clienteId")
+    // 2. Buscar ordens por cliente
+    @Query("SELECT DISTINCT os FROM OrdemServico os " +
+           "LEFT JOIN FETCH os.cliente " +
+           "LEFT JOIN FETCH os.bicicletasComItens " +
+           "WHERE os.cliente.id = :clienteId")
     List<OrdemServico> findByClienteId(@Param("clienteId") Long clienteId);
 
-    // Buscar ordens por bicicleta (agora bicicletas é 1:N)
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas b WHERE b.id = :bicicletaId")
+    // 2. findByBicicletaId (Ajustado para procurar dentro da nova entidade intermediária)
+    @Query("SELECT DISTINCT os FROM OrdemServico os " +
+           "JOIN os.bicicletasComItens bci " +
+           "WHERE bci.id = :bicicletaId")
     List<OrdemServico> findByBicicletaId(@Param("bicicletaId") Long bicicletaId);
 
-    // Buscar ordens por status
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas WHERE os.status = :status")
-    List<OrdemServico> findByStatus(@Param("status") StatusOrdem status);
+    // 3. findByStatus
+    List<OrdemServico> findByStatus(StatusOrdem status);
 
-    // Buscar ordens em aberto
-    @Query("SELECT DISTINCT os FROM OrdemServico os LEFT JOIN FETCH os.cliente LEFT JOIN FETCH os.bicicletas WHERE os.status IN :statuses")
-    List<OrdemServico> findByStatusIn(@Param("statuses") List<StatusOrdem> statuses);
+    // 4. findByStatusIn (Para listas como Aberta e Em Andamento)
+    List<OrdemServico> findByStatusIn(Collection<StatusOrdem> statuses);
 
-    // Relatório: Faturamento por data (ordens ENTREGUES) - CORRIGIDO
-    @Query("SELECT FUNCTION('DATE', os.dataSaidaReal) AS data, SUM(os.valorTotal) AS valorTotal " +
-           "FROM OrdemServico os WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE AND os.dataSaidaReal IS NOT NULL " +
-           "GROUP BY FUNCTION('DATE', os.dataSaidaReal) " +
-           "ORDER BY FUNCTION('DATE', os.dataSaidaReal)")
-    List<Object[]> findOrdensEntreguesPorData();
-
-    // Relatório: Faturamento por serviço - CORRIGIDO
-    @Query("SELECT s.descricao AS servico, SUM(oss.valor * oss.quantidade) AS valorTotal " +
-           "FROM ItemServico oss " +
-           "JOIN oss.servico s " +
-           "JOIN oss.ordemServico os " +
+    // 3. Relatório: Faturamento por serviço (Caminho: ItemServico -> BicicletaComItens -> OrdemServico)
+    @Query("SELECT s.descricao AS servico, SUM(iss.valor * iss.quantidade) AS valorTotal " +
+           "FROM ItemServico iss " +
+           "JOIN iss.servico s " +
+           "JOIN iss.bicicletaItem bi " +
+           "JOIN bi.ordemServico os " +
            "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
            "GROUP BY s.descricao " +
-           "ORDER BY SUM(oss.valor * oss.quantidade) DESC")
+           "ORDER BY SUM(iss.valor * iss.quantidade) DESC")
     List<Object[]> findFaturamentoPorServico();
 
-    // Relatório: Faturamento por peça - CORRIGIDO
-    @Query("SELECT p.descricao AS peca, SUM(osp.valor * osp.quantidade) AS valorTotal " +
-           "FROM ItemPeca osp " +
-           "JOIN osp.peca p " +
-           "JOIN osp.ordemServico os " +
+    // 4. Relatório: Faturamento por peça (Caminho: ItemPeca -> BicicletaComItens -> OrdemServico)
+    @Query("SELECT p.descricao AS peca, SUM(ip.valor * ip.quantidade) AS valorTotal " +
+           "FROM ItemPeca ip " +
+           "JOIN ip.peca p " +
+           "JOIN ip.bicicletaItem bi " +
+           "JOIN bi.ordemServico os " +
            "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
            "GROUP BY p.descricao " +
-           "ORDER BY SUM(osp.valor * osp.quantidade) DESC")
+           "ORDER BY SUM(ip.valor * ip.quantidade) DESC")
     List<Object[]> findFaturamentoPorPeca();
 
-    // Buscar ordens por período
-    @Query("SELECT os FROM OrdemServico os WHERE os.dataEntrada BETWEEN :dataInicio AND :dataFim")
-    List<OrdemServico> findByPeriodo(@Param("dataInicio") LocalDate dataInicio, 
-                                     @Param("dataFim") LocalDate dataFim);
+    // 5. Buscar ordens por período 
+   /* @Query("SELECT os FROM OrdemServico os WHERE os.dataEntrada BETWEEN :dataInicio AND :dataFim")
+    List<OrdemServico> findByPeriodo(@Param("dataInicio") java.time.LocalDateTime dataInicio, 
+                                     @Param("dataFim") java.time.LocalDateTime dataFim); */
 
-    // Contar ordens por status
+    // 6. Contar ordens por status
     @Query("SELECT os.status, COUNT(os) FROM OrdemServico os GROUP BY os.status")
     List<Object[]> countOrdensByStatus();
 
-    // Buscar ordens atrasadas (entrada há mais de X dias e não entregues) - CORRIGIDO
-    @Query("SELECT os FROM OrdemServico os WHERE os.status IN (br.net.manutencao.model.StatusOrdem.ABERTA, br.net.manutencao.model.StatusOrdem.EM_ANDAMENTO) AND os.dataEntrada < :dataLimite")
-    List<OrdemServico> findOrdensAtrasadas(@Param("dataLimite") LocalDate dataLimite);
+    // 5. findOrdensEntreguesPorData (Relatório de fechamento)
+    @Query("SELECT os FROM OrdemServico os " +
+           "WHERE os.status = br.net.manutencao.model.StatusOrdem.ENTREGUE " +
+           "AND os.dataSaidaReal IS NOT NULL " +
+           "ORDER BY os.dataSaidaReal DESC")
+    List<OrdemServico> findOrdensEntreguesPorData();
+
+    // 6. findOrdensAtrasadas (Corrigido para aceitar LocalDate ou usar data atual)
+    @Query("SELECT os FROM OrdemServico os " +
+           "WHERE os.status != br.net.manutencao.model.StatusOrdem.ENTREGUE " +
+           "AND os.dataPrevisaoSaida < :dataReferencia")
+    List<OrdemServico> findOrdensAtrasadas(@Param("dataReferencia") LocalDate dataReferencia);
+
+    // 7. findByPeriodo (Corrigido para aceitar LocalDate conforme chamado no Service)
+    // Usamos cast para LocalDateTime para comparar com o banco
+    @Query("SELECT os FROM OrdemServico os " +
+           "WHERE os.dataEntrada >= :inicio AND os.dataEntrada <= :fim")
+    List<OrdemServico> findByPeriodo(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
+    
+    // 7. Buscar ordens atrasadas
+   /*  @Query("SELECT os FROM OrdemServico os " +
+           "WHERE os.status != br.net.manutencao.model.StatusOrdem.ENTREGUE " +
+           "AND os.dataPrevisaoSaida < CURRENT_TIMESTAMP")
+    List<OrdemServico> findOrdensAtrasadas(); */
 }
