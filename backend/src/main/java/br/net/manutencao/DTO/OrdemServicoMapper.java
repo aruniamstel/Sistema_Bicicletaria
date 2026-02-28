@@ -9,13 +9,18 @@ import java.util.ArrayList;
 @Component
 public class OrdemServicoMapper {
 
+    // Método exigido pelo Controller para retornar listas
+    public List<OrdemServicoDTO> toDTOList(List<OrdemServico> ordens) {
+        if (ordens == null) return new ArrayList<>();
+        return ordens.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
     public OrdemServicoDTO toDTO(OrdemServico ordem) {
         if (ordem == null) return null;
         OrdemServicoDTO dto = new OrdemServicoDTO();
         dto.setId(ordem.getId());
         dto.setCliente(toClienteDTO(ordem.getCliente()));
         
-        // Mapeia a lista bicicletasComItens (nome exato da sua entidade)
         if (ordem.getBicicletasComItens() != null) {
             dto.setBicicletas(ordem.getBicicletasComItens().stream()
                 .map(this::toBicicletaComItensDTO)
@@ -26,7 +31,7 @@ public class OrdemServicoMapper {
         
         dto.setDataEntrada(ordem.getDataEntrada());
         dto.setDataPrevisaoSaida(ordem.getDataPrevisaoSaida());
-       // dto.setStatus(ordem.getStatus());
+        //dto.setStatus(ordem.getStatus());
         dto.setValorTotal(ordem.getValorTotal());
         dto.setObservacoes(ordem.getObservacoes());
         return dto;
@@ -57,10 +62,7 @@ public class OrdemServicoMapper {
         dto.setBicicletaId(item.getBicicletaItem() != null ? item.getBicicletaItem().getId() : null);
         
         if (item.getServico() != null) {
-            ServicoDTO sDto = new ServicoDTO();
-            sDto.setId(item.getServico().getId());
-            sDto.setDescricao(item.getServico().getDescricao());
-            sDto.setValor(item.getServico().getValor());
+            ServicoDTO sDto = new ServicoDTO(item.getServico().getId(), item.getServico().getDescricao(), item.getServico().getValor());
             dto.setServico(sDto);
         }
         return dto;
@@ -74,10 +76,7 @@ public class OrdemServicoMapper {
         dto.setBicicletaId(item.getBicicletaItem() != null ? item.getBicicletaItem().getId() : null);
 
         if (item.getPeca() != null) {
-            PecaDTO pDto = new PecaDTO();
-            pDto.setId(item.getPeca().getId());
-            pDto.setDescricao(item.getPeca().getDescricao());
-            pDto.setValor(item.getPeca().getValor());
+            PecaDTO pDto = new PecaDTO(item.getPeca().getId(), null, item.getPeca().getValor(), null);
             dto.setPeca(pDto);
         }
         return dto;
@@ -89,7 +88,7 @@ public class OrdemServicoMapper {
         dto.setId(cliente.getId());
         dto.setNome(cliente.getNome());
         dto.setTelefone(cliente.getTelefone());
-        // Removido CPF pois não existe no seu Model Cliente
+        // CPF não existe no seu modelo Cliente
         return dto;
     }
 }
