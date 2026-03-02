@@ -1,6 +1,7 @@
 package br.net.manutencao.service;
 
 import br.net.manutencao.model.Peca;
+import br.net.manutencao.repository.ItemPecaRepository;
 import br.net.manutencao.repository.PecaRepository;
 import br.net.manutencao.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,21 +91,29 @@ public class PecaService {
         return pecaRepository.save(pecaExistente);
     }
 
+    @Autowired
+private ItemPecaRepository itemPecaRepository;
+
     /**
      * Deletar peça
      */
     @Transactional
     public void deletar(Long id) {
-        Peca peca = buscarPorId(id);
+        // 1. Verificar se a peça existe
+        if (!pecaRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Peça não encontrada");
+        }
         
-        // Verificar se a peça está em uso em ordens de serviço
-        if (!peca.getItemPecas().isEmpty()) {
+        // 2. NOVA LÓGICA: Verificar se a peça está em uso consultando a tabela de itens
+        boolean emUso = itemPecaRepository.existsByPecaId(id);
+        
+        if (emUso) {
             throw new IllegalStateException(
-                "Não é possível excluir a peça pois ela está vinculada a ordens de serviço"
+                "Não é possível excluir a peça pois ela está vinculada a ordens de serviço (histórico de manutenção)"
             );
         }
         
-        pecaRepository.delete(peca);
+        pecaRepository.deleteById(id);
     }
 
     /**

@@ -29,8 +29,4 @@ public class Servico {
 
     private String descricao;
     private BigDecimal valor;
-
-    @OneToMany(mappedBy = "servico", fetch = jakarta.persistence.FetchType.LAZY)
-    @JsonIgnoreProperties ("servico") // Evita referência circular
-    private List<ItemServico> ItemServicos = new ArrayList<>();
 }

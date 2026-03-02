@@ -1,6 +1,7 @@
 package br.net.manutencao.service;
 
 import br.net.manutencao.model.Servico;
+import br.net.manutencao.repository.ItemServicoRepository;
 import br.net.manutencao.repository.ServicoRepository;
 import br.net.manutencao.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,21 +69,29 @@ public class ServicoService {
         return servicoRepository.save(servicoExistente);
     }
 
+    @Autowired
+private ItemServicoRepository itemServicoRepository;
+
     /**
      * Deletar serviço
      */
     @Transactional
     public void deletar(Long id) {
-        Servico servico = buscarPorId(id);
+        // 1. Verificar se o serviço existe
+        if (!servicoRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Serviço não encontrado");
+        }
         
-        // Verificar se o serviço está em uso em ordens de serviço
-        if (!servico.getItemServicos().isEmpty()) {
+        // 2. NOVA LÓGICA: Verificar se o serviço está em uso consultando a tabela de itens
+        boolean emUso = itemServicoRepository.existsByServicoId(id);
+        
+        if (emUso) {
             throw new IllegalStateException(
-                "Não é possível excluir o serviço pois ele está vinculado a ordens de serviço"
+                "Não é possível excluir o serviço pois ele está vinculado a ordens de serviço (histórico de manutenção)"
             );
         }
         
-        servicoRepository.delete(servico);
+        servicoRepository.deleteById(id);
     }
 
     /**

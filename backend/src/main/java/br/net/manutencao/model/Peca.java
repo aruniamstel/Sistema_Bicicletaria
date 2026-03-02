@@ -33,10 +33,6 @@ public class Peca {
     private String codigoInterno;
     private String categoria;
     private String subcategoria;
-
-    @OneToMany(mappedBy = "peca", fetch = jakarta.persistence.FetchType.LAZY)
-    @JsonIgnoreProperties ("peca") // Evita referência circular
-    private List<ItemPeca> ItemPecas = new ArrayList<>();
 }
     
 
