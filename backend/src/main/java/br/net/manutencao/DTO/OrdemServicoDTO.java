@@ -19,9 +19,6 @@ public class OrdemServicoDTO {
     // NOVO: Múltiplas bicicletas com seus itens aninhados
     private List<BicicletaComItensDTO> bicicletas;
     
-    // Mantido para compatibilidade (será preenchido com a primeira bicicleta se houver)
-    private BicicletaDTO bicicleta;
-    
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataEntrada;
     
@@ -33,11 +30,6 @@ public class OrdemServicoDTO {
     
     private String observacoes;
     private String status;
-    
-    // Mantido para compatibilidade (agrupa todos os itens)
-    private List<ItemServicoDTO> servicos;
-    private List<ItemPecaDTO> pecas;
-    
     private BigDecimal valorTotal;
     private boolean exibirAviso30Dias;
 }

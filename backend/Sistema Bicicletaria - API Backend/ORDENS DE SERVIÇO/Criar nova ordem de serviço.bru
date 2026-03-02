@@ -16,12 +16,55 @@ headers {
 
 body:json {
   {
-    "clienteId": 1,
-    "bicicletaId": 1,
-    "observacoes": "Verificar freios e ajustar corrente"
+    "cliente": {
+      "id": 1
+    },
+    "observacoes": "Cliente solicitou urgência na primeira bicicleta",
+    "dataPrevisaoSaida": "2026-03-05T18:00:00",
+    "exibirAviso30Dias": true,
+    "bicicletas": [
+      {
+        "id": null, 
+        "marca": "Specialized",
+        "modelo": "Rockhopper",
+        "cor": "Preto/Vermelho",
+        "tamanhoAro": 29,
+        "servicos": [
+          {
+            "servico": { "id": 1 },
+            "quantidade": 1
+          },
+          {
+            "servico": { "id": 2 },
+            "quantidade": 1
+          }
+        ],
+        "pecas": [
+          {
+            "peca": { "id": 2 },
+            "quantidade": 2
+          }
+        ]
+      },
+      {
+        "id": null,
+        "marca": "Caloi",
+        "modelo": "Explorer",
+        "cor": "Azul",
+        "tamanhoAro": 29,
+        "servicos": [
+          {
+            "servico": { "id": 2 },
+            "quantidade": 1
+          }
+        ],
+        "pecas": []
+      }
+    ]
   }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

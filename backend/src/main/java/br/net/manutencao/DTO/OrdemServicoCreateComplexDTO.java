@@ -16,104 +16,61 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrdemServicoCreateComplexDTO {
     
-    // Dados básicos da ordem
-    @JsonProperty("dataEntrada")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataEntrada;
     
-    @JsonProperty("dataPrevisaoSaida")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataPrevisaoSaida;
     
-    @JsonProperty("status")
     private String status;
-    
-    @JsonProperty("observacoes")
     private String observacoes;
-    
-    @JsonProperty("exibirAviso30Dias")
     private Boolean exibirAviso30Dias;
-    
-    // Cliente (objeto completo)
-    @JsonProperty("cliente")
     private ClienteData cliente;
-    
-    // Bicicleta (objeto completo)
-    @JsonProperty("bicicleta")
-    private BicicletaData bicicleta;
-    
-    // Serviços selecionados
-    @JsonProperty("servicos")
-    private List<ServicoSelecionado> servicos;
-    
-    // Peças selecionadas
-    @JsonProperty("pecas")
-    private List<PecaSelecionada> pecas;
-    
-    // Classe interna para dados do cliente
+
+    // ✅ O SEGREDO ESTÁ AQUI:
+    // O nome do campo deve ser "bicicletas" para dar match com o seu JSON
+    @JsonProperty("bicicletas") 
+    private List<BicicletaEntradaData> bicicletas;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ClienteData {
-        private Long id;
-        private String nome;
-        private String telefone;
-        private String endereco;
-        private String instagram;
-    }
-    
-    // Classe interna para dados da bicicleta
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class BicicletaData {
+    public static class BicicletaEntradaData {
         private Long id;
         private String marca;
         private String modelo;
-        private Integer tamanhoAro;
         private String cor;
+        private Integer tamanhoAro;
+        
+        // Itens específicos desta bicicleta
+        private List<ServicoSelecionado> servicos;
+        private List<PecaSelecionada> pecas;
     }
-    
-    // Classe interna para serviço selecionado
+
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ClienteData {
+        private Long id;
+    }
+
+    @Data
     public static class ServicoSelecionado {
         private ServicoData servico;
         private Integer quantidade;
-        
-        @Data
-        @NoArgsConstructor
-        @AllArgsConstructor
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class ServicoData {
-            private Long id;
-            private String descricao;
-            private Object valor; // Pode ser Double ou BigDecimal
-        }
     }
-    
-    // Classe interna para peça selecionada
+
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ServicoData {
+        private Long id;
+    }
+
+    @Data
     public static class PecaSelecionada {
         private PecaData peca;
         private Integer quantidade;
-        
-        @Data
-        @NoArgsConstructor
-        @AllArgsConstructor
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class PecaData {
-            private Long id;
-            private String descricao;
-            private Object valor; // Pode ser Double ou BigDecimal
-            private Integer quantidade;
-        }
+    }
+
+    @Data
+    public static class PecaData {
+        private Long id;
     }
 }

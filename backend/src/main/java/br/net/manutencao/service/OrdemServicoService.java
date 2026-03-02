@@ -803,75 +803,73 @@ public class OrdemServicoService {
         // Salvar a ordem primeiro para ter o ID
         final OrdemServico ordemSalva = ordemServicoRepository.save(novaOrdem);
 
-        // 3. Processar a Bicicleta e criar o vínculo BicicletaComItens
-        if (ordemDTO.getBicicleta() != null && ordemDTO.getBicicleta().getId() != null) {
-            Bicicleta bike = bicicletaRepository.findById(ordemDTO.getBicicleta().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Bicicleta não encontrada com ID: " + ordemDTO.getBicicleta().getId()));
-            
-            // Criar o "Container" intermediário exigido pela Opção 2
-            BicicletaComItens bikeItemContainer = new BicicletaComItens();
-            bikeItemContainer.setOrdemServico(ordemSalva);
+        // ✅ NOVA LÓGICA: Processar a lista de bicicletas que vem no DTO
+        if (ordemDTO.getBicicletas() != null && !ordemDTO.getBicicletas().isEmpty()) {
+            for (OrdemServicoCreateComplexDTO.BicicletaEntradaData bikeData : ordemDTO.getBicicletas()) {
+                
+                // 1. Criar o container para cada bicicleta da lista
+                BicicletaComItens container = new BicicletaComItens();
+                container.setOrdemServico(ordemSalva);
+                container.setMarca(bikeData.getMarca());
+                container.setModelo(bikeData.getModelo());
+                container.setCor(bikeData.getCor());
+                container.setTamanhoAro(bikeData.getTamanhoAro());
+                
+                // Salvar o container para vincular os itens abaixo
+                final BicicletaComItens containerSalvo = bicicletaComItensRepository.save(container);
 
-            // Copiando os dados da entidade Bicicleta encontrada para o Container
-            bikeItemContainer.setMarca(bike.getMarca());
-            bikeItemContainer.setModelo(bike.getModelo());
-            bikeItemContainer.setCor(bike.getCor());
-            bikeItemContainer.setTamanhoAro(bike.getTamanhoAro());
+                // 2. Processar SERVIÇOS desta bicicleta específica
+                if (bikeData.getServicos() != null) {
+                    for (OrdemServicoCreateComplexDTO.ServicoSelecionado servSel : bikeData.getServicos()) {
+                        Long servicoId = servSel.getServico().getId();
+                        Servico servico = servicoRepository.findById(servicoId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + servicoId));
 
-            // Salvar o container
-            bikeItemContainer = bicicletaComItensRepository.save(bikeItemContainer);
+                        ItemServico item = new ItemServico();
+                        item.setBicicletaItem(containerSalvo); // Vínculo correto
+                        item.setServico(servico);
+                        item.setDescricao(servico.getDescricao());
+                        item.setQuantidade(servSel.getQuantidade() != null ? servSel.getQuantidade() : 1);
+                        item.setValor(servico.getValor());
 
-            // 4. Adicionar serviços a ESTA bicicleta
-            if (ordemDTO.getServicos() != null && !ordemDTO.getServicos().isEmpty()) {
-                for (OrdemServicoCreateComplexDTO.ServicoSelecionado servicoSel : ordemDTO.getServicos()) {
-                    if (servicoSel.getServico() != null && servicoSel.getServico().getId() != null) {
-                        Servico servico = servicoRepository.findById(servicoSel.getServico().getId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado"));
-                        
-                        ItemServico itemServico = new ItemServico();
-                        itemServico.setBicicletaItem(bikeItemContainer); // Vínculo com o container
-                        itemServico.setServico(servico);
-                        itemServico.setDescricao(servico.getDescricao());
-                        itemServico.setQuantidade(servicoSel.getQuantidade() != null ? servicoSel.getQuantidade() : 1);
-                        itemServico.setValor(servico.getValor());
-                        
-                        itemServicoRepository.save(itemServico);
-                        bikeItemContainer.getServicos().add(itemServico);
+                        itemServicoRepository.save(item);
+                        containerSalvo.getServicos().add(item);
                     }
                 }
-            }
 
-            // 5. Adicionar peças a ESTA bicicleta
-            if (ordemDTO.getPecas() != null && !ordemDTO.getPecas().isEmpty()) {
-                for (OrdemServicoCreateComplexDTO.PecaSelecionada pecaSel : ordemDTO.getPecas()) {
-                    if (pecaSel.getPeca() != null && pecaSel.getPeca().getId() != null) {
-                        Peca peca = pecaRepository.findById(pecaSel.getPeca().getId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada"));
+                // 3. Processar PEÇAS desta bicicleta específica
+                if (bikeData.getPecas() != null) {
+                    for (OrdemServicoCreateComplexDTO.PecaSelecionada pecaSel : bikeData.getPecas()) {
+                        Long pecaId = pecaSel.getPeca().getId();
+                        Peca peca = pecaRepository.findById(pecaId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada: " + pecaId));
+
+                        int qtd = pecaSel.getQuantidade() != null ? pecaSel.getQuantidade() : 1;
                         
-                        Integer qtd = pecaSel.getQuantidade() != null ? pecaSel.getQuantidade() : 1;
+                        // Validação de estoque básica
                         if (peca.getQuantidade() < qtd) {
-                            throw new IllegalArgumentException("Estoque insuficiente para: " + peca.getDescricao());
+                            throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getDescricao());
                         }
-                        
+
                         ItemPeca itemPeca = new ItemPeca();
-                        itemPeca.setBicicletaItem(bikeItemContainer); // Vínculo com o container
+                        itemPeca.setBicicletaItem(containerSalvo); // Vínculo correto
                         itemPeca.setPeca(peca);
                         itemPeca.setDescricao(peca.getDescricao());
                         itemPeca.setQuantidade(qtd);
                         itemPeca.setValor(peca.getValor());
-                        
-                        ItemPecaRepository.save(itemPeca); // Usando o nome da variável injetada
-                        bikeItemContainer.getPecas().add(itemPeca);
+
+                        ItemPecaRepository.save(itemPeca);
+                        containerSalvo.getPecas().add(itemPeca);
 
                         // Atualizar estoque
                         peca.setQuantidade(peca.getQuantidade() - qtd);
                         pecaRepository.save(peca);
                     }
                 }
+                
+                // Adicionar o container pronto à ordem
+                ordemSalva.getBicicletasComItens().add(containerSalvo);
             }
-            
-            // Adicionar o container à lista da ordem
-            ordemSalva.getBicicletasComItens().add(bikeItemContainer);
         }
 
         // 6. Calcular valor total usando a lógica da entidade
