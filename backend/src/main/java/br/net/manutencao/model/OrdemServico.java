@@ -1,6 +1,8 @@
 package br.net.manutencao.model;
 
 import jakarta.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,6 +30,7 @@ public class OrdemServico {
 
     // Múltiplas bicicletas em uma OS (relacionamento bidirecional)
     @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore // Evita referência circular direta (usamos BicicletaComItens para detalhes)
     private List<Bicicleta> bicicletas = new ArrayList<>();
 
     // Bicicletas com itens (serviços/peças) para cada ordem

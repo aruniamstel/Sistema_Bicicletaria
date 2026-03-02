@@ -9,7 +9,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -31,7 +35,7 @@ public class Peca {
     private String subcategoria;
 
     @OneToMany(mappedBy = "peca", fetch = jakarta.persistence.FetchType.LAZY)
-    @JsonIgnore
+    @JsonIgnoreProperties ("peca") // Evita referência circular
     private List<ItemPeca> ItemPecas = new ArrayList<>();
 }
     
