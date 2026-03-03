@@ -45,6 +45,8 @@ public class OrdemServico {
     private LocalDateTime dataSaidaReal;
 
     private String observacoes;
+
+    @Enumerated(EnumType.STRING)
     private StatusOrdem status;
 
     private BigDecimal valorTotal;

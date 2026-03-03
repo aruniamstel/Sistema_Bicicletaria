@@ -32,6 +32,7 @@ public class OrdemServicoMapper {
         dto.setDataEntrada(ordem.getDataEntrada());
         dto.setDataPrevisaoSaida(ordem.getDataPrevisaoSaida());
         //dto.setStatus(ordem.getStatus());
+        dto.setStatus(ordem.getStatus() != null ? ordem.getStatus().name() : null);
         dto.setValorTotal(ordem.getValorTotal());
         dto.setObservacoes(ordem.getObservacoes());
         return dto;
