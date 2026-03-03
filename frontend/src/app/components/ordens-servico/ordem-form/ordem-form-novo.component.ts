@@ -101,6 +101,16 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
     this.carregarServicosEPecas();
     this.loadClientes();
     this.loadBicicletas();
+
+    this.ordemForm.get('cliente')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(clienteId => {
+      if (clienteId) {
+        this.carregarBicicletasDoCliente(clienteId);
+      } else {
+        this.todasBicicletas = []; // Limpa se desvincular o cliente
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -113,6 +123,22 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
   get pecas() { return this.ordemForm.get('pecasSelecionadas') as FormArray; }
 
   // ==================== CARREGAMENTO DE DADOS ====================
+
+    // Adicione este método na classe
+  private carregarBicicletasDoCliente(clienteId: number): void {
+    // Ajuste o nome do método de acordo com seu BicicletaService
+    // Geralmente: findByClienteId(id)
+    this.bicicletaService.getByCliente(clienteId) 
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (bikes) => {
+          this.todasBicicletas = bikes;
+          console.log('Bicicletas do cliente carregadas:', bikes);
+        },
+        error: (err) => console.error('Erro ao buscar bicicletas do cliente', err)
+      });
+  }
+
   private carregarServicosEPecas(): void {
     this.servicoService.getAll()
       .pipe(takeUntil(this.destroy$))
