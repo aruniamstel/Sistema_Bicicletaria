@@ -614,6 +614,34 @@ public class OrdemServicoService {
             System.out.println("🚲 Processando " + bicicletasData.size() + " bicicleta(s)...");
             
             for (Map<String, Object> bikeData : bicicletasData) {
+
+                // --- INÍCIO DO AJUSTE CIRÚRGICO ---
+                // Verifica se a bicicleta é nova (id nulo ou não presente)
+                Object idObj = bikeData.get("id");
+                if (idObj == null) {
+                    System.out.println("🆕 Cadastrando nova bicicleta no registro global: " + bikeData.get("modelo"));
+                    
+                    Bicicleta novaBikeGlobal = new Bicicleta();
+                    novaBikeGlobal.setMarca((String) bikeData.get("marca"));
+                    novaBikeGlobal.setModelo((String) bikeData.get("modelo"));
+                    novaBikeGlobal.setCor((String) bikeData.get("cor"));
+                    
+                    // Tratar tamanhoAro que pode vir como Integer ou Double do JSON
+                    if (bikeData.get("tamanhoAro") != null) {
+                        novaBikeGlobal.setTamanhoAro(((Number) bikeData.get("tamanhoAro")).intValue());
+                    }
+                    
+                    // Vincula ao cliente (importante para o manager de bicicletas)
+                    novaBikeGlobal.setCliente(cliente); 
+
+                    // Salva no repositório geral (BicicletaRepository)
+                    Bicicleta salva = bicicletaRepository.save(novaBikeGlobal);
+                    
+                    // Atualiza o Map com o novo ID para que o 'processarBicicletaComItens' o utilize
+                    bikeData.put("id", salva.getId());
+                }
+                // --- FIM DO AJUSTE CIRÚRGICO ---
+
                 processarBicicletaComItens(ordemSalva, bikeData);
             }
         }
@@ -807,6 +835,23 @@ public class OrdemServicoService {
         if (ordemDTO.getBicicletas() != null && !ordemDTO.getBicicletas().isEmpty()) {
             for (OrdemServicoCreateComplexDTO.BicicletaEntradaData bikeData : ordemDTO.getBicicletas()) {
                 
+                // 1. AJUSTE CIRÚRGICO: Salvar no cadastro global de bicicletas se for nova
+                if (bikeData.getId() == null) {
+                    Bicicleta novaBikeGlobal = new Bicicleta();
+                    novaBikeGlobal.setMarca(bikeData.getMarca());
+                    novaBikeGlobal.setModelo(bikeData.getModelo());
+                    novaBikeGlobal.setCor(bikeData.getCor());
+                    novaBikeGlobal.setTamanhoAro(bikeData.getTamanhoAro());
+                    // Se a entidade Bicicleta tiver vínculo com cliente, sete aqui também
+                    // novaBikeGlobal.setCliente(ordemSalva.getCliente()); 
+
+                    // Salva no repositório geral para aparecer no bicicleta-manager
+                    bicicletaRepository.save(novaBikeGlobal);
+                    
+                    // Opcional: Atualiza o ID no DTO para que a BicicletaComItens saiba a origem
+                    bikeData.setId(novaBikeGlobal.getId());
+                }
+
                 // 1. Criar o container para cada bicicleta da lista
                 BicicletaComItens container = new BicicletaComItens();
                 container.setOrdemServico(ordemSalva);
