@@ -84,29 +84,26 @@
       </div>
 
       <!-- Lista de Serviços -->
-  <table class="items-table" *ngIf="(ordem?.servicos?.length || 0) > 0">
+      <table class="details-table">
         <thead>
           <tr>
             <th>Bicicleta</th>
             <th>Serviço</th>
-            <th>Quantidade</th>
-            <th>Valor Unit.</th>
+            <th>Qtd</th>
+            <th>Unitário</th>
             <th>Total</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of ordem?.servicos">
-            <td>
-              <span *ngIf="item.bicicletaId">
-                {{ getBicicletaInfo(item.bicicletaId)?.marca }} {{ getBicicletaInfo(item.bicicletaId)?.modelo }}
-              </span>
-              <span *ngIf="!item.bicicletaId">AVULSA</span>
-            </td>
-            <td>{{ item.servico?.descricao }}</td>
-            <td>{{ item.quantidade }}</td>
-            <td>{{ item.servico?.valor | currency:'BRL' }}</td>
-            <td>{{ (item.quantidade * (item.servico?.valor || 0)) | currency:'BRL' }}</td>
-          </tr>
+          <ng-container *ngFor="let bike of ordem?.bicicletas">
+            <tr *ngFor="let item of bike.servicos">
+              <td><span class="bike-label">{{ bike.marca }} {{ bike.modelo }}</span></td>
+              <td>{{ item.servico?.descricao }}</td>
+              <td>{{ item.quantidade }}</td>
+              <td>{{ item.valor | currency:'BRL' }}</td>
+              <td>{{ (item.quantidade * item.valor) | currency:'BRL' }}</td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
 
@@ -134,29 +131,26 @@
       </div>
 
       <!-- Lista de Peças -->
-  <table class="items-table" *ngIf="(ordem?.pecas?.length || 0) > 0">
+      <table class="details-table">
         <thead>
           <tr>
             <th>Bicicleta</th>
             <th>Peça</th>
-            <th>Quantidade</th>
-            <th>Valor Unit.</th>
+            <th>Qtd</th>
+            <th>Unitário</th>
             <th>Total</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of ordem?.pecas">
-            <td>
-              <span *ngIf="item.bicicletaId">
-                {{ getBicicletaInfo(item.bicicletaId)?.marca }} {{ getBicicletaInfo(item.bicicletaId)?.modelo }}
-              </span>
-              <span *ngIf="!item.bicicletaId">AVULSA</span>
-            </td>
-            <td>{{ item.peca?.descricao }}</td>
-            <td>{{ item.quantidade }}</td>
-            <td>{{ item.peca?.valor | currency:'BRL' }}</td>
-            <td>{{ (item.quantidade * (item.peca?.valor || 0)) | currency:'BRL' }}</td>
-          </tr>
+          <ng-container *ngFor="let bike of ordem?.bicicletas">
+            <tr *ngFor="let item of bike.pecas">
+              <td><span class="bike-label">{{ bike.marca }} {{ bike.modelo }}</span></td>
+              <td>{{ item.peca?.descricao || 'Peça #' + item.peca?.id }}</td>
+              <td>{{ item.quantidade }}</td>
+              <td>{{ item.valor | currency:'BRL' }}</td>
+              <td>{{ (item.quantidade * item.valor) | currency:'BRL' }}</td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
 
