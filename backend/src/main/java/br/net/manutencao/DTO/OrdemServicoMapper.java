@@ -33,7 +33,7 @@ public class OrdemServicoMapper {
         dto.setDataPrevisaoSaida(ordem.getDataPrevisaoSaida());
         //dto.setStatus(ordem.getStatus());
         dto.setStatus(ordem.getStatus() != null ? ordem.getStatus().name() : null);
-        dto.setValorTotal(ordem.getValorTotal());
+        dto.setValorTotal(ordem.calcularValorTotal());
         dto.setObservacoes(ordem.getObservacoes());
         return dto;
     }
@@ -77,7 +77,12 @@ public class OrdemServicoMapper {
         dto.setBicicletaId(item.getBicicletaItem() != null ? item.getBicicletaItem().getId() : null);
 
         if (item.getPeca() != null) {
-            PecaDTO pDto = new PecaDTO(item.getPeca().getId(), null, item.getPeca().getValor(), null);
+            PecaDTO pDto = new PecaDTO(
+                item.getPeca().getId(), 
+                item.getPeca().getDescricao(), 
+                item.getPeca().getValor(), 
+                item.getPeca().getQuantidade()
+            );
             dto.setPeca(pDto);
         }
         return dto;
