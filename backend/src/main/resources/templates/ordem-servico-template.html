@@ -306,25 +306,21 @@
 
         <!-- ============ DADOS BICICLETA ============ -->
         <div class="section">
-            <div class="section-title">DADOS DA BICICLETA</div>
-            <div class="info-row">
-                <div class="info-column">
-                    <div class="info-label">Marca</div>
-                    <div class="info-value" th:text="${ordem.bicicleta.marca ?: '-'}"></div>
-                </div>
-                <div class="info-column">
-                    <div class="info-label">Modelo</div>
-                    <div class="info-value" th:text="${ordem.bicicleta.modelo ?: '-'}"></div>
-                </div>
-                <div class="info-column">
-                    <div class="info-label">Cor</div>
-                    <div class="info-value" th:text="${ordem.bicicleta.cor ?: '-'}"></div>
-                </div>
-            </div>
-            <div class="info-row">
-                <div class="info-column">
-                    <div class="info-label">Tamanho do Aro (polegadas)</div>
-                    <div class="info-value" th:text="${ordem.bicicleta.tamanhoAro ?: '-'} + '&quot;'"></div>
+            <div class="section-title">🚲 DADOS DAS BICICLETAS</div>
+            <div th:each="bike : ${ordem.bicicletasComItens}" style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">MARCA/MODELO</div>
+                        <div class="info-value" th:text="${(bike.marca ?: '') + ' ' + (bike.modelo ?: '')}">Oggi 7.1</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">COR</div>
+                        <div class="info-value" th:text="${bike.cor ?: '-'}">Verde</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ARO</div>
+                        <div class="info-value" th:text="${bike.tamanhoAro ?: '-'}">29</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -344,56 +340,40 @@
             </div>
         </div>
 
-        <!-- ============ TABELA DE SERVIÇOS ============ -->
+        <!-- ============ TABELA DE SERVIÇOS E PEÇAS ============ -->
         <div class="section">
-            <div class="section-title">SERVIÇOS</div>
-            <table th:if="${!ordem.servicos.isEmpty()}">
+            <div class="section-title">🛠️ DESCRIÇÃO DOS SERVIÇOS E PEÇAS</div>
+            <table class="items-table">
                 <thead>
                     <tr>
-                        <th style="width: 60%;">Descrição</th>
-                        <th style="width: 15%;" class="text-center">Qtd</th>
-                        <th style="width: 25%;" class="text-right">Valor Unitário</th>
+                        <th>BICICLETA</th>
+                        <th>DESCRIÇÃO DO ITEM</th>
+                        <th style="text-align: center;">QTD</th>
+                        <th style="text-align: right;">UNITÁRIO</th>
+                        <th style="text-align: right;">TOTAL</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="item : ${ordem.servicos}">
-                        <td th:text="${item.servico.descricao ?: '-'}"></td>
-                        <td class="text-center" th:text="${item.quantidade ?: '-'}"></td>
-                        <td class="text-right">
-                            R$ <span th:text="${#numbers.formatDecimal(item.valor, 1, 2, 'COMMA')}"></span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="empty-message" th:if="${ordem.servicos.isEmpty()}">
-                Nenhum serviço adicionado
-            </div>
-        </div>
+                    <th:block th:each="bike : ${ordem.bicicletasComItens}">
+                        
+                        <tr th:each="itemS : ${bike.servicos}">
+                            <td th:text="${bike.modelo}">Modelo</td>
+                            <td th:text="${itemS.servico.descricao}">Troca de Pneu</td>
+                            <td style="text-align: center;" th:text="${itemS.quantidade}">1</td>
+                            <td style="text-align: right;" th:text="${#numbers.formatCurrency(itemS.valor)}">R$ 50,00</td>
+                            <td style="text-align: right;" th:text="${#numbers.formatCurrency(itemS.valorTotal)}">R$ 50,00</td>
+                        </tr>
 
-        <!-- ============ TABELA DE PEÇAS ============ -->
-        <div class="section">
-            <div class="section-title">PEÇAS</div>
-            <table th:if="${!ordem.pecas.isEmpty()}">
-                <thead>
-                    <tr>
-                        <th style="width: 60%;">Descrição</th>
-                        <th style="width: 15%;" class="text-center">Qtd</th>
-                        <th style="width: 25%;" class="text-right">Valor Unitário</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="item : ${ordem.pecas}">
-                        <td th:text="${item.peca.descricao ?: '-'}"></td>
-                        <td class="text-center" th:text="${item.quantidade ?: '-'}"></td>
-                        <td class="text-right">
-                            R$ <span th:text="${#numbers.formatDecimal(item.valor, 1, 2, 'COMMA')}"></span>
-                        </td>
-                    </tr>
+                        <tr th:each="itemP : ${bike.pecas}">
+                            <td th:text="${bike.modelo}">Modelo</td>
+                            <td th:text="${itemP.peca.descricao}">Pneu 29x2.10</td>
+                            <td style="text-align: center;" th:text="${itemP.quantidade}">1</td>
+                            <td style="text-align: right;" th:text="${#numbers.formatCurrency(itemP.valor)}">R$ 120,00</td>
+                            <td style="text-align: right;" th:text="${#numbers.formatCurrency(itemP.valorTotal)}">R$ 120,00</td>
+                        </tr>
+                    </th:block>
                 </tbody>
             </table>
-            <div class="empty-message" th:if="${ordem.pecas.isEmpty()}">
-                Nenhuma peça adicionada
-            </div>
         </div>
 
         <!-- ============ TOTALIZADORES ============ -->
