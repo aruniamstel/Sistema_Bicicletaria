@@ -105,50 +105,67 @@
             <button type="button" class="remove-button" (click)="removerBicicletaDoCarrinho(i)">🗑️ Remover</button>
           </div>
 
-          <!-- Serviços desta Bicicleta -->
           <div class="itens-section">
             <h6>🛠️ Serviços</h6>
-            <div *ngFor="let servico of bike.servicos; let j=index" class="item-row">
-              <select (change)="onServicoChange(i, j, $any($event.target).value)">
-                <option value="">Selecione o serviço</option>
-                <option *ngFor="let s of listaServicosDisponiveis" [value]="s.id" [selected]="servico.servico?.id === s.id">
-                  {{ s.descricao }} - R$ {{ s.valor }}
-                </option>
-              </select>
-              <input 
-              type="number" 
-              [value]="servico.quantidade" 
-              (input)="onQtdServicoChange($event, i, j)" 
-              placeholder="Qtd" 
-              min="1" />
+            
+            <div *ngFor="let item of bike.servicos; let j=index" class="item-row">
+              <div class="item-info">
+                <span>{{ item.servico.descricao }} ({{ item.quantidade }}x) - {{ item.valor | currency:'BRL' }}</span>
+              </div>
               <button type="button" class="remove-item-btn" (click)="removerServicoDeaBicicleta(i, j)">🗑️</button>
             </div>
-            <button type="button" class="add-item-button" (click)="adicionarServicoParaBicicleta(i)">
-              + Adicionar Serviço
-            </button>
+
+            <div class="add-item-row" [formGroup]="ordemForm">
+              <select formControlName="servicoTemp">
+                <option [ngValue]="null">Selecione o serviço</option>
+                <option *ngFor="let s of listaServicosDisponiveis" [ngValue]="s">
+                  {{ s.descricao }} - {{ s.valor | currency:'BRL' }}
+                </option>
+              </select>
+              
+              <input 
+                type="number" 
+                formControlName="quantidadeServicoTemp" 
+                placeholder="Qtd" 
+                min="1" 
+                style="width: 60px;" />
+
+              <button type="button" class="add-item-button" (click)="adicionarServicoParaBicicleta(i)">
+                + Adicionar
+              </button>
+            </div>
           </div>
 
           <!-- Peças desta Bicicleta -->
           <div class="itens-section">
             <h6>⚙️ Peças</h6>
-            <div *ngFor="let peca of bike.pecas; let j=index" class="item-row">
-              <select (change)="onPecaChange(i, j, $any($event.target).value)">
-                <option value="">Selecione a peça</option>
-                <option *ngFor="let p of listaPecasDisponiveis" [value]="p.id" [selected]="peca.peca?.id === p.id">
-                  {{ p.descricao }} - R$ {{ p.valor }}
-                </option>
-              </select>
-              <input 
-                type="number" 
-                [value]="peca.quantidade" 
-                (input)="onQtdPecaChange($event, i, j)" 
-                placeholder="Qtd" 
-                min="1" />
+            
+            <div *ngFor="let item of bike.pecas; let j=index" class="item-row">
+              <div class="item-info">
+                <span>{{ item.peca.descricao }} ({{ item.quantidade }}x) - {{ item.valor | currency:'BRL' }}</span>
+              </div>
               <button type="button" class="remove-item-btn" (click)="removerPecaDeBicicleta(i, j)">🗑️</button>
             </div>
-            <button type="button" class="add-item-button" (click)="adicionarPecaParaBicicleta(i)">
-              + Adicionar Peça
-            </button>
+
+            <div class="add-item-row" [formGroup]="ordemForm">
+              <select formControlName="pecaTemp">
+                <option [ngValue]="null">Selecione a peça</option>
+                <option *ngFor="let p of listaPecasDisponiveis" [ngValue]="p">
+                  {{ p.descricao }} - {{ p.valor | currency:'BRL' }}
+                </option>
+              </select>
+              
+              <input 
+                type="number" 
+                formControlName="quantidadePecaTemp" 
+                placeholder="Qtd" 
+                min="1" 
+                style="width: 60px;" />
+
+              <button type="button" class="add-item-button" (click)="adicionarPecaParaBicicleta(i)">
+                + Adicionar
+              </button>
+            </div>
           </div>
         </div>
       </div>

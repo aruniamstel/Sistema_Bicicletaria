@@ -7,7 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Bicicleta } from '../../../shared/models/bicicleta.model';
-import { Servico, Peca, BicicletaComItens } from '../../../shared/models/ordem-servico.model';
+import { Servico, Peca, BicicletaComItens, OrdemServicoServico } from '../../../shared/models/ordem-servico.model';
 import { ClienteService } from '../../../services/cliente.service';
 import { BicicletaService } from '../../../services/bicicleta.service';
 import { OrdemServicoService } from '../../../services/ordem-servico.service';
@@ -93,7 +93,13 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
       
       // Serviços e Peças (agora associados a uma bicicleta)
       servicosSelecionados: this.fb.array([]),
-      pecasSelecionadas: this.fb.array([])
+      pecasSelecionadas: this.fb.array([]),
+
+      // CAMPOS TEMPORÁRIOS PARA O SELECT
+      servicoTemp: [null],
+      quantidadeServicoTemp: [1],
+      pecaTemp: [null],
+      quantidadePecaTemp: [1]
     }, { validators: clienteOuNovoClienteValidator });
   }
 
@@ -279,20 +285,32 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
   /**
    * Adiciona um serviço a uma bicicleta específica
    */
-  adicionarServicoParaBicicleta(bicicletaIndex: number): void {
-    if (bicicletaIndex < 0 || bicicletaIndex >= this.bicicletasAdicionadas.length) {
-      this.errorMessage = 'Bicicleta inválida.';
-      return;
-    }
+ adicionarServicoParaBicicleta(bicicletaIndex: number): void {
+  const servicoSelecionado = this.ordemForm.get('servicoTemp')?.value;
+  const qtd = this.ordemForm.get('quantidadeServicoTemp')?.value;
 
-    this.bicicletasAdicionadas[bicicletaIndex].servicos.push({
-      id: undefined,
-      servico: { id: undefined, descricao: '', valor: 0 },
-      quantidade: 1,
-      valor: 0,
-      bicicletaId: this.bicicletasAdicionadas[bicicletaIndex].id
-    });
+  if (!servicoSelecionado) {
+    this.errorMessage = 'Selecione um serviço primeiro.';
+    return;
   }
+
+  // Criamos o item seguindo EXATAMENTE a interface OrdemServicoServico
+  const itemServico: OrdemServicoServico = {
+    // Aqui espalhamos o objeto servico selecionado (id, descricao, valor)
+    // Isso resolve o erro "Property 'valor' is missing in type"
+    servico: { ...servicoSelecionado }, 
+    
+    quantidade: qtd || 1,
+    valor: servicoSelecionado.valor, // Valor unitário do item
+    bicicletaId: this.bicicletasAdicionadas[bicicletaIndex].id
+  };
+
+  this.bicicletasAdicionadas[bicicletaIndex].servicos.push(itemServico);
+
+  // Limpa os campos
+  this.ordemForm.get('servicoTemp')?.setValue(null);
+  this.ordemForm.get('quantidadeServicoTemp')?.setValue(1);
+}
 
   /**
    * Remove um serviço de uma bicicleta
@@ -307,19 +325,23 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
   /**
    * Adiciona uma peça a uma bicicleta específica
    */
-  adicionarPecaParaBicicleta(bicicletaIndex: number): void {
-    if (bicicletaIndex < 0 || bicicletaIndex >= this.bicicletasAdicionadas.length) {
-      this.errorMessage = 'Bicicleta inválida.';
-      return;
-    }
+  adicionarPecaParaBicicleta(index: number) {
+    const peca = this.ordemForm.get('pecaTemp')?.value;
+    const qtd = this.ordemForm.get('quantidadePecaTemp')?.value;
 
-    this.bicicletasAdicionadas[bicicletaIndex].pecas.push({
-      id: undefined,
-      peca: { id: undefined, descricao: '', valor: 0, quantidade: 1 },
-      quantidade: 1,
-      valor: 0,
-      bicicletaId: this.bicicletasAdicionadas[bicicletaIndex].id
-    });
+    if (peca) {
+      this.bicicletasAdicionadas[index].pecas.push({
+        peca: { ...peca }, // Espalha o objeto para evitar erro de tipos
+        quantidade: qtd || 1,
+        valor: peca.valor,
+        bicicletaId: this.bicicletasAdicionadas[index].id
+      });
+      // Limpa para a próxima
+      this.ordemForm.get('pecaTemp')?.setValue(null);
+      this.ordemForm.get('quantidadePecaTemp')?.setValue(1);
+    } else {
+      this.errorMessage = 'Selecione a peça primeiro';
+    }
   }
 
   /**
