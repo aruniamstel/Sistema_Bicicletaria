@@ -107,6 +107,15 @@
         <button type="button" class="btn-primary" (click)="exportarBicicletasCSV()" [disabled]="loading">
           📥 Exportar CSV
         </button>
+        <button type="button" class="btn-primary" (click)="abrirImportacaoBicicletas()" [disabled]="loading">
+          📤 Importar CSV
+        </button>
+        <input 
+          type="file" 
+          #fileInputBicicletas 
+          (change)="onFileSelected($event)" 
+          hidden 
+          accept=".csv">
       </div>
     </form>
   </div>

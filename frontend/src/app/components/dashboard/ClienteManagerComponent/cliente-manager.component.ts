@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -33,6 +33,8 @@ export class ClienteManagerComponent implements OnInit, OnDestroy {
 
   // Cleanup
   private destroy$ = new Subject<void>();
+
+  @ViewChild('fileInputClientes') fileInputClientes!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -312,6 +314,55 @@ export class ClienteManagerComponent implements OnInit, OnDestroy {
           console.error('❌ Erro ao exportar clientes:', error);
           this.errorMessage = 'Erro ao exportar clientes. Tente novamente.';
           this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Dispara o click do input file de importação
+   */
+  abrirImportacaoClientes(): void {
+    this.fileInputClientes.nativeElement.click();
+  }
+
+  /**
+   * Processa o arquivo selecionado para importação de clientes
+   */
+  onFileSelected(event: any): void {
+    const file: File | null = event.target.files ? event.target.files[0] : null;
+
+    if (!file) {
+      this.errorMessage = 'Nenhum arquivo foi selecionado.';
+      return;
+    }
+
+    // Validar extensão do arquivo
+    if (!file.name.endsWith('.csv')) {
+      this.errorMessage = 'Por favor, selecione um arquivo CSV válido.';
+      event.target.value = ''; // Limpar o input
+      return;
+    }
+
+    this.loadingOperation = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.exportarService.importarCsv('clientes', file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Importação de clientes bem-sucedida:', response);
+          this.successMessage = response || '✅ Clientes importados com sucesso!';
+          this.carregarClientes();
+          this.loadingOperation = false;
+          event.target.value = ''; // Limpar o input
+        },
+        error: (error) => {
+          console.error('❌ Erro ao importar clientes:', error);
+          const errorMsg = error?.error || error?.message || 'Erro ao importar clientes. Verifique o arquivo e tente novamente.';
+          this.errorMessage = errorMsg;
+          this.loadingOperation = false;
+          event.target.value = ''; // Limpar o input
         }
       });
   }

@@ -87,6 +87,15 @@
       <button type="button" class="btn-primary" (click)="exportarPecasCSV()" [disabled]="loading">
         📥 Exportar CSV
       </button>
+      <button type="button" class="btn-primary" (click)="abrirImportacaoPecas()" [disabled]="loadingOperation">
+        📤 Importar CSV
+      </button>
+      <input 
+        type="file" 
+        #fileInputPecas 
+        (change)="onFileSelected($event)" 
+        hidden 
+        accept=".csv">
     </div>
   </form>
 </div>

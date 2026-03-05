@@ -68,4 +68,30 @@ export class ExportarService {
       });
     });
   }
+
+  /**
+   * Importa dados do CSV para a entidade especificada
+   * @param entidade - tipo de entidade: 'clientes', 'bicicletas', 'pecas', 'servicos'
+   * @param arquivo - arquivo CSV selecionado pelo usuário
+   * @returns Observable<string> com mensagem de sucesso ou erro
+   */
+  importarCsv(entidade: string, arquivo: File): Observable<string> {
+    if (!entidade || entidade.trim().length === 0) {
+      throw new Error('Entidade não pode estar vazia');
+    }
+
+    if (!arquivo) {
+      throw new Error('Arquivo não foi selecionado');
+    }
+
+    const formData = new FormData();
+    formData.append('file', arquivo);
+
+    const url = `${this.apiUrl}/importar/${entidade.toLowerCase().trim()}`;
+    console.log('📤 Requisição de importação:', url, 'Arquivo:', arquivo.name);
+
+    return this.http.post(url, formData, {
+      responseType: 'text'
+    });
+  }
 }

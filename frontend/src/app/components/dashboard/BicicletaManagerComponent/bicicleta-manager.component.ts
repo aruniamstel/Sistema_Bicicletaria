@@ -45,6 +45,8 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
 
   @ViewChild('modalHistorico') modal!: ElementRef<HTMLDialogElement>;
 
+  @ViewChild('fileInputBicicletas') fileInputBicicletas!: ElementRef<HTMLInputElement>;
+
   constructor(
     private fb: FormBuilder,
     private bicicletaService: BicicletaService,
@@ -426,6 +428,55 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
           console.error('❌ Erro ao exportar bicicletas:', error);
           this.errorMessage = 'Erro ao exportar bicicletas. Tente novamente.';
           this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Dispara o click do input file de importação
+   */
+  abrirImportacaoBicicletas(): void {
+    this.fileInputBicicletas.nativeElement.click();
+  }
+
+  /**
+   * Processa o arquivo selecionado para importação de bicicletas
+   */
+  onFileSelected(event: any): void {
+    const file: File | null = event.target.files ? event.target.files[0] : null;
+
+    if (!file) {
+      this.errorMessage = 'Nenhum arquivo foi selecionado.';
+      return;
+    }
+
+    // Validar extensão do arquivo
+    if (!file.name.endsWith('.csv')) {
+      this.errorMessage = 'Por favor, selecione um arquivo CSV válido.';
+      event.target.value = ''; // Limpar o input
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.exportarService.importarCsv('bicicletas', file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Importação de bicicletas bem-sucedida:', response);
+          this.successMessage = response || '✅ Bicicletas importadas com sucesso!';
+          this.carregarDados();
+          this.loading = false;
+          event.target.value = ''; // Limpar o input
+        },
+        error: (error) => {
+          console.error('❌ Erro ao importar bicicletas:', error);
+          const errorMsg = error?.error || error?.message || 'Erro ao importar bicicletas. Verifique o arquivo e tente novamente.';
+          this.errorMessage = errorMsg;
+          this.loading = false;
+          event.target.value = ''; // Limpar o input
         }
       });
   }

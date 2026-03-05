@@ -103,6 +103,15 @@
       <button type="button" (click)="exportarClientesCSV()" class="btn-primary" [disabled]="loading">
         📥 Exportar CSV
       </button>
+      <button type="button" (click)="abrirImportacaoClientes()" class="btn-primary" [disabled]="loadingOperation">
+        📤 Importar CSV
+      </button>
+      <input 
+        type="file" 
+        #fileInputClientes 
+        (change)="onFileSelected($event)" 
+        hidden 
+        accept=".csv">
     </form>
   </div>
 

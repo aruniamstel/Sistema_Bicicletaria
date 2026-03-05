@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -32,6 +32,8 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
 
   // Cleanup
   private destroy$ = new Subject<void>();
+
+  @ViewChild('fileInputPecas') fileInputPecas!: ElementRef<HTMLInputElement>;
 
   constructor(
     private fb: FormBuilder,
@@ -253,6 +255,55 @@ export class EstoqueManagerComponent implements OnInit, OnDestroy {
           console.error('❌ Erro ao exportar peças:', error);
           this.errorMessage = 'Erro ao exportar peças. Tente novamente.';
           this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Dispara o click do input file de importação
+   */
+  abrirImportacaoPecas(): void {
+    this.fileInputPecas.nativeElement.click();
+  }
+
+  /**
+   * Processa o arquivo selecionado para importação de peças
+   */
+  onFileSelected(event: any): void {
+    const file: File | null = event.target.files ? event.target.files[0] : null;
+
+    if (!file) {
+      this.errorMessage = 'Nenhum arquivo foi selecionado.';
+      return;
+    }
+
+    // Validar extensão do arquivo
+    if (!file.name.endsWith('.csv')) {
+      this.errorMessage = 'Por favor, selecione um arquivo CSV válido.';
+      event.target.value = ''; // Limpar o input
+      return;
+    }
+
+    this.loadingOperation = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.exportarService.importarCsv('pecas', file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Importação de peças bem-sucedida:', response);
+          this.successMessage = response || '✅ Peças importadas com sucesso!';
+          this.carregarDados();
+          this.loadingOperation = false;
+          event.target.value = ''; // Limpar o input
+        },
+        error: (error) => {
+          console.error('❌ Erro ao importar peças:', error);
+          const errorMsg = error?.error || error?.message || 'Erro ao importar peças. Verifique o arquivo e tente novamente.';
+          this.errorMessage = errorMsg;
+          this.loadingOperation = false;
+          event.target.value = ''; // Limpar o input
         }
       });
   }
