@@ -13,6 +13,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -39,13 +41,15 @@ public class Bicicleta {
     @NotBlank
     private String cor;
 
+    // Relacionamento com Cliente - lado "Many"
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
+    @JsonBackReference("cliente-bicicletas")
     private Cliente cliente;
 
-    // NOVO: Relacionamento com OrdemServico (lado "Many")
+    // Relacionamento com OrdemServico - lado "Many"
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "ordem_servico_id")
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     private OrdemServico ordemServico;
 }

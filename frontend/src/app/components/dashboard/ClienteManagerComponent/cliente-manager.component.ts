@@ -194,28 +194,49 @@ export class ClienteManagerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (confirm('Tem certeza que deseja excluir este cliente?')) {
-      this.loadingOperation = true;
-      this.errorMessage = '';
-
-      this.clienteService.delete(clienteId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            console.log('✅ Cliente excluído:', response);
-            this.successMessage = 'Cliente excluído com sucesso!';
-            this.carregarClientes();
-            this.clienteForm.reset();
-            this.editingCliente = null;
-            this.loadingOperation = false;
-          },
-          error: (error) => {
-            console.error('❌ Erro ao excluir cliente:', error);
-            this.errorMessage = 'Erro ao excluir cliente. Tente novamente.';
-            this.loadingOperation = false;
-          }
-        });
+    // Encontrar cliente para verificar ordens
+    const cliente = this.clientes.find(c => c.id === clienteId);
+    if (!cliente) {
+      this.errorMessage = 'Cliente não encontrado.';
+      return;
     }
+
+    // Verificar se cliente possui ordens de serviço
+    const temOrdens = cliente.ordensServico && cliente.ordensServico.length > 0;
+    const quantidadeOrdens = cliente.ordensServico?.length || 0;
+
+    let mensagem = 'Tem certeza que deseja excluir este cliente?';
+    
+    if (temOrdens) {
+      mensagem = `O cliente "${cliente.nome}" possui ${quantidadeOrdens} ordem(ns) de serviço vinculada(s). ` +
+                 `Apagá-lo excluirá permanentemente TODAS as ordens, bicicletas e históricos. ` +
+                 `Esta ação não pode ser desfeita. Tem certeza absoluta?`;
+    }
+
+    if (!confirm(mensagem)) {
+      return;
+    }
+
+    this.loadingOperation = true;
+    this.errorMessage = '';
+
+    this.clienteService.delete(clienteId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Cliente excluído:', response);
+          this.successMessage = 'Cliente excluído com sucesso!';
+          this.carregarClientes();
+          this.clienteForm.reset();
+          this.editingCliente = null;
+          this.loadingOperation = false;
+        },
+        error: (error) => {
+          console.error('❌ Erro ao excluir cliente:', error);
+          this.errorMessage = 'Erro ao excluir cliente. Tente novamente.';
+          this.loadingOperation = false;
+        }
+      });
   }
 
   /**

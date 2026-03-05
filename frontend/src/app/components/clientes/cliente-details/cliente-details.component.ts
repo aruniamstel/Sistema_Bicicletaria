@@ -87,8 +87,22 @@ export class ClienteDetailsComponent implements OnInit {
   }
 
   delete(): void {
-    if (!this.clienteId) return;
-    if (!confirm('Deseja realmente excluir este cliente?')) return;
+    if (!this.clienteId || !this.cliente) return;
+
+    // Verificar se cliente possui ordens de serviço
+    const temOrdens = this.cliente.ordensServico && this.cliente.ordensServico.length > 0;
+    const quantidadeOrdens = this.cliente.ordensServico?.length || 0;
+
+    let mensagem = 'Deseja realmente excluir este cliente?';
+    
+    if (temOrdens) {
+      mensagem = `O cliente "${this.cliente.nome}" possui ${quantidadeOrdens} ordem(ns) de serviço vinculada(s). ` +
+                 `Apagá-lo excluirá permanentemente TODAS as ordens, bicicletas e históricos. ` +
+                 `Esta ação não pode ser desfeita. Tem certeza absoluta?`;
+    }
+
+    if (!confirm(mensagem)) return;
+
     this.loading = true;
     this.clienteService.delete(this.clienteId).subscribe({
       next: () => {
