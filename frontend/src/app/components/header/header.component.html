@@ -25,6 +25,11 @@
         <span class="badge" *ngIf="ordensPendentes > 0">{{ ordensPendentes }}</span>
       </a>
       
+      <a class="nav-link" [routerLink]="['/historico']" routerLinkActive="active">
+        <span class="nav-icon">📊</span>
+        Histórico
+      </a>
+      
       <a class="nav-link" [routerLink]="['/bicicletas-em-servico']" routerLinkActive="active">
         <span class="nav-icon">🚲</span>
         Bicicletas em Serviço

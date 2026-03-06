@@ -1,0 +1,144 @@
+<app-header></app-header>
+
+<div class="container">
+  <!-- Section Header -->
+  <div class="section-header">
+    <h2>📋 Histórico de Serviços</h2>
+    <p>Visualize todos os serviços e peças aplicadas às bicicletas</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Carregando histórico...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="carregarHistorico()">Tentar Novamente</button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error" class="content">
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <h4>🔍 Filtros</h4>
+      
+      <div class="filter-row">
+        <div class="filter-field">
+          <label for="filtro-cliente">Buscar por Cliente</label>
+          <input
+            id="filtro-cliente"
+            type="text"
+            [(ngModel)]="filtroCliente"
+            (input)="onFiltroClienteChange()"
+            placeholder="Ex: João Silva"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="filtro-servico">Buscar por Serviço/Peça</label>
+          <input
+            id="filtro-servico"
+            type="text"
+            [(ngModel)]="filtroServicoOuPeca"
+            (input)="onFiltroServicoOuPecaChange()"
+            placeholder="Ex: Tubeless, Pneu"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="filtro-data">Realizados após</label>
+          <input
+            id="filtro-data"
+            type="date"
+            [(ngModel)]="filtroData"
+            (input)="onFiltroDataChange()"
+          />
+        </div>
+
+        <div class="filter-field">
+          <label for="filtro-telefone">Filtro por Telefone</label>
+          <input
+            id="filtro-telefone"
+            type="tel"
+            [(ngModel)]="filtroTelefone"
+            (input)="onFiltroTelefoneChange()"
+            placeholder="Ex: 5511999"
+          />
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-secondary" (click)="limparFiltros()">Limpar Filtros</button>
+      </div>
+
+      <div class="filter-stats">
+        <small>
+          Exibindo <strong>{{ totalResultados }}</strong> de <strong>{{ totalRegistros }}</strong> registros
+        </small>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="list-section">
+      <!-- Empty State -->
+      <div *ngIf="historicoFiltrado.length === 0" class="empty-state">
+        <p>Nenhum serviço ou peça encontrado.</p>
+        <small *ngIf="allHistorico.length > 0">Tente ajustar os filtros.</small>
+      </div>
+
+      <!-- Results Table -->
+      <div *ngIf="historicoFiltrado.length > 0" class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data Entrega</th>
+              <th>Cliente</th>
+              <th>Telefone</th>
+              <th>Bicicleta</th>
+              <th>Serviço/Peça</th>
+              <th>Valor</th>
+              <th class="col-actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of historicoFiltrado" class="table-row">
+              <td class="col-data">
+                {{ item.dataEntrega }}
+              </td>
+              <td class="col-cliente">
+                {{ item.nomeCliente }}
+              </td>
+              <td class="col-telefone">
+                {{ item.telefone || '-' }}
+              </td>
+              <td class="col-bicicleta">
+                {{ item.modeloBicicleta }}
+              </td>
+              <td class="col-item">
+                <span [class]="'badge ' + getClasseTipo(item.tipo)">
+                  {{ item.descricaoItem }}
+                </span>
+              </td>
+              <td class="col-valor">
+                {{ item.valor | currency: 'BRL': 'symbol': '1.2-2' }}
+              </td>
+              <td class="col-actions">
+                <button
+                  class="btn-action btn-view"
+                  (click)="verOrdem(item.ordemId)"
+                  title="Ver detalhes da Ordem de Serviço"
+                >
+                  👁️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

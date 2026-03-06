@@ -21,6 +21,7 @@ import { OrdemDetailsComponent } from './components/ordens-servico/ordem-details
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
 import { OrdemFormNovoComponent } from './components/ordens-servico/ordem-form/ordem-form-novo.component';
+import { HistoricoComponent } from './components/historico/historico.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -120,10 +121,18 @@ export const routes: Routes = [
         children: [
             { path: '', component: OrdemListComponent },
             { path: 'novo', component: OrdemFormNovoComponent },
+            { path: 'detalhes/:id', component: OrdemDetailsComponent },
             { path: ':id', component: OrdemDetailsComponent }
         ],
         canActivate: [authGuard],
         data: { role: ['ADMIN', 'FUNCIONARIO', 'CLIENTE'] }
+    },
+    // Histórico de Serviços (componente analítico)
+    {
+        path: 'historico',
+        component: HistoricoComponent,
+        canActivate: [authGuard],
+        data: { role: ['ADMIN', 'FUNCIONARIO'] }
     },
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     { path: 'dashboard', component: DashboardComponent },
