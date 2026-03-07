@@ -13,11 +13,16 @@ import { StatusOrdem } from '../../shared/models/ordem-servico.model';
 })
 export class HeaderComponent implements OnInit {
   ordensPendentes = 0;
+  menuAberto = false;
 
   constructor(private ordemService: OrdemServicoService) {}
 
   ngOnInit() {
     //this.carregarOrdensPendentes();
+  }
+
+  toggleMenu(): void {
+    this.menuAberto = !this.menuAberto;
   }
 
  /* carregarOrdensPendentes() {

@@ -76,94 +76,136 @@
   <h3>Todas as Bicicletas ({{ bicicletasEmServico.length }} em serviço)</h3>
 
   <!-- Barra de Filtros -->
-  <div class="filters-section">
-    <h4>🔍 Filtros</h4>
-    <form [formGroup]="filtrosForm" class="filters-form">
-      <div class="filter-row">
-        <div class="filter-field">
-          <label>Cliente</label>
-          <input type="text" formControlName="cliente" placeholder="Buscar por cliente...">
+  <div class="card card-filters mb-4">
+    <div class="card-body">
+      <form [formGroup]="filtrosForm" class="row g-3">
+        <div class="col-12 col-md-6 col-lg-2">
+          <input type="text" formControlName="cliente" class="form-control" placeholder="🔍 Cliente...">
         </div>
-        <div class="filter-field">
-          <label>Marca</label>
-          <input type="text" formControlName="marca" placeholder="Buscar por marca...">
+        <div class="col-12 col-md-6 col-lg-2">
+          <input type="text" formControlName="marca" class="form-control" placeholder="🏷️ Marca...">
         </div>
-        <div class="filter-field">
-          <label>Modelo</label>
-          <input type="text" formControlName="modelo" placeholder="Buscar por modelo...">
+        <div class="col-12 col-md-6 col-lg-2">
+          <input type="text" formControlName="modelo" class="form-control" placeholder="🚗 Modelo...">
         </div>
-        <div class="filter-field">
-          <label>Cor</label>
-          <input type="text" formControlName="cor" placeholder="Buscar por cor...">
+        <div class="col-12 col-md-6 col-lg-2">
+          <input type="text" formControlName="cor" class="form-control" placeholder="🎨 Cor...">
         </div>
-        <div class="filter-field">
-          <label>Tamanho do Aro</label>
-          <input type="text" formControlName="tamanhoAro" placeholder="Buscar por aro...">
+        <div class="col-12 col-md-6 col-lg-2">
+          <input type="text" formControlName="tamanhoAro" class="form-control" placeholder="⭕ Aro...">
         </div>
-      </div>
-
-      <div class="filter-actions">
-        <button type="button" class="btn-secondary" (click)="limparFiltros()">🧹 Limpar Filtros</button>
-        <button type="button" class="btn-primary" (click)="exportarBicicletasCSV()" [disabled]="loading">
-          📥 Exportar CSV
-        </button>
-        <button type="button" class="btn-primary" (click)="abrirImportacaoBicicletas()" [disabled]="loading">
-          📤 Importar CSV
-        </button>
-        <input 
-          type="file" 
-          #fileInputBicicletas 
-          (change)="onFileSelected($event)" 
-          hidden 
-          accept=".csv">
-      </div>
-    </form>
+        <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
+          <button type="button" class="btn btn-outline-secondary" (click)="limparFiltros()">🧹 Limpar</button>
+          <button type="button" class="btn btn-primary" (click)="exportarBicicletasCSV()" [disabled]="loading">
+            📥 Exportar
+          </button>
+          <button type="button" class="btn btn-primary" (click)="abrirImportacaoBicicletas()" [disabled]="loading">
+            📤 Importar
+          </button>
+        </div>
+        <div class="col-12">
+          <input 
+            type="file" 
+            #fileInputBicicletas 
+            (change)="onFileSelected($event)" 
+            hidden 
+            accept=".csv">
+        </div>
+      </form>
+    </div>
   </div>
 
-  <div *ngIf="bicicletas.length === 0" class="empty-state">
-    <p>📭 Nenhuma bicicleta encontrada.</p>
+  <!-- Empty State -->
+  <div *ngIf="bicicletas.length === 0" class="alert alert-info text-center py-5">
+    <p class="mb-0">📭 Nenhuma bicicleta encontrada</p>
   </div>
 
-  <div class="table-container" *ngIf="bicicletas.length > 0">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Marca</th>
-          <th>Modelo</th>
-          <th>Cor</th>
-          <th>Aro</th>
-          <th>Dono (Cliente)</th>
-          <th>Telefone</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let bicicleta of bicicletasFiltradas" class="table-row">
-          <td class="col-marca"><strong>{{ bicicleta.marca }}</strong></td>
-          <td class="col-modelo">{{ bicicleta.modelo }}</td>
-          <td class="col-cor">{{ bicicleta.cor }}</td>
-          <td class="col-aro">{{ bicicleta.tamanhoAro }}"</td>
-          <td class="col-dono">{{ bicicleta.cliente?.nome }}</td>
-          <td class="col-telefone">{{ bicicleta.cliente?.telefone }}</td>
-          <td class="col-actions">
-            <button 
-              type="button" 
-              (click)="editarBicicleta(bicicleta)" 
-              class="btn-action btn-edit"
-              title="Editar bicicleta">
-              ✏️
-            </button>
-            <button 
-              type="button" 
-              (click)="excluirBicicleta(bicicleta.id!)" 
-              class="btn-action btn-delete"
-              title="Excluir bicicleta">
-              🗑️
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Tabela de Bicicletas (Desktop View) -->
+  <div class="d-none d-md-block" *ngIf="bicicletas.length > 0">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Cor</th>
+            <th>Aro</th>
+            <th>Dono (Cliente)</th>
+            <th>Telefone</th>
+            <th class="text-center" style="width: 100px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let bicicleta of bicicletasFiltradas" class="table-row">
+            <td class="fw-600">{{ bicicleta.marca }}</td>
+            <td>{{ bicicleta.modelo }}</td>
+            <td>{{ bicicleta.cor }}</td>
+            <td class="text-center">{{ bicicleta.tamanhoAro }}"</td>
+            <td class="fw-600 text-primary">{{ bicicleta.cliente?.nome }}</td>
+            <td class="font-monospace small">{{ bicicleta.cliente?.telefone }}</td>
+            <td class="text-center">
+              <button 
+                type="button" 
+                (click)="editarBicicleta(bicicleta)" 
+                class="btn btn-sm btn-warning me-2"
+                title="Editar bicicleta">
+                ✏️
+              </button>
+              <button 
+                type="button" 
+                (click)="excluirBicicleta(bicicleta.id!)" 
+                class="btn btn-sm btn-danger"
+                title="Excluir bicicleta">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Cards para Mobile (Mobile View) -->
+  <div class="d-block d-md-none" *ngIf="bicicletas.length > 0">
+    <div class="row g-3">
+      <div *ngFor="let bicicleta of bicicletasFiltradas" class="col-12 col-sm-6">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <h6 class="card-title mb-2">{{ bicicleta.marca }} {{ bicicleta.modelo }}</h6>
+            <div class="mb-2">
+              <small class="d-block text-muted">Cor:</small>
+              <small class="fw-600">{{ bicicleta.cor }}</small>
+            </div>
+            <div class="mb-2">
+              <small class="d-block text-muted">Aro:</small>
+              <small class="fw-600">{{ bicicleta.tamanhoAro }}"</small>
+            </div>
+            <div class="mb-2">
+              <small class="d-block text-muted">Dono:</small>
+              <small class="fw-600">{{ bicicleta.cliente?.nome }}</small>
+            </div>
+            <div class="mb-3">
+              <small class="d-block text-muted">Telefone:</small>
+              <small class="font-monospace">{{ bicicleta.cliente?.telefone }}</small>
+            </div>
+            <div class="d-grid gap-2">
+              <button 
+                type="button" 
+                (click)="editarBicicleta(bicicleta)" 
+                class="btn btn-sm btn-warning">
+                ✏️ Editar
+              </button>
+              <button 
+                type="button" 
+                (click)="excluirBicicleta(bicicleta.id!)" 
+                class="btn btn-sm btn-danger">
+                🗑️ Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

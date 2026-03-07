@@ -1,51 +1,67 @@
 <header class="app-header">
-  <div class="navbar">
-    <!-- Logo e Título -->
-    <div class="nav-brand">
-      <img src="assets/images/logo-cliente.png" alt="Logo Fabiano Bikes" class="header-logo">
-    </div>
-
-    <!-- Menu de Navegação -->
-    <nav class="nav-menu">
-      <!-- Ação Principal: Nova Ordem -->
-      <a class="nav-link highlight" [routerLink]="['/ordens-servico/novo']">
-        <span class="nav-icon">➕</span>
-        Nova Ordem
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+      <!-- Logo e Marca -->
+      <a class="navbar-brand" [routerLink]="['/dashboard']">
+        <img src="assets/images/logo-cliente.png" alt="Logo Fabiano Bikes" class="header-logo" style="height: 40px;">
+        <span class="ms-2 d-none d-sm-inline">Fabiano Bikes</span>
       </a>
 
-      <!-- Navegação Principal -->
-      <a class="nav-link" [routerLink]="['/dashboard']" routerLinkActive="active">
-        <span class="nav-icon">📊</span>
-        Cadastro
-      </a>
-      
-      <a class="nav-link" [routerLink]="['/ordens-servico']" routerLinkActive="active">
-        <span class="nav-icon">📋</span>
-        Ordens de Serviço
-        <span class="badge" *ngIf="ordensPendentes > 0">{{ ordensPendentes }}</span>
-      </a>
-      
-      <a class="nav-link" [routerLink]="['/historico']" routerLinkActive="active">
-        <span class="nav-icon">📊</span>
-        Histórico
-      </a>
-      
-      <a class="nav-link" [routerLink]="['/bicicletas-em-servico']" routerLinkActive="active">
-        <span class="nav-icon">🚲</span>
-        Bicicletas em Serviço
-      </a>
+      <!-- Toggle para Mobile -->
+      <button 
+        class="navbar-toggler" 
+        type="button" 
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuAberto"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-      <!-- Usuário e Sair -->
-      <div class="user-section">
-        <a class="nav-link" [routerLink]="['/agenda']" routerLinkActive="active">
-        <span class="nav-icon">🗓️</span>
-        Agenda
-        </a>
-        <a class="btn-logout" [routerLink]="['/login']">
-          <span class="nav-icon">🚪</span>
-          Sair
-        </a>
+      <!-- Menu de Navegação -->
+      <div class="collapse navbar-collapse" [class.show]="menuAberto" id="navbarNav">
+        <div class="navbar-nav ms-auto">
+          <!-- Ação Principal: Nova Ordem -->
+          <a class="nav-link fw-bold text-success" [routerLink]="['/ordens-servico/novo']" (click)="menuAberto = false">
+            <span class="nav-icon">➕</span>
+            Nova Ordem
+          </a>
+
+          <!-- Navegação Principal -->
+          <a class="nav-link" [routerLink]="['/dashboard']" routerLinkActive="active" (click)="menuAberto = false">
+            <span class="nav-icon">📊</span>
+            <span class="d-lg-inline d-none ms-1">Cadastro</span>
+          </a>
+          
+          <a class="nav-link position-relative" [routerLink]="['/ordens-servico']" routerLinkActive="active" (click)="menuAberto = false">
+            <span class="nav-icon">📋</span>
+            <span class="d-lg-inline d-none ms-1">Ordens</span>
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" *ngIf="ordensPendentes > 0">
+              {{ ordensPendentes }}
+            </span>
+          </a>
+          
+          <a class="nav-link" [routerLink]="['/historico']" routerLinkActive="active" (click)="menuAberto = false">
+            <span class="nav-icon">📊</span>
+            <span class="d-lg-inline d-none ms-1">Histórico</span>
+          </a>
+          
+          <a class="nav-link" [routerLink]="['/bicicletas-em-servico']" routerLinkActive="active" (click)="menuAberto = false">
+            <span class="nav-icon">🚲</span>
+            <span class="d-lg-inline d-none ms-1">Bicicletas</span>
+          </a>
+
+          <a class="nav-link" [routerLink]="['/agenda']" routerLinkActive="active" (click)="menuAberto = false">
+            <span class="nav-icon">🗓️</span>
+            <span class="d-lg-inline d-none ms-1">Agenda</span>
+          </a>
+
+          <!-- Sair -->
+          <a class="nav-link text-danger fw-bold" [routerLink]="['/login']" (click)="menuAberto = false">
+            <span class="nav-icon">🚪</span>
+            <span class="d-lg-inline d-none ms-1">Sair</span>
+          </a>
+        </div>
       </div>
-    </nav>
-  </div>
+    </div>
+  </nav>
 </header>
