@@ -83,12 +83,10 @@ public class ClienteService {
     public void deletarCliente(Long id) {
         Cliente cliente = buscarClientePorId(id);
         
-        // Verificar se o cliente tem bicicletas cadastradas
-        if (!cliente.getBicicletas().isEmpty()) {
-            throw new IllegalStateException("Não é possível excluir o cliente pois existem bicicletas cadastradas para ele.");
-        }
-        
+        // Usar o cascade delete: o @OnDelete(action = OnDeleteAction.CASCADE) 
+        // e o @PreRemove cuidarão das dependências automaticamente
         clienteRepository.delete(cliente);
+        clienteRepository.flush();
     }
 
     // Verificar se cliente existe

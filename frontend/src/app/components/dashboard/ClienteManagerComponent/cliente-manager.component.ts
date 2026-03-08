@@ -194,22 +194,36 @@ export class ClienteManagerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Encontrar cliente para verificar ordens
-    const cliente = this.clientes.find(c => c.id === clienteId);
+    // Encontrar cliente para verificar ordens e bicicletas
+    let cliente = this.clientes.find(c => c.id === clienteId);
     if (!cliente) {
       this.errorMessage = 'Cliente não encontrado.';
       return;
     }
 
-    // Verificar se cliente possui ordens de serviço
+    // Verificar se cliente possui bicicletas e/ou ordens de serviço
+    const temBicicletas = cliente.bicicletas && cliente.bicicletas.length > 0;
     const temOrdens = cliente.ordensServico && cliente.ordensServico.length > 0;
+    const quantidadeBicicletas = cliente.bicicletas?.length || 0;
     const quantidadeOrdens = cliente.ordensServico?.length || 0;
 
-    let mensagem = 'Tem certeza que deseja excluir este cliente?';
+    //let mensagem = 'Tem certeza que deseja excluir este cliente?';
+
+    let mensagem = `Tem certeza que deseja excluir este cliente? ` +
+                 `Apagá-lo excluirá permanentemente TODAS as bicicletas, ordens e históricos vinculados. ` +
+                 `Esta ação não pode ser desfeita.`;
     
-    if (temOrdens) {
-      mensagem = `O cliente "${cliente.nome}" possui ${quantidadeOrdens} ordem(ns) de serviço vinculada(s). ` +
-                 `Apagá-lo excluirá permanentemente TODAS as ordens, bicicletas e históricos. ` +
+    if (temBicicletas || temOrdens) {
+      let detalhes = '';
+      if (temBicicletas) {
+        detalhes += `${quantidadeBicicletas} bicicleta(s)`;
+      }
+      if (temOrdens) {
+        detalhes += (detalhes ? ' e ' : '') + `${quantidadeOrdens} ordem(ns) de serviço`;
+      }
+      
+      mensagem = `O cliente "${cliente.nome}" possui ${detalhes} vinculada(s). ` +
+                 `Apagá-lo excluirá permanentemente TODAS as bicicletas, ordens e históricos. ` +
                  `Esta ação não pode ser desfeita. Tem certeza absoluta?`;
     }
 
