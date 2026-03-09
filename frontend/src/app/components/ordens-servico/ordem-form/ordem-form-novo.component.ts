@@ -53,6 +53,9 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
   // NOVO: Carrinho de bicicletas
   bicicletasAdicionadas: BicicletaComItens[] = [];
   
+  // NOVO: Flag para modo AVULSA
+  isAvulsa: boolean = false;
+  
   loading: boolean = false;
   loadingOperation: boolean = false;
   errorMessage: string = '';
@@ -115,6 +118,22 @@ export class OrdemFormNovoComponent implements OnInit, OnDestroy {
         this.carregarBicicletasDoCliente(clienteId);
       } else {
         this.todasBicicletas = []; // Limpa se desvincular o cliente
+      }
+    });
+
+    // NOVO: Monitorar mudanças no select de bicicletas para detectar modo AVULSA
+    this.ordemForm.get('bicicletaExistente')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(valor => {
+      this.isAvulsa = valor === 'AVULSA';
+      if (this.isAvulsa) {
+        // Limpar campos de nova bicicleta quando modo avulsa é ativado
+        this.ordemForm.patchValue({
+          novaBicicletaMarca: '',
+          novaBicicletaModelo: '',
+          novaBicicletaCor: '',
+          novaBicicletaTamanhoAro: ''
+        });
       }
     });
   }
@@ -430,7 +449,8 @@ onQtdPecaChange(event: any, bIndex: number, pIndex: number): void {
       return;
     }
 
-    if (this.bicicletasAdicionadas.length === 0) {
+    // Validação de bicicletas: requer pelo menos uma, a menos que esteja em modo AVULSA
+    if (!this.isAvulsa && this.bicicletasAdicionadas.length === 0) {
       this.errorMessage = 'Adicione pelo menos uma bicicleta à ordem.';
       return;
     }

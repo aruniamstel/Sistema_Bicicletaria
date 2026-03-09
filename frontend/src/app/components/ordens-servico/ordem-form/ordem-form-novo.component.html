@@ -54,13 +54,14 @@
       <h3>🚲 Bicicletas da Ordem</h3>
 
       <!-- Formulário para Adicionar Bicicleta -->
-      <div class="bicicleta-adicionar-container">
+      <div class="bicicleta-adicionar-container" *ngIf="!isAvulsa">
         <h4>Adicionar Bicicleta</h4>
         
         <div class="form-row">
           <div class="form-field">
             <label>Bicicleta Existente</label>
             <select formControlName="bicicletaExistente">
+              <option value="AVULSA">-- AVULSA (Apenas Peças/Serviços Individuais) --</option>
               <option value="">-- Selecione --</option>
               <option *ngFor="let bicicleta of todasBicicletas" [value]="bicicleta.id">
                 {{ bicicleta.marca }} - {{ bicicleta.modelo }} ({{ bicicleta.cor }})
@@ -92,7 +93,7 @@
       </div>
 
       <!-- Carrinho de Bicicletas -->
-      <div class="bicicletas-carrinho">
+      <div class="bicicletas-carrinho" *ngIf="!isAvulsa">
         <h4>🛒 Bicicletas Adicionadas ({{ bicicletasAdicionadas.length }})</h4>
 
         <div *ngIf="bicicletasAdicionadas.length === 0" class="empty-state">
@@ -168,6 +169,13 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ========== AVISO DE MODO AVULSA ========== -->
+    <div class="form-section avulsa-info" *ngIf="isAvulsa">
+      <div class="avulsa-banner">
+        <p>ℹ️ <strong>Modo Avulsa ativo:</strong> Descreva as peças e serviços detalhadamente nas observações.</p>
       </div>
     </div>
 
