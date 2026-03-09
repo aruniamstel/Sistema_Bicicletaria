@@ -40,14 +40,17 @@ export class OrdemListComponent implements OnInit {
     this.ordemService.getAll().subscribe({
       next: (data) => {
         console.log('✅ Dados recebidos:', data);
-        console.log('📊 Número de ordens:', data.length);
+        
+        // Tratar null ou undefined como array vazio
+        const ordensRecebidas = data && Array.isArray(data) ? data : [];
+        console.log('📊 Número de ordens:', ordensRecebidas.length);
         
         // ⭐ Debug: Logar valorTotal de cada ordem
-        data.forEach(ordem => {
+        ordensRecebidas.forEach(ordem => {
           console.log(`Ordem #${ordem.id}: valorTotal = ${ordem.valorTotal}, servicos = ${ordem.servicos?.length || 0}, pecas = ${ordem.pecas?.length || 0}`);
         });
         
-        this.ordensServico = data;
+        this.ordensServico = ordensRecebidas;
         this.applyFilters();
         this.loading = false;
         
@@ -56,9 +59,9 @@ export class OrdemListComponent implements OnInit {
       error: (error) => {
         console.error('❌ Erro ao carregar ordens:', error);
         this.error = 'Erro ao carregar ordens de serviço: ' + error.message;
-        this.loading = false;
         this.ordensServico = [];
         this.filteredOrdens = [];
+        this.loading = false;
       }
     });
   }

@@ -72,7 +72,11 @@ export class HistoricoComponent implements OnInit, OnDestroy {
         .subscribe({
         next: (response: any) => {
             // AJUSTE AQUI: Verifica se a lista está em 'response', 'response.content' ou se é o próprio response
-            const listaOrdens = Array.isArray(response) ? response : (response.content || []);
+            // Tratar null ou undefined como array vazio
+            let listaOrdens = [];
+            if (response) {
+              listaOrdens = Array.isArray(response) ? response : (response.content || []);
+            }
             
             console.log('📦 Ordens recebidas:', listaOrdens);
             
@@ -83,6 +87,8 @@ export class HistoricoComponent implements OnInit, OnDestroy {
         error: (err) => {
             console.error('❌ Erro ao carregar histórico:', err);
             this.error = 'Não foi possível carregar o histórico de serviços.';
+            this.allHistorico = [];
+            this.historicoFiltrado = [];
             this.loading = false;
         }
         });

@@ -26,8 +26,8 @@
     {{ error }}
   </div>
 
-  <div *ngIf="!loading && !error && filteredOrdens.length === 0" class="empty-message">
-    Nenhuma ordem de serviço existente.
+  <div *ngIf="!loading && !error && filteredOrdens.length === 0" class="alert alert-info text-center py-5">
+    <p class="mb-0">📭 Não há ordens de serviços cadastradas no banco de dados.</p>
   </div>
 
   <table class="ordens-table" *ngIf="!loading && !error && filteredOrdens.length > 0">

@@ -89,9 +89,10 @@
     <!-- Results Section -->
     <div class="list-section">
       <!-- Empty State -->
-      <div *ngIf="historicoFiltrado.length === 0" class="alert alert-info text-center py-5">
-        <p class="mb-0">📭 Nenhum serviço ou peça encontrado.</p>
-        <small *ngIf="allHistorico.length > 0" class="text-muted">Tente ajustar os filtros.</small>
+      <div *ngIf="!loading && historicoFiltrado.length === 0" class="alert alert-info text-center py-5">
+        <p class="mb-0" *ngIf="allHistorico.length === 0">📭 Não há ordens de serviços cadastradas no banco de dados.</p>
+        <p class="mb-0" *ngIf="allHistorico.length > 0">📭 Nenhum serviço ou peça encontrado.</p>
+        <small *ngIf="allHistorico.length > 0" class="text-muted d-block">Tente ajustar os filtros.</small>
       </div>
 
       <!-- Desktop Table View (d-none d-md-table) -->
