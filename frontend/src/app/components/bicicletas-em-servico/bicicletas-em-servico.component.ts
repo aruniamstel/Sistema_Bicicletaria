@@ -120,24 +120,58 @@ export class BicicletasEmServicoComponent implements OnInit, OnDestroy {
    * Filtra apenas bicicletas que têm ordens de serviço em aberto
    */
   private filtrarBicicletasEmServico(): void {
+    console.log('🔄 Iniciando filtro de bicicletas em serviço...');
+    console.log(`📦 Total de Bicicletas: ${this.todasBicicletas.length}`);
+    console.log(`📋 Total de Ordens: ${this.todasOrdensServico.length}`);
+    
     this.bicicletasEmServico = this.todasBicicletas.filter(bike => {
+      console.log(`\n🔍 Processando Bike: ID=${bike.id}, Marca=${bike.marca}, Modelo=${bike.modelo}`);
+      
       const osDaBike = this.todasOrdensServico.find(os => {
-        // Valida se bicicleta existe (pode ser null para serviços avulsos)
-        if (!os.bicicleta || !os.bicicleta.id) return false;
-        return os.bicicleta.id === bike.id;
+        // Valida se o array de bicicletas existe e não é vazio
+        const bicleletasArray = os.bicicletas ?? [];
+        
+        if (!Array.isArray(bicleletasArray)) {
+          console.warn(`  ⚠️  OS ${os.id} não possui array válido de bicicletas`);
+          return false;
+        }
+        
+        // Procura se a bicicleta atual está no array de bicicletas da OS com comparação robusta
+        const encontrada = bicleletasArray.some(b => {
+          const bikeIdFromOs = Number(b.id);
+          const bikeIdFromList = Number(bike.id);
+          const match = bikeIdFromOs === bikeIdFromList;
+          
+          if (bicleletasArray.length > 0) {
+            console.log(`    🔎 DEBUG: Comparando Bike da OS ID=${bikeIdFromOs} (tipo: ${typeof b.id}) com Bike da Lista ID=${bikeIdFromList} (tipo: ${typeof bike.id}) = ${match}`);
+          }
+          
+          return match;
+        });
+        
+        if (encontrada) {
+          console.log(`  ✓ Bike encontrada na OS ${os.id} com status: ${os.status}`);
+        }
+        
+        return encontrada;
       });
       
-      // Considera em serviço: qualquer status exceto ENTREGUE
-      const temOsAtiva = osDaBike && osDaBike.status !== 'ENTREGUE';
+      // Considera em serviço: qualquer status ativo (não ENTREGUE)
+      const statusAtivo = ['ABERTA', 'EM_ANDAMENTO', 'CONCLUIDA'].includes(osDaBike?.status || '');
+      const temOsAtiva = osDaBike && osDaBike.status !== 'ENTREGUE' && statusAtivo;
       
       if (temOsAtiva) {
-        console.log(`✅ ${bike.marca} ${bike.modelo} - Status: ${osDaBike?.status}`);
+        console.log(`  ✅ ${bike.marca} ${bike.modelo} - Status da OS: ${osDaBike?.status} ✓ APROVADA`);
+      } else if (osDaBike) {
+        console.log(`  ❌ ${bike.marca} ${bike.modelo} - Status da OS: ${osDaBike?.status} ✗ REJEITADA`);
+      } else {
+        console.log(`  ⚠️  ${bike.marca} ${bike.modelo} - Nenhuma OS encontrada`);
       }
       
       return temOsAtiva;
     });
 
-    console.log('📊 Bicicletas em serviço:', this.bicicletasEmServico.length);
+    console.log(`\n✅ Filtragem concluída! Bicicletas em serviço: ${this.bicicletasEmServico.length}\n`);
   }
 
   /**
@@ -171,7 +205,11 @@ export class BicicletasEmServicoComponent implements OnInit, OnDestroy {
     // Filtro por status
     if (filtros.status && filtros.status.trim()) {
       filtradas = filtradas.filter(bike => {
-        const osDaBike = this.todasOrdensServico.find(os => os.bicicleta?.id === bike.id);
+        const osDaBike = this.todasOrdensServico.find(os => {
+          const bicicletasArray = os.bicicletas ?? [];
+          if (!Array.isArray(bicicletasArray)) return false;
+          return bicicletasArray.some(b => Number(b.id) === Number(bike.id));
+        });
         return osDaBike && osDaBike.status === filtros.status;
       });
     }
@@ -179,7 +217,11 @@ export class BicicletasEmServicoComponent implements OnInit, OnDestroy {
     // Filtro por data de entrada
     if (filtros.dataEntradaInicio || filtros.dataEntradaFim) {
       filtradas = filtradas.filter(bike => {
-        const osDaBike = this.todasOrdensServico.find(os => os.bicicleta?.id === bike.id);
+        const osDaBike = this.todasOrdensServico.find(os => {
+          const bicicletasArray = os.bicicletas ?? [];
+          if (!Array.isArray(bicicletasArray)) return false;
+          return bicicletasArray.some(b => Number(b.id) === Number(bike.id));
+        });
         if (!osDaBike || !osDaBike.dataEntrada) return false;
         
         const dataEntrada = new Date(osDaBike.dataEntrada);
@@ -197,7 +239,11 @@ export class BicicletasEmServicoComponent implements OnInit, OnDestroy {
     // Filtro por data de previsão de saída
     if (filtros.dataPrevisaoInicio || filtros.dataPrevisaoFim) {
       filtradas = filtradas.filter(bike => {
-        const osDaBike = this.todasOrdensServico.find(os => os.bicicleta?.id === bike.id);
+        const osDaBike = this.todasOrdensServico.find(os => {
+          const bicicletasArray = os.bicicletas ?? [];
+          if (!Array.isArray(bicicletasArray)) return false;
+          return bicicletasArray.some(b => Number(b.id) === Number(bike.id));
+        });
         if (!osDaBike || !osDaBike.dataPrevisaoSaida) return false;
         
         const dataPrevisao = new Date(osDaBike.dataPrevisaoSaida);
@@ -258,7 +304,25 @@ export class BicicletasEmServicoComponent implements OnInit, OnDestroy {
    * Obtém status da OS para uma bicicleta
    */
   getStatusOS(bicicletaId: number): string {
-    const os = this.todasOrdensServico.find(os => os.bicicleta?.id === bicicletaId);
+    const os = this.todasOrdensServico.find(os => {
+      const bicicletasArray = os.bicicletas ?? [];
+      
+      if (!Array.isArray(bicicletasArray)) {
+        return false;
+      }
+      
+      const encontrada = bicicletasArray.some(b => {
+        const bikeIdFromOs = Number(b.id);
+        const bikeIdSearched = Number(bicicletaId);
+        return bikeIdFromOs === bikeIdSearched;
+      });
+      
+      if (encontrada) {
+        console.log(`🔍 Verificando OS ${os.status} para bicicleta ${bicicletaId}: ${bicicletasArray.map(b => b.id).join(', ')}`);
+      }
+      
+      return encontrada;
+    });
     return os ? os.status : '';
   }
 
