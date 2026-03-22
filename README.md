@@ -12,6 +12,13 @@ O Sistema de Gestão para Bicicletaria está sendo desenvolvido para atender as 
 - Geração de PDF da Ordem de Serviço
 - Possibilidade de exportar dados no formato CSV
 
+
+## 🛠️ Arquitetura do Sistema
+
+- **Modelo de arquitetura**: Cliente-Servidor, comunicação via protocolo HTTP  
+- **Backend**: Java 17 Spring Boot
+- **Front-end**: Angular
+  
 ## 🛠️ O Que já Foi Implementado
 
 - **Arquitetura do Sistema**: Controllers, Models, Repository, Services e Banco de Dados
