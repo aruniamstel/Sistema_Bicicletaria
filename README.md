@@ -42,6 +42,6 @@ Este projeto, foi fundamental para construir:
 
 ## 📝 Notas do Autor
 
-Autor: Aruni van Amstel
+Autor: Aruni van Amstel  
 Hoje, como desenvolvedor focado em Desenvolvimento Full Stack e domínio completo do processo de Análise de Sistemas, valorizo o aprendizado que tive aqui sobre arquitetura de software e criação de soluções comerciais complexas e escaláveis.
 
