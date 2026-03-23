@@ -21,23 +21,15 @@ Interface reativa focada em performance e UX técnica, com gerenciamento de esta
 
 - **Persistência:** PostgreSQL. Modelagem relacional otimizada para consistência ACID.
   
-## 🛠️ Funcionalidades Implementadas
+## ⚙️ Funcionalidades Implementadas  
 
-- Motor de Geração de Documentos:
+**Motor de Geração de Documentos:** Engine integrada para emissão de Ordens de Serviço em formato PDF, assegurando conformidade com requisitos de registro físico.
 
- Engine integrada para emissão de Ordens de Serviço em formato PDF, assegurando conformidade com requisitos de registro físico;
+**Pipeline de Exportação de Dados:** Módulo de extração de relatórios em CSV para análise externa e auditoria de dados.
 
-- Pipeline de Exportação de Dados:
+**Gestão de Fluxo de Trabalho:** CRUD completo de ordens de serviço com persistência em tempo real e validação de integridade.
 
- Módulo de extração de relatórios em CSV para análise externa e auditoria de dados.
-
-- Gestão de Fluxo de Trabalho:
-
-  CRUD completo de ordens de serviço com persistência em tempo real e validação de integridade.
-
-- Segurança de Acesso:
-
-  Camada de autenticação e controle de sessão no frontend integrada aos endpoints de backend.
+**Segurança de Acesso:** Camada de autenticação e controle de sessão no frontend integrada aos endpoints de backend.
 
 ## 🚀 Diferenciais de Engenharia  
 
