@@ -1,6 +1,7 @@
 import{ Injectable} from'@angular/core';
 import{ catchError, map, Observable, of, throwError} from 'rxjs';
 import { Usuario, Login } from '../shared/models'
+import { environment } from '../../environments/environment';
 
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
@@ -9,7 +10,7 @@ const LS_CHAVE: string= "usuarioLogado";
 @Injectable({ providedIn: 'root'})
 export class LoginService {
 
-  BASE_URL = "http://localhost:8081/login";
+  BASE_URL = environment.apiUrl + '/login';
 
   httpOptions = {
 

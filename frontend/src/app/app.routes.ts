@@ -1,14 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
-import { CadastroComponent } from './components/cadastro/cadastro.component';
-import { PagarservicoComponent } from './components/pagarservico/pagarservico.component';
-import { ListarFuncionarioComponent } from './components/listar-funcionario/listar-funcionario.component';
-import { InserirFuncionarioComponent } from './components/inserir-funcionario/inserir-funcionario.component';
-import { EditarFuncionarioComponent } from './components/editar-funcionario/editar-funcionario.component';
-import { ListarCategoriaComponent } from './components/listar-categoria/listar-categoria.component';
-import { InserirCategoriaComponent } from './components/inserir-categoria/inserir-categoria.component';
 // import { ExcluirCategoriaComponent } from './components/excluir-categoria/excluir-categoria.component';
-import { AtualizarCategoriaComponent } from './components/atualizar-categoria/atualizar-categoria.component';
 import { authGuard } from './auth/auth.guard';
 import { ClienteListComponent } from './components/clientes/cliente-list/cliente-list.component';
 import { ClienteFormComponent } from './components/clientes/cliente-form/cliente-form.component';
@@ -26,67 +18,6 @@ import { HistoricoComponent } from './components/historico/historico.component';
 export const routes: Routes = [
     { path: '', redirectTo: '/login', pathMatch: 'full' },
     { 'path': 'login', component: LoginComponent },
-    { 'path': 'cadastro', component: CadastroComponent },
-    {
-        'path': 'pagarservico/:id',
-        component: PagarservicoComponent,
-        canActivate: [authGuard],
-        data: {
-            role: ['CLIENTE']
-        }
-    },
-    {
-        'path': 'crud-funcionario', redirectTo: 'funcionarios/listar', pathMatch: 'full'
-    },
-    {
-        'path': 'funcionarios/listar',
-        component: ListarFuncionarioComponent,
-        canActivate: [authGuard],
-        data: {
-            role: [ 'FUNCIONARIO']
-        }
-    },
-    {
-        'path': 'funcionarios/novo',
-        component: InserirFuncionarioComponent,
-        canActivate: [authGuard],
-        data: {
-            role: [ 'FUNCIONARIO']
-        }
-    },
-    {
-        'path': 'funcionarios/editar/:id',
-        component: EditarFuncionarioComponent,
-        canActivate: [authGuard],
-        data: {
-            role: ['FUNCIONARIO']
-        }
-    },
-    {
-        'path': 'categorias/listar',
-        component: ListarCategoriaComponent,
-        canActivate: [authGuard],
-        data: {
-            role: [ 'FUNCIONARIO']
-        }
-    },
-    {
-        'path': 'categorias/novo',
-        component: InserirCategoriaComponent,
-        canActivate: [authGuard],
-        data: {
-            role: [ 'FUNCIONARIO']
-        }
-    },
-    // {'path': 'categorias/excluir', component: ExcluirCategoriaComponent},
-    {
-        'path': 'categorias/editar/:id',
-        component: AtualizarCategoriaComponent,
-        canActivate: [authGuard],
-        data: {
-            role: [ 'FUNCIONARIO']
-        }
-    },
     // Clientes (lista, cadastro rápido, detalhes, edição)
     {
         path: 'clientes',

@@ -11,7 +11,7 @@
 	<groupId>br.net.manutencao</groupId>
 	<artifactId>sistema-manutencao</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>sistema-manutencao</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -51,21 +51,21 @@
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
     	</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
-		</dependency>
+		</dependency> -->
 		<dependency>
     		<groupId>org.thymeleaf.extras</groupId>
     		<artifactId>thymeleaf-extras-java8time</artifactId>
     		<version>3.0.4.RELEASE</version>
 		</dependency>
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
-		</dependency> comentado para o MVP -->
+		</dependency>
 
 		<!-- <dependency>
 			<groupId>com.auth0</groupId>
