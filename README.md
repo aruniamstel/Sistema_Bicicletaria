@@ -1,23 +1,25 @@
-# Sistema de Gestão para Bicicletaria
+# Sistema de Gestão de Ativos e Manutenção para Bicicletarias (Bicycle Service Engine)
 
 ## 📖 Sobre o Projeto
 
-O Sistema de Gestão para Bicicletaria está sendo desenvolvido para atender as necessidades operacionais do dia dia de lojas de manutenção de bicicletas.
+Solução corporativa robusta para o gerenciamento de ordens de serviço e controle de inventário em ambientes de manutenção técnica. O sistema foi projetado para centralizar a operação, garantindo a integridade dos dados e a automação de fluxos de saída documental.
 
-**Estado Atual:** Em desenvolvimento 
-
-*Status do Desenvolvimento:* Backend concluído  
+**Status de Implantação:** Produção (Deployed via VPS).   
+**Modelo de arquitetura**: Cliente-Servidor desacoplada, operando sobre protocolo HTTP/REST
 
 ### Funcionalidades implementadas:  
 - Geração de PDF da Ordem de Serviço
 - Possibilidade de exportar dados no formato CSV
 
+## 🛠️ Especificações Técnicas e Arquitetura do Sistema
 
-## 🛠️ Arquitetura do Sistema
+- **Backend:** Java 17 com ecossistema Spring Boot; 
+ Implementação de camadas de persistência (JPA/Hibernate), lógica de negócio (Services) e exposição de endpoints (REST Controllers).
 
-- **Modelo de arquitetura**: Cliente-Servidor, comunicação via protocolo HTTP  
-- **Backend**: Java 17 Spring Boot
-- **Front-end**: Angular
+- **Front-end:** Angular 17;  
+Interface reativa focada em performance e UX técnica, com gerenciamento de estado e consumo assíncrono de APIs.
+
+- **Persistência:** PostgreSQL. Modelagem relacional otimizada para consistência ACID.
   
 ## 🛠️ O Que já Foi Implementado
 
