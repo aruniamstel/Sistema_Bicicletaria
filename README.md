@@ -39,8 +39,8 @@ Interface reativa focada em performance e UX técnica, com gerenciamento de esta
 
 **Resiliência:** Tratamento de exceções centralizado e validações de DTO para garantir que apenas dados íntegros atinjam a camada de persistência.
 
-## 📝 Notas do Autor
+##  Notas do Autor
 
 Autor: Aruni van Amstel  
-Hoje, como desenvolvedor focado em Desenvolvimento Full Stack e domínio completo do processo de Análise de Sistemas, valorizo o aprendizado que tive aqui sobre arquitetura de software e criação de soluções comerciais complexas e escaláveis.
+Hoje, como desenvolvedor focado em Desenvolvimento Full Stack e domínio completo (Full Cycle development) do processo de Análise de Sistemas, valorizo o aprendizado que tive aqui sobre arquitetura de software e criação de soluções comerciais complexas e escaláveis.
 
