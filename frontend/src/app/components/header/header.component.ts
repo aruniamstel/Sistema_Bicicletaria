@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { OrdemServicoService } from '../../services/ordem-servico.service';
 import { StatusOrdem } from '../../shared/models/ordem-servico.model';
 
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -23,6 +24,10 @@ export class HeaderComponent implements OnInit {
 
   toggleMenu(): void {
     this.menuAberto = !this.menuAberto;
+  }
+
+  encerrar(): void {
+    localStorage.removeItem('token');
   }
 
  /* carregarOrdensPendentes() {

@@ -187,7 +187,7 @@ export class OrdemListComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `ordem-servico-${ordemId}.pdf`;
+        link.download = `Ordem-Servico-${ordemId}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
