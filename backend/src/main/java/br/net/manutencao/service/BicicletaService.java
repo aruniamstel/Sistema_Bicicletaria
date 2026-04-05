@@ -55,8 +55,8 @@ public class BicicletaService {
             bicicleta.setModelo(bicicletaAtualizada.getModelo());
         }
         if (bicicletaAtualizada.getTamanhoAro() != null) {
-            if (bicicletaAtualizada.getTamanhoAro() < 12 || bicicletaAtualizada.getTamanhoAro() > 29) {
-                throw new IllegalArgumentException("Tamanho do aro deve estar entre 12 e 29 polegadas");
+            if (bicicletaAtualizada.getTamanhoAro() < 12 || bicicletaAtualizada.getTamanhoAro() > 700) {
+                throw new IllegalArgumentException("Tamanho do aro deve estar entre 12 e 700");
             }
             bicicleta.setTamanhoAro(bicicletaAtualizada.getTamanhoAro());
         }

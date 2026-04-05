@@ -1,0 +1,36 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8081/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "login": "admin",
+    "senha": "admin123"
+  }
+}
+
+script:post-response {
+  // Verifica se a resposta foi 200 OK
+  if (res.getStatus() === 200) {
+      const data = res.getBody();
+      
+      // Ajuste aqui conforme a estrutura exata do seu JSON (ex: data.token ou data.tokenJWT)
+      if (data.token) {
+          bru.setEnvVar("jwt_token", data.token);
+          console.log("Token atualizado com sucesso!");
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
