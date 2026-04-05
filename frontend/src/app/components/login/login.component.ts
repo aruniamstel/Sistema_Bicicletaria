@@ -39,20 +39,24 @@ export class LoginComponent implements OnInit {
   }
 
   logar(): void {
-    this.loading = true;
-  
-    if (this.formLogin.form.valid) {
-      this.loginService.login(this.login).subscribe({
-        next: (usu) => {
-          if (usu) {
-            this.loginService.usuarioLogado = usu;
-            sessionStorage.setItem('id', usu.id.toString()); //armazena o id do usuário durante a sessão
-            this.redirecionarPorPerfil(usu.perfil);
-          } else {
-            this.message = "Usuário/senha inválido.";
-          }
-          this.loading = false;
-        },
+  this.loading = true;
+
+  if (this.formLogin.form.valid) {
+    this.loginService.login(this.login).subscribe({
+      next: (res) => { // 'res' agora é o objeto { usuario: ..., token: ... }
+        if (res && res.usuario) {
+          // AJUSTE AQUI: Pegamos apenas a parte do usuário para o estado
+          this.loginService.usuarioLogado = res.usuario;
+          
+          sessionStorage.setItem('id', res.usuario.id.toString());
+          
+          // AJUSTE AQUI: Usamos o perfil que está dentro de res.usuario
+          this.redirecionarPorPerfil(res.usuario.perfil);
+        } else {
+          this.message = "Usuário/senha inválido.";
+        }
+        this.loading = false;
+      },
         error: (err) => {
           console.error("Erro no login:", err);
           this.message = "Ocorreu um erro inesperado.";

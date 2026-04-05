@@ -58,7 +58,7 @@ export class BicicletaManagerComponent implements OnInit, OnDestroy {
       selectedClienteId: ['', Validators.required],
       marca: ['', Validators.required],
       modelo: ['', Validators.required],
-      tamanhoAro: ['', [Validators.required, Validators.min(12), Validators.max(29)]],
+      tamanhoAro: ['', [Validators.required, Validators.min(12), Validators.max(1000)]],
       cor: ['', Validators.required]
     });
 

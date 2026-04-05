@@ -47,9 +47,9 @@
       <div class="form-row">
         <div class="form-field">
           <label>Tamanho do Aro</label>
-          <input type="number" formControlName="tamanhoAro" placeholder="26, 29..." />
+          <input type="number" formControlName="tamanhoAro" placeholder="26, 29, 700..." />
           <div class="error" *ngIf="bicicletaForm.get('tamanhoAro')?.touched && (bicicletaForm.get('tamanhoAro')?.errors?.['required'] || bicicletaForm.get('tamanhoAro')?.errors?.['min'] || bicicletaForm.get('tamanhoAro')?.errors?.['max'])">
-            Aro deve ser entre 12 e 29
+            Aro deve ser entre 12 e 700 polegadas
           </div>
         </div>
 
