@@ -177,29 +177,37 @@ export class OrdemListComponent implements OnInit {
   /**
    * Gera e baixa o PDF de uma ordem de serviço
    */
-  gerarPDF(ordemId: number): void {
-    
-    console.log('📄 Gerando PDF para ordem #' + ordemId);
-    
-    this.ordemService.downloadPdf(ordemId).subscribe({
-      next: (blob) => {
-        // Criar URL do blob e fazer download
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Ordem-Servico-${ordemId}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        console.log('✅ PDF baixado com sucesso');
-      },
-      error: (error) => {
-        console.error('❌ Erro ao gerar PDF:', error);
-        this.error = 'Erro ao gerar PDF. Tente novamente.';
-      }
-    });
-  }
+    gerarPDF(ordem: any): void { // Recebe o objeto completo da ordem
+      const ordemId = ordem.id;
+      // Pega o nome do cliente, trata para remover espaços/acentos se quiser ser perfeccionista
+      const nomeCliente = ordem.cliente?.nome || 'Cliente-Nao-Identificado';
+      
+      // Formata o nome do arquivo: ex Ordem-10-Joao-Silva.pdf
+      const nomeArquivo = `Ordem-${ordemId}-${nomeCliente.replace(/\s+/g, '-')}.pdf`;
+
+      console.log(`📄 Gerando PDF para ${nomeArquivo}`);
+
+      this.ordemService.downloadPdf(ordemId).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          
+          // Aqui acontece a mágica
+          link.download = nomeArquivo; 
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          console.log('✅ PDF baixado com sucesso');
+        },
+        error: (error) => {
+          console.error('❌ Erro ao gerar PDF:', error);
+          this.error = 'Erro ao gerar PDF. Tente novamente.';
+        }
+      });
+    }
 
   /**
    * Reverte o status de ENTREGUE para EM_ANDAMENTO

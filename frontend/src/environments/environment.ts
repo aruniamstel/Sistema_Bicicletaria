@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8081',
+  //apiUrl: 'http://localhost:8081', // dev
+  apiUrl: '/api', // prod
   endpoints: {
     clientes: '/clientes',
     bicicletas: '/bicicletas',
