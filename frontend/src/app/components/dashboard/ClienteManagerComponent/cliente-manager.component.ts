@@ -296,21 +296,32 @@ export class ClienteManagerComponent implements OnInit, OnDestroy {
   /**
    * Formata o telefone enquanto o usuário digita
    */
-  formatarTelefone(event: any): void {
-    let value = event.target.value.replace(/\D/g, '');
+// No seu arquivo .ts
+formatarTelefone(event: any): void {
+  let input = event.target;
+  let value = input.value.replace(/\D/g, '');
 
-    if (value.length > 11) value = value.substring(0, 11);
+  if (value.length > 11) value = value.substring(0, 11);
 
-    if (value.length > 2) {
-      if (value.length <= 10) {
-        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-      } else {
-        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-      }
-    }
-
-    event.target.value = value;
+  // Lógica da máscara
+  let formattedValue = value;
+  if (value.length > 0) {
+    formattedValue = value.replace(/^(\d{2})/, '($1) ');
   }
+  if (value.length > 9) {
+    formattedValue = formattedValue.replace(/(\d{5})(\d{4})$/, '$1-$2');
+  } else if (value.length > 5) {
+    formattedValue = formattedValue.replace(/(\d{4})(\d{0,4})$/, '$1-$2');
+  }
+
+  // ATUALIZAÇÃO CRUCIAL:
+  // Atualiza o valor visual no input
+  input.value = formattedValue;
+
+  // Atualiza o valor no FormControl para que o Angular "saiba" da mudança
+  // Substitua 'telefone' pelo nome do seu campo no FormGroup
+  this.clienteForm.get('telefone')?.setValue(formattedValue, { emitEvent: false });
+}
 
   /**
    * Tenta carregar novamente em caso de erro
