@@ -37,31 +37,26 @@ export class LoginService {
 
   // Mudamos o retorno para 'any' porque agora recebemos um objeto com {usuario, token}
   login(login: Login): Observable<any> {
-    return this.httpClient.post<any>(
-      this.BASE_URL, 
-      JSON.stringify(login), 
-      this.httpOptions
-    ).pipe(
-      map((resp: HttpResponse<any>) => {
-        if (resp.status === 200 && resp.body) {
-          // SALVANDO O TOKEN: O segredo está aqui
-          localStorage.setItem(TOKEN_CHAVE, resp.body.token);
-          
-          // Retornamos o objeto completo para o componente
-          return resp.body; 
-        } else {
-          return null;
+  // Simplificamos os headers e removemos o observe: "response"
+  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+  return this.httpClient.post<any>(this.BASE_URL, JSON.stringify(login), { headers }).pipe(
+    map((res) => {
+      // Em produção, o 'res' já é o corpo do JSON {usuario: {...}, token: "..."}
+      if (res && res.token) {
+        localStorage.setItem(TOKEN_CHAVE, res.token);
+        // Opcional: já salvar o usuário aqui para garantir
+        if (res.usuario) {
+          localStorage.setItem(LS_CHAVE, JSON.stringify(res.usuario));
         }
-      }),
-      catchError((err) => {
-        if (err.status === 401) {
-          alert("Login ou senha inválidos!");
-          return of(null);
-        } else {
-          alert("Erro ao tentar efetuar login");
-          return throwError(() => err);
-        }
-      })
-    );
-  }
+        return res;
+      }
+      return null;
+    }),
+    catchError((err) => {
+      console.error("Erro no service:", err);
+      return throwError(() => err);
+    })
+  );
+}
 }

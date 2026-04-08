@@ -43,19 +43,39 @@ export class LoginComponent implements OnInit {
 
   if (this.formLogin.form.valid) {
     this.loginService.login(this.login).subscribe({
-      next: (res) => { // 'res' agora é o objeto { usuario: ..., token: ... }
-        if (res && res.usuario) {
-          // AJUSTE AQUI: Pegamos apenas a parte do usuário para o estado
-          this.loginService.usuarioLogado = res.usuario;
-          
-          sessionStorage.setItem('id', res.usuario.id.toString());
-          
-          // AJUSTE AQUI: Usamos o perfil que está dentro de res.usuario
-          this.redirecionarPorPerfil(res.usuario.perfil);
-        } else {
-          this.message = "Usuário/senha inválido.";
+      next: (res: any) => {
+        console.log('Resposta Bruta:', res);
+
+        // 1. EXTRAÇÃO BLINDADA: Tenta pegar o token e o usuário de qualquer lugar do objeto
+        const token = res?.token;
+        // Se 'res.usuario' existir, usa ele. Se não, tenta o 'res' direto (caso o back envie plano)
+        const user = res?.usuario ? res.usuario : res;
+
+        // 2. PERSISTÊNCIA IMEDIATA (Sem frescura)
+        if (token) {
+          localStorage.setItem('token', token);
         }
-        this.loading = false;
+
+        // 3. VALIDAÇÃO DO ID (Usando String() para evitar o erro de toString)
+        // Verificamos 'user.id' porque se 'user' for o 'res' plano, ele achará o ID ali.
+        if (user && (user.id !== undefined && user.id !== null)) {
+          
+          // Atualiza o estado do serviço antes de tudo
+          this.loginService.usuarioLogado = user;
+          
+          // Salva o ID na sessionStorage
+          sessionStorage.setItem('id', String(user.id));
+          
+          // 4. REDIRECIONAMENTO
+          // Se o perfil estiver no user.perfil ou direto no res.perfil
+          const perfilFinal = user.perfil || res.perfil;
+          this.redirecionarPorPerfil(perfilFinal);
+          
+        } else {
+          console.error("Estrutura de usuário não encontrada. ID está ausente.");
+          this.message = "Erro na estrutura de dados do servidor.";
+          this.loading = false; // Importante para destravar o botão
+        }
       },
         error: (err) => {
           console.error("Erro no login:", err);
