@@ -170,8 +170,12 @@ public class OrdemServicoController {
     public ResponseEntity<?> adicionarServico(@PathVariable Long id, @RequestBody AdicionarServicoPecaDTO servicoDTO) {
         Map<String, Object> response = new HashMap<>();
         try {
+            // Usar bicicletaItemId do DTO (ID da BicicletaComItens específica)
+            Long bicicletaItemId = servicoDTO.getBicicletaItemId() != null ? 
+                servicoDTO.getBicicletaItemId() : id;
+            
             OrdemServico ordem = ordemServicoService.adicionarServico(
-                id, 
+                bicicletaItemId, 
                 servicoDTO.getItemId(), 
                 servicoDTO.getQuantidade()
             );
@@ -198,8 +202,12 @@ public class OrdemServicoController {
     public ResponseEntity<?> adicionarPeca(@PathVariable Long id, @RequestBody AdicionarServicoPecaDTO pecaDTO) {
         Map<String, Object> response = new HashMap<>();
         try {
+            // Usar bicicletaItemId do DTO (ID da BicicletaComItens específica)
+            Long bicicletaItemId = pecaDTO.getBicicletaItemId() != null ? 
+                pecaDTO.getBicicletaItemId() : id;
+            
             OrdemServico ordem = ordemServicoService.adicionarPeca(
-                id, 
+                bicicletaItemId, 
                 pecaDTO.getItemId(), 
                 pecaDTO.getQuantidade()
             );
@@ -308,7 +316,7 @@ public class OrdemServicoController {
             // Retornar como anexo
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF)
-                    .header("Content-Disposition", "attachment; filename=OS_" + id + ".pdf")
+                    .header("Content-Disposition", "attachment; filename=OS_" + ordem.getCliente().getNome() + ".pdf")
                     .body(pdfBytes);
                     
         } catch (ResourceNotFoundException e) {

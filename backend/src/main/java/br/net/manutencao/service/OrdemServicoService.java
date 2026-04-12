@@ -305,10 +305,10 @@ public class OrdemServicoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Peça não encontrada com ID: " + pecaId));
         
         // 3. Verificar estoque antes de qualquer operação
-        if (peca.getQuantidade() < quantidade) {
+        /*if (peca.getQuantidade() < quantidade) {
             throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getDescricao() + 
                     ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
-        }
+        } */
         
         // 4. Verificar se a peça já existe NESTA bicicleta específica
         Optional<ItemPeca> existing = bikeItem.getPecas().stream()
@@ -334,8 +334,8 @@ public class OrdemServicoService {
         }
         
         // 5. Atualizar o estoque da peça no catálogo
-        peca.setQuantidade(peca.getQuantidade() - quantidade);
-        pecaRepository.save(peca);
+        //peca.setQuantidade(peca.getQuantidade() - quantidade);
+        //pecaRepository.save(peca);
         
         // 6. Recuperar a Ordem de Serviço pai para atualizar o valor total
         OrdemServico ordem = bikeItem.getOrdemServico();
@@ -537,10 +537,10 @@ public class OrdemServicoService {
                         
                         // Validar estoque
                         Integer qtd = pecaData.getQuantidade() != null ? pecaData.getQuantidade() : 1;
-                        if (peca.getQuantidade() < qtd) {
+                        /*if (peca.getQuantidade() < qtd) {
                             throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getDescricao() + 
                                 ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + qtd);
-                        }
+                        } */
                         
                         ItemPeca itemPeca = new ItemPeca();
                         itemPeca.setBicicletaItem(bikeItem); // Vínculo correto
@@ -553,8 +553,8 @@ public class OrdemServicoService {
                         bikeItem.getPecas().add(itemPeca);
                         
                         // Atualizar estoque
-                        peca.setQuantidade(peca.getQuantidade() - qtd);
-                        pecaRepository.save(peca);
+                        /* peca.setQuantidade(peca.getQuantidade() - qtd);
+                        pecaRepository.save(peca); */
                     }
                 }
             }
@@ -778,10 +778,10 @@ public class OrdemServicoService {
         Integer quantidade = qtdObj != null ? qtdObj.intValue() : 1;
 
         // Validar estoque
-        if (peca.getQuantidade() < quantidade) {
+        /* if (peca.getQuantidade() < quantidade) {
             throw new IllegalArgumentException("❌ Estoque insuficiente para a peça: " + peca.getDescricao() + 
                 ". Disponível: " + peca.getQuantidade() + ", Solicitado: " + quantidade);
-        }
+        } */
 
         // ✅ NOVO: Criar ItemPeca com BicicletaComItens
         ItemPeca osPeca = new ItemPeca();
@@ -794,8 +794,8 @@ public class OrdemServicoService {
         bikeItem.getPecas().add(osPeca);
 
         // Atualizar estoque
-        peca.setQuantidade(peca.getQuantidade() - quantidade);
-        pecaRepository.save(peca);
+        /* peca.setQuantidade(peca.getQuantidade() - quantidade);
+        pecaRepository.save(peca); */
         System.out.println("    ✓ Peça adicionada: " + peca.getDescricao() + " (x" + quantidade + ")");
     }
 
@@ -892,9 +892,9 @@ public class OrdemServicoService {
                         int qtd = pecaSel.getQuantidade() != null ? pecaSel.getQuantidade() : 1;
                         
                         // Validação de estoque básica
-                        if (peca.getQuantidade() < qtd) {
+                        /* if (peca.getQuantidade() < qtd) {
                             throw new IllegalArgumentException("Estoque insuficiente para a peça: " + peca.getDescricao());
-                        }
+                        } */
 
                         ItemPeca itemPeca = new ItemPeca();
                         itemPeca.setBicicletaItem(containerSalvo); // Vínculo correto
@@ -907,8 +907,8 @@ public class OrdemServicoService {
                         containerSalvo.getPecas().add(itemPeca);
 
                         // Atualizar estoque
-                        peca.setQuantidade(peca.getQuantidade() - qtd);
-                        pecaRepository.save(peca);
+                        /* peca.setQuantidade(peca.getQuantidade() - qtd);
+                        pecaRepository.save(peca); */
                     }
                 }
                 
