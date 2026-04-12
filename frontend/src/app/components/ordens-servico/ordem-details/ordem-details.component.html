@@ -63,8 +63,18 @@
       <!-- Adicionar Serviço -->
   <div class="add-form" *ngIf="ordem?.status !== 'CONCLUIDA' && ordem?.status !== 'ENTREGUE'">
         <h4>Adicionar Serviço</h4>
-  <form [formGroup]="servicoForm" (ngSubmit)="addServico()">
+        <form [formGroup]="servicoForm" (ngSubmit)="addServico()">
           <div class="form-row">
+            <div class="form-field">
+              <label>Bicicleta</label>
+              <select formControlName="bicicletaItemId">
+                <option [value]="null">Selecione uma bicicleta</option>
+                <option *ngFor="let bike of ordem?.bicicletas" [value]="bike.id">
+                  {{ bike.marca }} {{ bike.modelo }}
+                </option>
+              </select>
+            </div>
+
             <div class="form-field">
               <label>Serviço</label>
               <select formControlName="servicoId">
@@ -112,6 +122,16 @@
         <h4>Adicionar Peça</h4>
         <form [formGroup]="pecaForm" (ngSubmit)="addPeca()">
           <div class="form-row">
+            <div class="form-field">
+              <label>Bicicleta</label>
+              <select formControlName="bicicletaItemId">
+                <option [value]="null">Selecione uma bicicleta</option>
+                <option *ngFor="let bike of ordem?.bicicletas" [value]="bike.id">
+                  {{ bike.marca }} {{ bike.modelo }}
+                </option>
+              </select>
+            </div>
+
             <div class="form-field">
               <label>Peça</label>
               <select formControlName="pecaId">

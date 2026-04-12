@@ -40,6 +40,8 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  bicicletaSelecionadaServicoId: number | null = null;
+  bicicletaSelecionadaPecaId: number | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -50,15 +52,18 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
     private ordemService: OrdemServicoService,
     private servicoService: ServicoService,
     private pecaService: PecaService
-  ) {
+  ) { 
+    // validadores do formulario
     this.servicoForm = this.fb.group({
       servicoId: ['', Validators.required],
-      quantidade: [1, [Validators.required, Validators.min(1)]]
+      quantidade: [1, [Validators.required, Validators.min(1)]],
+      bicicletaItemId: ['', Validators.required]
     });
 
     this.pecaForm = this.fb.group({
       pecaId: ['', Validators.required],
-      quantidade: [1, [Validators.required, Validators.min(1)]]
+      quantidade: [1, [Validators.required, Validators.min(1)]],
+      bicicletaItemId: ['', Validators.required]
     });
   }
 
@@ -139,13 +144,12 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const { servicoId, quantidade } = this.servicoForm.value;
+    const { servicoId, quantidade, bicicletaItemId } = this.servicoForm.value;
 
-    this.ordemService.addServico(this.ordem.id, servicoId, quantidade)
+    this.ordemService.addServico(this.ordem.id, bicicletaItemId, servicoId, quantidade)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Handle both old format and new format ({ message, ordem })
           const updatedOrdem = response.ordem || response;
           console.log('✅ Serviço adicionado com sucesso!');
           console.log(`💰 Novo Valor Total: R$ ${updatedOrdem.valorTotal}`);
@@ -153,7 +157,7 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
           
           this.ordem = updatedOrdem;
           this.successMessage = '✅ Serviço adicionado com sucesso!';
-          this.servicoForm.reset({ quantidade: 1 });
+          this.servicoForm.reset({ quantidade: 1, servicoId: '', bicicletaItemId: '' });
           this.loading = false;
         },
         error: (error) => {
@@ -174,9 +178,9 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const { pecaId, quantidade } = this.pecaForm.value;
+    const { pecaId, quantidade, bicicletaItemId } = this.pecaForm.value;
 
-    this.ordemService.addPeca(this.ordem.id, pecaId, quantidade)
+    this.ordemService.addPeca(this.ordem.id, bicicletaItemId, pecaId, quantidade)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -188,7 +192,7 @@ export class OrdemDetailsComponent implements OnInit, OnDestroy {
           
           this.ordem = updatedOrdem;
           this.successMessage = '✅ Peça adicionada com sucesso!';
-          this.pecaForm.reset({ quantidade: 1 });
+          this.pecaForm.reset({ quantidade: 1, pecaId: '', bicicletaItemId: '' });
           this.loading = false;
         },
         error: (error) => {

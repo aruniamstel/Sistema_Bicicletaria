@@ -94,8 +94,9 @@ export class OrdemServicoService {
   /**
    * Adiciona um serviço a uma ordem existente
    */
-  addServico(ordemId: number, servicoId: number, quantidade: number): Observable<any> {
+  addServico(ordemId: number, bicicletaItemId: number, servicoId: number, quantidade: number): Observable<any> {
     const payload = {
+      bicicletaItemId: bicicletaItemId,
       itemId: servicoId,
       quantidade: quantidade
     };
@@ -109,8 +110,9 @@ export class OrdemServicoService {
   /**
    * Adiciona uma peça a uma ordem existente
    */
-  addPeca(ordemId: number, pecaId: number, quantidade: number): Observable<any> {
+  addPeca(ordemId: number, bicicletaItemId: number, pecaId: number, quantidade: number): Observable<any> {
     const payload = {
+      bicicletaItemId: bicicletaItemId,
       itemId: pecaId,
       quantidade: quantidade
     };
